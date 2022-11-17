@@ -24,8 +24,7 @@ export default function About () {
             text={
               <>
                 <p>
-                  Hi, I&apos;m Hector, a student of computer engineering at the
-                  university of university of zaragoza moved by the desire to
+                  Hi, I&apos;m Hector, a computer engineer from zaragoza, moved by the desire to
                   learn something new every day.
                 </p>
                 <p>
