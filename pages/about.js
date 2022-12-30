@@ -1,6 +1,5 @@
 import Image from 'next/image'
-import { isMobileOnly } from 'react-device-detect'
-import { motion } from 'framer-motion'
+import Layout from '@/components/Layout'
 import {
   SiLinux,
   SiDocker,
@@ -11,202 +10,90 @@ import {
   SiReact,
   SiExpress
 } from 'react-icons/si'
-import Content from '../components/Content'
-import { FadeInUp, Stagger, Tool } from '../animations/About'
+import resources from '@/data/resources'
 
-export default function About () {
+export default function About({ post }) {
   return (
-    <motion.div exit={{ opacity: 0 }} className="h-full">
-      <div className="h-full flex flex-col md:flex-row gap-10 items-center justify-center sm:mt-16 md:mt-32 py-10">
-        <div className="flex-1 h-full flex items-center justify-center">
-          <Content
-            title="Who Am I"
-            text={
-              <>
-                <p>
-                  Hi, I&apos;m Hector, a computer engineer from zaragoza, moved by the desire to
-                  learn something new every day.
-                </p>
-                <p>
-                  Within the IT sector, what most attracts my attention and is
-                  currently my passion is the world of security, system
-                  administration and web apps.
-                </p>
-                <p>
-                  On the other hand, in my free time I like working out and
-                  meeting my friends.
-                </p>
-              </>
-            }
+    <div className='py-5 lg:py-8'>
+      <h1 className="mt-2 mb-3 text-3xl font-semibold tracking-tight text-center lg:leading-snug text-brand-primary lg:text-4xl">
+        About
+      </h1>
+      <p className="text-center">
+        Computer engineer based in zaragoza
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-6 mb-16 md:mt-16 md:mb-32 md:gap-16">
+        <div className="relative overflow-hidden rounded-md aspect-square mx-auto w-full h-full sm:w-64 sm:h-64">
+          <Image
+            src="/me.jpg"
+            alt={"me"}
+            fill={true}
+            sizes="(max-width: 320px) 100vw, 320px"
+            className='object-cover'
           />
         </div>
-        <div className="flex-1 h-full flex items-center justify-center">
-          <motion.div
-            initial="initial"
-            animate="animate"
-            variants={FadeInUp}
-            className="w-80 h-80 sm:w-96 sm:h-96 relative"
-          >
-            <Image
-              src={'/me.jpg'}
-              alt="Picture of the author"
-              layout="fill"
-              className="object-cover"
-            />
-          </motion.div>
+        <p className="text-left">
+          Hi, I'm Hector, a computer engineer from zaragoza, moved by the desire to learn something new every day.
+          Within the IT sector, what most attracts my attention and is currently my passion is the world of security, system administration and web apps.
+          On the other hand, in my free time I like working out and meeting my friends.
+        </p>
+      </div>
+      <h2 className="mt-2 mb-3 text-3xl font-semibold tracking-tight text-center lg:leading-snug text-brand-primary lg:text-4xl">
+        My Toolkit
+      </h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-6 mb-16 md:mt-16 md:mb-32 md:gap-16">
+        <p className="text-left">
+          It's always good to go well equipped to the places where you are needed, that's why I try to keep my tools updated as well as my knowledge about them.<br />
+          Apart from the ones you can see below, I also have knowledge in other technologies such as: Java, Haskell, Flex & Bison, relational and non-relational databases and other web frameworks such as django and next js.
+        </p>
+        <div className="flex-1 h-full flex flex-wrap items-center justify-center gap-2">
+          <div className="flex items-center justify-center w-36 h-16 shadow hover:text-red-600 dark:bg-light dark:hover:bg-white">
+            <SiLinux className="text-4xl" />
+          </div>
+          <div className="flex items-center justify-center w-36 h-16 shadow hover:text-blue-600 dark:bg-light dark:hover:bg-white">
+            <SiDocker className="text-4xl" />
+          </div>
+          <div className="flex items-center justify-center w-36 h-16 shadow hover:text-orange-500 dark:bg-light dark:hover:bg-white">
+            <SiGit className="text-4xl" />
+          </div>
+          <div className="flex items-center justify-center w-36 h-16 shadow hover:text-indigo-800 dark:bg-light dark:hover:bg-white">
+            <SiCplusplus className="text-4xl" />
+          </div>
+          <div className="flex items-center justify-center w-36 h-16 shadow hover:text-yellow-300 dark:bg-light dark:hover:bg-white">
+            <SiJavascript className="text-4xl" />
+          </div>
+          <div className="flex items-center justify-center w-36 h-16 shadow hover:text-blue-500 dark:bg-light dark:hover:bg-white">
+            <SiPython className="text-4xl" />
+          </div>
+          <div className="flex items-center justify-center w-36 h-16 shadow hover:text-blue-400 dark:bg-light dark:hover:bg-white">
+            <SiReact className="text-4xl" />
+          </div>
+          <div className="flex items-center justify-center w-36 h-16 shadow hover:text-green-400 dark:bg-light dark:hover:bg-white">
+            <SiExpress className="text-4xl" />
+          </div>
         </div>
       </div>
-
-      <div className="h-full flex flex-col md:flex-row gap-10 items-center justify-center sm:mt-16 md:mt-96 pt-10 pb-16 sm:pb-32 md:pb-64">
-        <div className="flex-1 h-full flex items-center justify-center">
-          <Content
-            title="My Toolkit"
-            text={
-              <>
-                <p>
-                  It&apos;s always good to go well equipped to the places where
-                  you are needed, that&apos;s why I try to keep my tools updated
-                  as well as my knowledge about them.
-                </p>
-                <p>
-                  Apart from the ones you can see below, I also have knowledge
-                  in other technologies such as: Java, Haskell, Flex & Bison,
-                  relational and non-relational databases and other web
-                  frameworks such as django and next js.
-                </p>
-              </>
-            }
-          />
-        </div>
-        <motion.div
-          initial="initial"
-          whileInView="animate"
-          variants={Stagger}
-          viewport={{ once: true, amount: 0.4 }}
-          className="flex-1 h-full flex flex-col items-center justify-center gap-2"
-        >
-          {!isMobileOnly
-            ? (
-            <>
-              <motion.div
-                variants={Tool}
-                className="flex items-center justify-center w-36 h-16 shadow hover:text-red-600 dark:bg-light dark:hover:bg-white"
-              >
-                <SiLinux className="text-4xl" />
-              </motion.div>
-              <div className="flex gap-2">
-                <motion.div
-                  variants={Tool}
-                  className="flex items-center justify-center w-36 h-16 shadow hover:text-blue-600 dark:bg-light dark:hover:bg-white"
-                >
-                  <SiDocker className="text-4xl" />
-                </motion.div>
-                <motion.div
-                  variants={Tool}
-                  className="flex items-center justify-center w-36 h-16 shadow hover:text-orange-500 dark:bg-light dark:hover:bg-white"
-                >
-                  <SiGit className="text-4xl" />
-                </motion.div>
-              </div>
-              <div className="flex gap-2">
-                <motion.div
-                  variants={Tool}
-                  className="flex items-center justify-center w-36 h-16 shadow hover:text-indigo-800 dark:bg-light dark:hover:bg-white"
-                >
-                  <SiCplusplus className="text-4xl" />
-                </motion.div>
-                <motion.div
-                  variants={Tool}
-                  className="flex items-center justify-center w-36 h-16 shadow hover:text-yellow-300 dark:bg-light dark:hover:bg-white"
-                >
-                  <SiJavascript className="text-4xl" />
-                </motion.div>
-                <motion.div
-                  variants={Tool}
-                  className="flex items-center justify-center w-36 h-16 shadow hover:text-blue-500 dark:bg-light dark:hover:bg-white"
-                >
-                  <SiPython className="text-4xl" />
-                </motion.div>
-              </div>
-              <div className="flex gap-2">
-                <motion.div
-                  variants={Tool}
-                  className="flex items-center justify-center w-36 h-16 shadow hover:text-blue-400 dark:bg-light dark:hover:bg-white"
-                >
-                  <SiReact className="text-4xl" />
-                </motion.div>
-                <motion.div
-                  variants={Tool}
-                  className="flex items-center justify-center w-36 h-16 shadow hover:text-green-400 dark:bg-light dark:hover:bg-white"
-                >
-                  <SiExpress className="text-4xl" />
-                </motion.div>
-              </div>
-            </>
-              )
-            : (
-            <>
-              <div className="flex gap-2">
-                <motion.div
-                  variants={Tool}
-                  className="flex items-center justify-center w-36 h-16 shadow hover:text-red-600 dark:bg-light dark:hover:bg-white"
-                >
-                  <SiLinux className="text-4xl" />
-                </motion.div>
-                <motion.div
-                  variants={Tool}
-                  className="flex items-center justify-center w-36 h-16 shadow hover:text-orange-500 dark:bg-light dark:hover:bg-white"
-                >
-                  <SiGit className="text-4xl" />
-                </motion.div>
-              </div>
-
-              <div className="flex gap-2">
-                <motion.div
-                  variants={Tool}
-                  className="flex items-center justify-center w-36 h-16 shadow hover:text-blue-600 dark:bg-light dark:hover:bg-white"
-                >
-                  <SiDocker className="text-4xl" />
-                </motion.div>
-                <motion.div
-                  variants={Tool}
-                  className="flex items-center justify-center w-36 h-16 shadow hover:text-indigo-800 dark:bg-light dark:hover:bg-white"
-                >
-                  <SiCplusplus className="text-4xl" />
-                </motion.div>
-              </div>
-              <div className="flex gap-2">
-                <motion.div
-                  variants={Tool}
-                  className="flex items-center justify-center w-36 h-16 shadow hover:text-yellow-300 dark:bg-light dark:hover:bg-white"
-                >
-                  <SiJavascript className="text-4xl" />
-                </motion.div>
-                <motion.div
-                  variants={Tool}
-                  className="flex items-center justify-center w-36 h-16 shadow hover:text-blue-500 dark:bg-light dark:hover:bg-white"
-                >
-                  <SiPython className="text-4xl" />
-                </motion.div>
-              </div>
-              <div className="flex gap-2">
-                <motion.div
-                  variants={Tool}
-                  className="flex items-center justify-center w-36 h-16 shadow hover:text-blue-400 dark:bg-light dark:hover:bg-white"
-                >
-                  <SiReact className="text-4xl" />
-                </motion.div>
-                <motion.div
-                  variants={Tool}
-                  className="flex items-center justify-center w-36 h-16 shadow hover:text-green-400 dark:bg-light dark:hover:bg-white"
-                >
-                  <SiExpress className="text-4xl" />
-                </motion.div>
-              </div>
-            </>
-              )}
-        </motion.div>
-      </div>
-    </motion.div>
+    </div>
   )
+}
+
+About.getLayout = function getLayout(page) {
+  return (
+    <Layout>
+      {page}
+    </Layout>
+  )
+}
+
+export async function getStaticProps() {
+  let post = []
+  for (const [key, value] of Object.entries(resources)) {
+    post = [...post, { ...value, id: key }]
+  }
+  post.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+
+  return {
+    props: {
+      post,
+    },
+  }
 }

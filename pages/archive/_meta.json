@@ -1,0 +1,11 @@
+{
+  "*": {
+    "theme": {
+      "breadcrumb": false,
+      "sidebar": false,
+      "toc": true,
+      "pagination": false,
+      "typesetting": "article"
+    }
+  }
+}

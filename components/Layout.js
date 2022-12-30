@@ -1,14 +1,17 @@
-import Meta from './Meta'
-import Navbar from './Navbar'
+import Navbar from "@/components/Navbar"
+import Footer from "@/components/Footer"
 
-export default function Layout ({ children }) {
+export default function Layout(props) {
+  const { children } = props;
   return (
-    <div className='bg-light dark:bg-dark'>
-      <Meta />
-      <div className="mx-auto min-h-screen px-4">
-        <Navbar />
-        <main className="container mx-auto scroll-smooth">{children}</main>
+    <div className='container px-8 xl:px-5 mx-auto max-w-screen-lg'>
+      <div className="antialiased text-gray-800 flex flex-col min-h-screen">
+        <div className="grow">
+          <Navbar {...props} />
+          <div>{children}</div>
+        </div>
       </div>
+      <Footer />
     </div>
   )
 }

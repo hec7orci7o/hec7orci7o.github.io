@@ -1,14 +1,6 @@
-import '../styles/globals.css'
-import Layout from '../components/Layout'
-import { AnimatePresence } from 'framer-motion'
+import '@/styles/globals.css'
 
-export default function MyApp ({ Component, pageProps }) {
+export default function App({ Component, pageProps }) {
   const getLayout = Component.getLayout || ((page) => page)
-  return getLayout(
-    <AnimatePresence exitBeforeEnter>
-      <Layout>
-        <Component {...pageProps} />
-      </Layout>
-    </AnimatePresence>
-  )
+  return getLayout(<Component {...pageProps} />)
 }

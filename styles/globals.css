@@ -1,35 +1,3 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-::-webkit-scrollbar { width: 0 !important }
-
-.card{
-    height: 100%;
-    width: 100%;
-    transition: all 125ms linear;
-}
-
-/* front */
-.circle {
-    background: transparent url("../public/overlays-01.svg") no-repeat 50% 50%/110px auto;
-}
-.hexagon {
-    background: transparent url("../public/overlays-02.svg") no-repeat 50% 50%/110px auto;
-}
-.end {
-    opacity: .3;
-    background: transparent url("../public/overlays-03.svg") no-repeat 50% 50%/110px auto;
-}
-
-.contenedor:hover .card {
-    transform: rotateY(90deg);
-}
