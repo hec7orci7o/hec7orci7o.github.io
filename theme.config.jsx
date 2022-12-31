@@ -14,6 +14,11 @@ const themeConfig = {
       <meta name="author" content={frontMatter.author || 'Héctor Toral'} />
     </>
   },
+  useNextSeoProps() {
+    return {
+      titleTemplate: '%s – Hec7or'
+    }
+  },
   navbar: {
     component: <div className='container px-8 xl:px-5 mx-auto max-w-screen-lg'><Navbar /></div>
   },
@@ -21,8 +26,12 @@ const themeConfig = {
     component: <div className='container px-8 xl:px-5 mx-auto max-w-screen-lg'><Footer /></div>
   },
   docsRepositoryBase: 'https://github.com/hec7orci7o/portfolio',
-  darkMode: false,
-  nextTheme: 'light',
+  darkMode: false, // Show or hide the dark mode toggle button.
+  nextThemes: {
+    defaultTheme: 'light',
+    enableSystem: false,
+    enableColorScheme: false,
+  }
 }
 
 export default themeConfig
