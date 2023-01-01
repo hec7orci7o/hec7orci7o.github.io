@@ -1,5 +1,5 @@
 ---
-title: HOT-ASM
+title: HOTASM
 description: A simple, powerful and flexible site generation framework with everything you love from Next.js.
 ---
 
@@ -8,6 +8,7 @@ import resources from '@/data/resources'
 import GoBack from '@/components/GoBack'
 import Category from '@/components/Category'
 import AuthorCard from '@/components/AuthorCard'
+import { Callout } from 'nextra-theme-docs'
 
 <Category />
 
@@ -26,24 +27,77 @@ import AuthorCard from '@/components/AuthorCard'
 
 {/* ESCRIBE AQUI TU CONTENIDO */}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum purus orci, 
-tempor vitae fermentum ac, convallis et felis. Vivamus nec urna id nisi luctus 
-consequat in id leo. Nunc a lorem eu nulla euismod elementum id non risus.
-Praesent eros dolor, bibendum sit amet elit sagittis, feugiat cursus massa. 
-Nullam posuere rutrum magna ac ornare. Vestibulum ante ipsum primis in faucibus
-orci luctus et ultrices posuere cubilia curae; Quisque eget dui ac turpis dictum
-scelerisque ut vel nisi. Fusce eu tellus vitae libero imperdiet vestibulum. In
-in mauris consequat, pharetra justo at, maximus diam. Proin at quam tortor. 
-Fusce eget convallis orci. Vivamus imperdiet ipsum tortor, eu laoreet orci
-volutpat nec.
+## Introducción
+HOTASM es un proyecto de código abierto que permite la traducción de código ASM 
+a binario además de traducirlo a hexadecimal. A parte de esto, permite descargar
+el resultado para posteriormente importarlo en un emulador de circuitos como
+podria ser Logisim.
 
-Fusce mollis maximus dui, ac consequat sapien gravida vitae. Mauris id orci sit 
-amet turpis congue ullamcorper. Sed velit ipsum, consectetur nec dignissim in, 
-convallis a ante. Duis vestibulum, ligula sed pharetra lobortis, neque ipsum 
-ultricies leo, non sagittis arcu mauris eu felis. Phasellus in tincidunt nisi. 
-Sed dignissim, odio nec laoreet tincidunt, dolor nulla pretium libero, sed 
-convallis mi sapien quis enim. Nulla et dui a tellus aliquet scelerisque id ac 
-elit.
+## Cómo funciona
+La web implementa una pequeña maquina de estados que permite la traducción de
+código ASM a binario y hexadecimal. Para ello, se ha de cargar una configuración
+que especifique las instrucciones de codigo maquina que se van a utilizar con su 
+correspondiente traducción en base 2 y, además se le ha de indicar el tamaño de
+las instrucciones en bits.
+
+<Callout type="info" emoji="️ℹ️">
+  Ejemplo de configuración
+</Callout>
+
+```asm filename="num_bits" {1} copy
+32
+```
+
+```asm filename="instrucciones asm" {1} copy
+mov #K rb; 010 31:29 18:3 23:19;
+add ra rb rd; 011 31:29 28:24 23:19 18:14;
+ld ra rb; 100 31:29 28:24 23:19 18:3;
+st rb ra; 101 31:29 23:19 28:24 18:3;
+beq ra rb #K; 001 31:29 28:24 23:19 18:3;
+nop; 000 31:29;
+```
+
+## Cómo funciona
+Para utilizar la web, se ha de cargar una configuración de instrucciones y, a
+partir de ahí, se puede traducir código ASM a binario y hexadecimal.
+
+Para realizar una prueba, reutilizaremos el ejemplo anterior.
+
+Como se puede observar en, la configuración de instrucciones, la instrucción 
+resaltada en azul es la instrucción `mov #K rb; 010 31:29 18:3 23:19;`, en esta
+estamos indicando que la instrucción `mov` tiene 2 operandos, el primero es un
+número en decimal y el segundo es un registro. Además, se le ha indicado que
+la instrucción `mov` se traduce a `010` en binario y que los bits `31:29`, `18:3` y
+`23:19` son los que se utilizan para los operandos siendo el primero el `18:3` y el
+segundo el `23:19`.
+
+Una vez cargada la configuración, se puede traducir código ASM a binario y
+hexadecimal. Para ello, se ha de escribir el código ASM en el editor de texto
+
+```asm filename="codigo asm" {1} copy
+mov #5 r0;
+mov #2 r1;
+add r1 r0 r2;
+ld r2 r3;
+```
+
+```asm filename="codigo binario" copy
+01000000000000000000000000101000
+01000000000010000000000000010000
+01100001000000001000000000000000
+10000010000110000000000000000000
+```
+
+```asm filename="codigo hexadecimal" copy
+v2.0 raw
+40000028 40080010 61008000 82180000
+```
+
+## Cómo contribuir
+A la hora de subir una nueva 'feature' asegurate de seguir la guía de estilos
+definida con eslint usando npm run lint, si te sale algún aviso o error arreglalo
+antes de subir los cambios para intentar mantener el codigo dentro de un orden. 
+De esto por lo general se encargará el paquete de npm husky
 
 {/*  AQUI ACABA TU CONTENIDO  */}
 

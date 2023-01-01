@@ -3,7 +3,8 @@ const colors = {
   BLUE: "text-blue-600",
   ORANGE: "text-orange-700",
   PURPLE: "text-purple-600",
-  PINK: "text-pink-600"
+  PINK: "text-pink-600",
+  RED: "text-red-600"
 };
 
 export default function Label(props) {

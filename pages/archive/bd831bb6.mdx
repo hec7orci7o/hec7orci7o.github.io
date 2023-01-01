@@ -26,24 +26,51 @@ import AuthorCard from '@/components/AuthorCard'
 
 {/* ESCRIBE AQUI TU CONTENIDO */}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum purus orci, 
-tempor vitae fermentum ac, convallis et felis. Vivamus nec urna id nisi luctus 
-consequat in id leo. Nunc a lorem eu nulla euismod elementum id non risus.
-Praesent eros dolor, bibendum sit amet elit sagittis, feugiat cursus massa. 
-Nullam posuere rutrum magna ac ornare. Vestibulum ante ipsum primis in faucibus
-orci luctus et ultrices posuere cubilia curae; Quisque eget dui ac turpis dictum
-scelerisque ut vel nisi. Fusce eu tellus vitae libero imperdiet vestibulum. In
-in mauris consequat, pharetra justo at, maximus diam. Proin at quam tortor. 
-Fusce eget convallis orci. Vivamus imperdiet ipsum tortor, eu laoreet orci
-volutpat nec.
+## Introducción
+Mall bot es un bot escrito en python que te permite crear tu propio bar en discord.
+Es un bot sencillo de usar y administrar y con el que puedes echarte unas risas con tus amigos.
 
-Fusce mollis maximus dui, ac consequat sapien gravida vitae. Mauris id orci sit 
-amet turpis congue ullamcorper. Sed velit ipsum, consectetur nec dignissim in, 
-convallis a ante. Duis vestibulum, ligula sed pharetra lobortis, neque ipsum 
-ultricies leo, non sagittis arcu mauris eu felis. Phasellus in tincidunt nisi. 
-Sed dignissim, odio nec laoreet tincidunt, dolor nulla pretium libero, sed 
-convallis mi sapien quis enim. Nulla et dui a tellus aliquet scelerisque id ac 
-elit.
+## Como usarlo
+
+### Comandos de usuario
+
+```bash  filename="Pide un producto al camarero" copy
+$order <name>
+```
+
+
+```bash  filename="Pide la carta al camamerero" copy
+$carta
+```
+### Comandos de administración
+
+
+```bash  filename="Añade un producto a la carta" copy
+$insert <name> <category> <url:opt>
+```
+```bash  filename="Edita el nombre de un producto" copy
+$update <old:name> <new:name>
+```
+```bash  filename="Edita la categoría de un producto" copy
+$update <name> <new:category>
+```
+```bash  filename="Borra un producto" copy
+$delete <id>
+```
+```bash  filename="Borra la imagen de un producto" copy
+$clear <name>
+```
+```bash  filename="Muestra los ids de las imagenes de un producto" copy
+$select <name>
+```
+
+## Ejemplo de uso
+
+![pedir bebida](public/mall_bot/example.png)
+
+## Como desplegarlo
+Para saber como desplegarlo puedes ver el repositorio en github en el siguiente enlace:
+[Repositorio](https://github.com/hec7orci7o/mall-bot)
 
 {/*  AQUI ACABA TU CONTENIDO  */}
 

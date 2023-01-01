@@ -9,8 +9,8 @@ const themeConfig = {
     const { frontMatter } = useConfig()
     return <>
       <meta property="og:url" content={`https://hec7or.me${asPath}`} />
-      <meta property="og:title" content={frontMatter.title || 'Nextra'} />
-      <meta property="og:description" content={frontMatter.description || 'The next site builder'} />
+      <meta property="og:title" content={frontMatter.title || 'Hec7or'} />
+      <meta property="og:description" content={frontMatter.description || 'Developer portfolio'} />
       <meta name="author" content={frontMatter.author || 'Héctor Toral'} />
     </>
   },

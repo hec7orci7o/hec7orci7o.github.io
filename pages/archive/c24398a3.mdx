@@ -8,6 +8,7 @@ import resources from '@/data/resources'
 import GoBack from '@/components/GoBack'
 import Category from '@/components/Category'
 import AuthorCard from '@/components/AuthorCard'
+import { Callout } from 'nextra-theme-docs'
 
 <Category />
 
@@ -26,24 +27,73 @@ import AuthorCard from '@/components/AuthorCard'
 
 {/* ESCRIBE AQUI TU CONTENIDO */}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum purus orci, 
-tempor vitae fermentum ac, convallis et felis. Vivamus nec urna id nisi luctus 
-consequat in id leo. Nunc a lorem eu nulla euismod elementum id non risus.
-Praesent eros dolor, bibendum sit amet elit sagittis, feugiat cursus massa. 
-Nullam posuere rutrum magna ac ornare. Vestibulum ante ipsum primis in faucibus
-orci luctus et ultrices posuere cubilia curae; Quisque eget dui ac turpis dictum
-scelerisque ut vel nisi. Fusce eu tellus vitae libero imperdiet vestibulum. In
-in mauris consequat, pharetra justo at, maximus diam. Proin at quam tortor. 
-Fusce eget convallis orci. Vivamus imperdiet ipsum tortor, eu laoreet orci
-volutpat nec.
+## Introducción
+El proyecto maps Scraping es un script que permite la extracción de información 
+de google maps para su posterior análisis y consulta. Surge de la necesidad de 
+tener una base de datos de las floristerías de toda España para poder realizar
+una comunidad entre la que poder redirigirse los pedidos de flores entre ellas.
 
-Fusce mollis maximus dui, ac consequat sapien gravida vitae. Mauris id orci sit 
-amet turpis congue ullamcorper. Sed velit ipsum, consectetur nec dignissim in, 
-convallis a ante. Duis vestibulum, ligula sed pharetra lobortis, neque ipsum 
-ultricies leo, non sagittis arcu mauris eu felis. Phasellus in tincidunt nisi. 
-Sed dignissim, odio nec laoreet tincidunt, dolor nulla pretium libero, sed 
-convallis mi sapien quis enim. Nulla et dui a tellus aliquet scelerisque id ac 
-elit.
+## Como funciona
+Para ejecutar el script es necesario tener instalado python 3 instalado en el
+sistema. Una vez instalado, se debe ejecutar el script con el siguiente comando:
+
+```bash
+python3 maps_scraping.py
+```
+
+Una vez ejecutado el script, se le pedirá al usuario que introduzca una query 
+sobre la que extraer datos de google maps por ejemplo "floristerias huesca".
+
+El script se encargará de extraer los datos de las páginas que aparecen en la
+primera página de resultados de google maps. Para cada resultado se extraerá
+la siguiente información:
+
+| Campo | Descripción | Tipo |
+| --- | --- | --- |
+| title | Título de la página | string |
+| score | Puntuación de la página | float |
+| num_reviews | Número de reseñas de la página | int |
+| tag | Etiquetas de la página | list |
+| address | Dirección de la página | string | 
+| coords | Coordenadas de la página | tuple |
+| domain | Dominio de la página | string |
+| phone | Teléfono de la página | string |
+| plus_code | Código plus de la página | string |
+| email | Email de la página | string |
+
+## Ejemplo de uso
+
+<Callout type="warning" emoji="️⚠️">
+  Puede dar varias ejecuciones fallidas dependiendo del proxie que se utilice.
+</Callout>
+
+```python
+Searching results for: floristerias huesca
+   1 - ✅ data successfully collected. KEY: floristeria zaraflor huesca              TIME: 3.12s
+   2 - ✅ data successfully collected. KEY: floristeria los arcos                    TIME: 5.51s
+   3 - ✅ data successfully collected. KEY: floristeria albahaca                     TIME: 2.36s
+   4 - ✅ data successfully collected. KEY: la reina de las flores                   TIME: 2.64s
+   5 - ✅ data successfully collected. KEY: floristeria paraiso                      TIME: 5.92s
+   6 - ✅ data successfully collected. KEY: uson floristas                           TIME: 4.93s
+   7 - ✅ data successfully collected. KEY: floristeria jungla                       TIME: 8.24s
+   8 - ✅ data successfully collected. KEY: rafael marquez troya                     TIME: 8.27s
+   9 - ✅ data successfully collected. KEY: cactus taller floral                     TIME: 4.85s
+  10 - ✅ data successfully collected. KEY: brotalia y semonia                       TIME: 5.29s
+  11 - ✅ data successfully collected. KEY: floristeria canales                      TIME: 7.98s
+  12 - ✅ data successfully collected. KEY: floristeria el cisne                     TIME: 8.65s
+  13 - ✅ data successfully collected. KEY: floristeria muguet                       TIME: 11.93s
+  14 - ✅ data successfully collected. KEY: floristeria yerbaflor                    TIME: 9.06s
+  15 - ✅ data successfully collected. KEY: flores bambu                             TIME: 13.05s
+  16 - ✅ data successfully collected. KEY: floristeria tella                        TIME: 9.06s
+  17 - ✅ data successfully collected. KEY: la naturaleza                            TIME: 11.50s
+  18 - ✅ data successfully collected. KEY: flores benede                            TIME: 12.69s
+  19 - ✅ data successfully collected. KEY: floristeria azahar                       TIME: 12.27s
+  20 - ❌ data already collected.      KEY: floristeria tella
+Seeking emails...
+Progress: | >>>>>>>>>>>>>>>>>>>| 100.0% Complete
+Total results achieved: 19
+Total elapsed time: 4.64m
+```
 
 {/*  AQUI ACABA TU CONTENIDO  */}
 

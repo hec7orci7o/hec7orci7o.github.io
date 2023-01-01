@@ -6,6 +6,7 @@ const tags = {
   ORANGE: "bg-orange-100 text-orange-700",
   PURPLE: "bg-purple-100 text-purple-600",
   PINK: "bg-pink-100 text-pink-600",
+  RED: "bg-red-100 text-red-600",
   GRAY: "bg-gray-100 text-gray-700"
 };
 

@@ -1,4 +1,8 @@
 const categories = {
+  UNKNOWN: {
+    title: "UNKNOWN",
+    color: "RED",
+  },
   EVENT: {
     title: "EVENT",
     color: "GREEN",

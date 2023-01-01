@@ -26,24 +26,44 @@ import AuthorCard from '@/components/AuthorCard'
 
 {/* ESCRIBE AQUI TU CONTENIDO */}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum purus orci, 
-tempor vitae fermentum ac, convallis et felis. Vivamus nec urna id nisi luctus 
-consequat in id leo. Nunc a lorem eu nulla euismod elementum id non risus.
-Praesent eros dolor, bibendum sit amet elit sagittis, feugiat cursus massa. 
-Nullam posuere rutrum magna ac ornare. Vestibulum ante ipsum primis in faucibus
-orci luctus et ultrices posuere cubilia curae; Quisque eget dui ac turpis dictum
-scelerisque ut vel nisi. Fusce eu tellus vitae libero imperdiet vestibulum. In
-in mauris consequat, pharetra justo at, maximus diam. Proin at quam tortor. 
-Fusce eget convallis orci. Vivamus imperdiet ipsum tortor, eu laoreet orci
-volutpat nec.
+## Introducción
+Finance bot es un bot escrito en python que te permite consultar el precio de 
+distintos activos financieros.
+Actualemente no sigue en desarrollo, pero si quieres puedes ver el código en mi
+[repositorio](https://github.com/hec7orci7o/finance-bot) de github.
 
-Fusce mollis maximus dui, ac consequat sapien gravida vitae. Mauris id orci sit 
-amet turpis congue ullamcorper. Sed velit ipsum, consectetur nec dignissim in, 
-convallis a ante. Duis vestibulum, ligula sed pharetra lobortis, neque ipsum 
-ultricies leo, non sagittis arcu mauris eu felis. Phasellus in tincidunt nisi. 
-Sed dignissim, odio nec laoreet tincidunt, dolor nulla pretium libero, sed 
-convallis mi sapien quis enim. Nulla et dui a tellus aliquet scelerisque id ac 
-elit.
+## Comandos
+
+```bash filename="Consultar información sobre un cryptoactivo" copy
+currency <symbol> <divisa>
+```
+
+![currency](public/finance_bot/example_currency.png)
+
+---
+
+```bash filename="Listar los n cryptoactivos más calientes" copy
+$hot <limit:[1-3]>* <fiat>
+```
+
+![hot](public/finance_bot/example_hot.png)
+
+---
+
+```bash filename="" copy
+$fiat <divisa>
+```
+
+![fiat](public/finance_bot/example_fiat.png)
+
+---
+
+```bash filename="Precio del gas de la red de ETH" copy
+gas
+```
+
+![gas](public/finance_bot/example_gas.png)
+
 
 {/*  AQUI ACABA TU CONTENIDO  */}
 
