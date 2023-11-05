@@ -1,9 +1,248 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="Welcome to Astro.">
-	<main>
+  <main>
+    <article class="portfolio" data-page="portfolio">
+      <header>
+        <h2 class="h2 article-title">Portfolio</h2>
+      </header>
 
-	</main>
+      <section class="projects">
+        <ul class="filter-list">
+          <li class="filter-item">
+            <button class="active" data-filter-btn>All</button>
+          </li>
+
+          <li class="filter-item">
+            <button data-filter-btn>Applications</button>
+          </li>
+
+          <li class="filter-item">
+            <button data-filter-btn>Web development</button>
+          </li>
+        </ul>
+
+        <div class="filter-select-box">
+          <button class="filter-select" data-select>
+            <div class="select-value" data-selecct-value>Select category</div>
+
+            <div class="select-icon">
+              <ion-icon name="chevron-down"></ion-icon>
+            </div>
+          </button>
+
+          <ul class="select-list">
+            <li class="select-item">
+              <button data-select-item>All</button>
+            </li>
+
+            <li class="select-item">
+              <button data-select-item>Applications</button>
+            </li>
+
+            <li class="select-item">
+              <button data-select-item>Web development</button>
+            </li>
+          </ul>
+        </div>
+
+        <ul class="project-list">
+          <li
+            class="project-item active"
+            data-filter-item
+            data-category="web development"
+          >
+            <a href="https://reign.gracehopper.xyz/">
+              <figure class="project-img">
+                <div class="project-item-icon-box">
+                  <ion-icon name="eye-outline"></ion-icon>
+                </div>
+
+                <img
+                  src="./assets/images/projects/project-8.png"
+                  alt="Reign"
+                  loading="lazy"
+                  class="project-img-item"
+                />
+              </figure>
+
+              <h3 class="project-title">Reign</h3>
+
+              <p class="project-category">Web development</p>
+            </a>
+          </li>
+
+          <li
+            class="project-item active"
+            data-filter-item
+            data-category="web development"
+          >
+            <a href="https://github.com/Hec7or-Uni/urlshortener">
+              <figure class="project-img">
+                <div class="project-item-icon-box">
+                  <ion-icon name="eye-outline"></ion-icon>
+                </div>
+
+                <img
+                  src="./assets/images/projects/project-7.png"
+                  alt="URLShortener"
+                  loading="lazy"
+                />
+              </figure>
+
+              <h3 class="project-title">URLShortener</h3>
+
+              <p class="project-category">Web development</p>
+            </a>
+          </li>
+
+          <li
+            class="project-item active"
+            data-filter-item
+            data-category="web development"
+          >
+            <a href="https://buiildr.vercel.app/">
+              <figure class="project-img">
+                <div class="project-item-icon-box">
+                  <ion-icon name="eye-outline"></ion-icon>
+                </div>
+
+                <img
+                  src="./assets/images/projects/project-6.png"
+                  alt="Buiildr"
+                  loading="lazy"
+                />
+              </figure>
+
+              <h3 class="project-title">Buiildr</h3>
+
+              <p class="project-category">Web development</p>
+            </a>
+          </li>
+
+          <li
+            class="project-item active"
+            data-filter-item
+            data-category="web development"
+          >
+            <a href="https://hotasm.vercel.app/">
+              <figure class="project-img">
+                <div class="project-item-icon-box">
+                  <ion-icon name="eye-outline"></ion-icon>
+                </div>
+
+                <img
+                  src="./assets/images/projects/project-5.png"
+                  alt="HotAsm"
+                  loading="lazy"
+                />
+              </figure>
+
+              <h3 class="project-title">HotAsm</h3>
+
+              <p class="project-category">Web development</p>
+            </a>
+          </li>
+
+          <li
+            class="project-item active"
+            data-filter-item
+            data-category="applications"
+          >
+            <a href="https://github.com/hec7orci7o/mapsScraping">
+              <figure class="project-img">
+                <div class="project-item-icon-box">
+                  <ion-icon name="eye-outline"></ion-icon>
+                </div>
+
+                <img
+                  src="./assets/images/project-1.jpg"
+                  alt="GMaps Scraping"
+                  loading="lazy"
+                />
+              </figure>
+
+              <h3 class="project-title">GMaps Scraping</h3>
+
+              <p class="project-category">Applications</p>
+            </a>
+          </li>
+
+          <li
+            class="project-item active"
+            data-filter-item
+            data-category="web development"
+          >
+            <a href="https://github.com/Hec7or-Uni/BIdeas">
+              <figure class="project-img">
+                <div class="project-item-icon-box">
+                  <ion-icon name="eye-outline"></ion-icon>
+                </div>
+
+                <img
+                  src="./assets/images/projects/project-3.png"
+                  alt="BIdeas"
+                  loading="lazy"
+                />
+              </figure>
+
+              <h3 class="project-title">BIdeas</h3>
+
+              <p class="project-category">Web development</p>
+            </a>
+          </li>
+
+          <li
+            class="project-item active"
+            data-filter-item
+            data-category="applications"
+          >
+            <a href="https://github.com/hec7orci7o/finance-bot">
+              <figure class="project-img">
+                <div class="project-item-icon-box">
+                  <ion-icon name="eye-outline"></ion-icon>
+                </div>
+
+                <img
+                  src="./assets/images/project-1.jpg"
+                  alt="Finance Bot"
+                  loading="lazy"
+                />
+              </figure>
+
+              <h3 class="project-title">Finance Bot</h3>
+
+              <p class="project-category">Applications</p>
+            </a>
+          </li>
+
+          <li
+            class="project-item active"
+            data-filter-item
+            data-category="applications"
+          >
+            <a href="https://github.com/hec7orci7o/mall-bot">
+              <figure class="project-img">
+                <div class="project-item-icon-box">
+                  <ion-icon name="eye-outline"></ion-icon>
+                </div>
+
+                <img
+                  src="./assets/images/project-1.jpg"
+                  alt="Mall Bot"
+                  loading="lazy"
+                />
+              </figure>
+
+              <h3 class="project-title">Mall Bot</h3>
+
+              <p class="project-category">Applications</p>
+            </a>
+          </li>
+        </ul>
+      </section>
+    </article>
+  </main>
 </Layout>

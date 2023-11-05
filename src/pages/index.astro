@@ -1,9 +1,85 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="Welcome to Astro.">
-	<main>
+  <main>
+    <article class="about active" data-page="about">
+      <header>
+        <h2 class="h2 article-title">About me</h2>
+      </header>
 
-	</main>
+      <section class="about-text">
+        <p>
+          Hi, I'm Héctor and I'm a computer engineering student based in
+          Zaragoza, Spain.
+        </p>
+        <p>
+          I consider myself a friendly, empathetic and open-minded person. I
+          have had the opportunity to work with people from different cultures
+          and in different languages, which has allowed me to develop
+          communication skills and adaptability.
+        </p>
+        <p>
+          In my free time, I like to learn new things, travel and enjoy time
+          with my friends.
+        </p>
+        <p>
+          In the work environment, I am especially attracted to fields such as
+          cybersecurity, cloud architecture design. In addition, I have
+          experience in full stack development and data analysis, which allows
+          me to have a complete vision of the projects I work on and develop
+          effective strategies for their implementation.
+        </p>
+        <p>
+          If you are looking for someone who has technical skills and is also
+          able to work in a team and communicate effectively, feel free to
+          contact me - I'm excited to explore new opportunities and collaborate
+          on interesting projects!
+        </p>
+      </section>
+      <section class="service">
+        <h3 class="h3 service-title">What i'm doing</h3>
+
+        <ul class="service-list">
+          <li class="service-item">
+            <div class="service-icon-box">
+              <img
+                src="./assets/images/icons/icon-dev.svg"
+                alt="Web development icon"
+                width="40"
+              />
+            </div>
+
+            <div class="service-content-box">
+              <h4 class="h4 service-item-title">Web development</h4>
+
+              <p class="service-item-text">
+                High-quality development of sites at the professional level.
+              </p>
+            </div>
+          </li>
+
+          <li class="service-item">
+            <div class="service-icon-box">
+              <img
+                src="./assets/images/icons/icon-dev.svg"
+                alt="camera icon"
+                width="40"
+              />
+            </div>
+
+            <div class="service-content-box">
+              <h4 class="h4 service-item-title">Pentesting</h4>
+
+              <p class="service-item-text">
+                In my spare time I try to solve hack the box and try hack me
+                machines.
+              </p>
+            </div>
+          </li>
+        </ul>
+      </section>
+    </article>
+  </main>
 </Layout>

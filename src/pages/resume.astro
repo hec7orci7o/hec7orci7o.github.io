@@ -1,9 +1,125 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="Welcome to Astro.">
-	<main>
+  <main>
+    <article class="resume" data-page="resume">
+      <header>
+        <h2 class="h2 article-title">Resume</h2>
+      </header>
 
-	</main>
+      <section class="timeline">
+        <div class="title-wrapper">
+          <div class="icon-box">
+            <ion-icon name="book-outline"></ion-icon>
+          </div>
+
+          <h3 class="h3">Education</h3>
+        </div>
+
+        <ol class="timeline-list">
+          <li class="timeline-item">
+            <h4 class="h4 timeline-item-title">HTB Academy</h4>
+
+            <span>2022 — Present</span>
+
+            <p class="timeline-text">
+              In my spare time I have been able to complete some Hack the Box
+              Academy (HTB) courses such as: "Introduction to Network Traffic
+              Analysis", "Linux Fundamentals" and "Windows Fundamentals".
+            </p>
+          </li>
+
+          <li class="timeline-item">
+            <h4 class="h4 timeline-item-title">Computer Engineering</h4>
+
+            <span>2019 — Present</span>
+
+            <p class="timeline-text">
+              At this stage I was able to acquire a great knowledge base of
+              great professionals and meet wonderful people.
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="timeline">
+        <div class="title-wrapper">
+          <div class="icon-box">
+            <ion-icon name="book-outline"></ion-icon>
+          </div>
+
+          <h3 class="h3">Experience</h3>
+        </div>
+
+        <ol class="timeline-list">
+          <li class="timeline-item">
+            <h4 class="h4 timeline-item-title">
+              junior cybersecurity engineer
+            </h4>
+
+            <span>2022 — 2022</span>
+
+            <p class="timeline-text">
+              In summer 2022, I had the opportunity to intern with Nologin's
+              security team. During this time, I was able to learn from their
+              extensive knowledge and experience, and it was a privilege to
+              share my time with such a great team.
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="skill">
+        <h3 class="h3 skills-title">My skills</h3>
+
+        <ul class="skills-list content-card">
+          <li class="skills-item">
+            <div class="title-wrapper">
+              <h5 class="h5">Web development</h5>
+              <data value="85">85%</data>
+            </div>
+
+            <div class="skill-progress-bg">
+              <div class="skill-progress-fill" style="width: 85%;"></div>
+            </div>
+          </li>
+
+          <li class="skills-item">
+            <div class="title-wrapper">
+              <h5 class="h5">Pentesting</h5>
+              <data value="30">30%</data>
+            </div>
+
+            <div class="skill-progress-bg">
+              <div class="skill-progress-fill" style="width: 30%;"></div>
+            </div>
+          </li>
+
+          <li class="skills-item">
+            <div class="title-wrapper">
+              <h5 class="h5">Analytical</h5>
+              <data value="75">75%</data>
+            </div>
+
+            <div class="skill-progress-bg">
+              <div class="skill-progress-fill" style="width: 75%;"></div>
+            </div>
+          </li>
+
+          <li class="skills-item">
+            <div class="title-wrapper">
+              <h5 class="h5">Adaptability</h5>
+              <data value="75">75%</data>
+            </div>
+
+            <div class="skill-progress-bg">
+              <div class="skill-progress-fill" style="width: 75%;"></div>
+            </div>
+          </li>
+        </ul>
+      </section>
+    </article>
+  </main>
 </Layout>
