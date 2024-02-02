@@ -4,8 +4,8 @@ import { Image } from "astro:assets"
 
 import Layout from "@/layouts/Layout.astro";
 import SocialLinks from "@/components/SocialLinks.astro";
-import PostCard from "@/components/PostCard.astro";
-import ProjectCard from "@/components/ProjectCard.astro";
+import PostCard from "@/components/posts/Card.astro";
+import ProjectCard from "@/components/projects/Card.astro";
 import Link from "@/components/shared/Link.astro";
 import convertAsteriskToStrongTag from "@/utils/convertAsteriskToStrongTag";
 
@@ -15,18 +15,6 @@ import projects from "@/data/projects";
 const posts = (await getCollection("posts")).sort(function (first, second) {
   return second.data.publishedAt.getTime() - first.data.publishedAt.getTime();
 });
-const lines = [
-"2023-12-08 15:30:45 | Firewall: SecuritySystemXYZ | Action: Blocked",
-"Source IP: 192.168.1.100 | Destination IP: 203.0.113.5 | Protocol: TCP | Port: 22 | Reason: Suspicious SSH Connection",
-"2023-12-08 15:32:12 | Firewall: SecuritySystemXYZ | Action: Allowed",
-"Source IP: 10.0.0.5 | Destination IP: 198.51.100.21 | Protocol: UDP | Port: 500 | Reason: VPN Traffic",
-"2023-12-08 15:35:27 | Firewall: SecuritySystemXYZ | Action: Blocked",
-"Source IP: 192.168.1.200 | Destination IP: 203.0.113.8 | Protocol: ICMP | Port: N/A | Reason: Ping Flood",
-"2023-12-08 15:40:09 | Firewall: SecuritySystemXYZ | Action: Blocked",
-"Source IP: 192.168.1.75 | Destination IP: 203.0.113.12 | Protocol: TCP | Port: 445 | Reason: Attempted SMB Exploit",
-"2023-12-08 15:42:55 | Firewall: SecuritySystemXYZ | Action: Allowed",
-"Source IP: 10.0.0.10 | Destination IP: 198.51.100.15 | Protocol: TCP | Port: 80 | Reason: Web Browsing",
-]
 ---
 
 <Layout>
@@ -73,6 +61,7 @@ const lines = [
         {
           posts.length !== 0 &&
             posts
+              .filter((post) => post.data.isPublished) 
               .slice(0, 2)
               .map((post) => (
                 <PostCard
@@ -80,7 +69,7 @@ const lines = [
                   title={post.data.title}
                   description={post.data.description}
                   slug={post.slug}
-                  isPublish={post.data.isPublish}
+                  isPublished={post.data.isPublished}
                 />
               ))
         }
@@ -88,19 +77,28 @@ const lines = [
     </article>
 
     <article class="flex flex-col gap-8">
-        <header class="flex w-full flex-row justify-between gap-2">
-          <h3 class="text-lg text-neutral-100">
-            Active projects ({projects.filter((project) => project.isDeployed).length})
-          </h3>
-          <Link href="/projects" label="See all projects" isUnderline target="_self" />
-        </header>
+      <header class="flex w-full flex-row justify-between gap-2">
+        <h3 class="text-lg text-neutral-100">
+          Active projects ({projects.filter((project) => project.isDeployed).length})
+        </h3>
+        <Link href="/projects" label="See all projects" isUnderline target="_self" />
+      </header>
       {projects.length === 0 && <p>Oops, I must work^^^^^</p>}
 
       <section class="flex flex-col gap-4">
         {
           projects.length !== 0 &&
             projects
-              .filter((project) => project.isDeployed)
+              .filter((project) => project.isDeployed || project.isComingSoon)
+              .sort((first, second) => {
+                if (first.isDeployed && !second.isDeployed) {
+                  return -1; // Mueve los proyectos desplegados hacia arriba
+                } else if (!first.isDeployed && second.isDeployed) {
+                  return 1; // Mueve los proyectos no desplegados hacia arriba
+                } else {
+                  return 0; // Mantén el orden actual
+                }
+              })
               .map((project) => <ProjectCard {...project} />)
         }
       </section>

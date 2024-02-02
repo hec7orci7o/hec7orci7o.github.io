@@ -26,7 +26,6 @@ const { Content, remarkPluginFrontmatter  } = await post.render();
       <h1 class="text-md">
         {post.data.title} - {formatDate(post.data.publishedAt)}
       </h1>
-      <p class="italic">{post.data.description}</p>
       <p>{remarkPluginFrontmatter.minutesRead}</p>
     </header>
 

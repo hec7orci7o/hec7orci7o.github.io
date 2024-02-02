@@ -1,9 +1,9 @@
 ---
-title: "Unicode 2023"
-publishedAt: 2023-10-18
-description: "I was part of the Staff of the unicode hackathon."
-slug: "unicode-2023"
-isPublish: false
+title: "Locked Shields - CCDCOE 2023"
+publishedAt: 2023-03-01
+description: "I participated in the cyber defense exercise organized by NATO in 2023."
+slug: "locked-shields-ccdcoe-2023"
+isPublished: false
 isDraft: true
 ---
 

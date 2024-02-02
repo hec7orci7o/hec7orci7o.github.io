@@ -6,15 +6,15 @@ type Props = {
   publishedAt: Date;
   description: string;
   slug: string;
-  isPublish: boolean;
+  isPublished: boolean;
 };
 
-const { title, publishedAt, description, slug, isPublish } = Astro.props;
+const { title, publishedAt, description, slug, isPublished } = Astro.props;
 ---
 
 <a
   class="group flex cursor-pointer flex-col gap-2 rounded-md border border-neutral-700 p-4 transition-all duration-300 hover:-translate-y-2 hover:border-neutral-400"
-  href={isPublish ? `/posts/${slug}` : '/posts'}
+  href={isPublished ? `/posts/${slug}` : '/posts'}
 >
   <div
     class="flex w-full flex-col justify-between gap-2 sm:flex-row md:items-center"
@@ -26,7 +26,7 @@ const { title, publishedAt, description, slug, isPublish } = Astro.props;
       height="18"
       viewBox="0 0 18 18"
       fill="none"
-      class="transition-all duration-300 group-hover:translate-x-1 sm:hidden"
+      class="min-w-fit min-h-fit transition-all duration-300 group-hover:translate-x-1 sm:hidden"
     >
       <path
         d="M5.25 12.75L12.75 5.25"

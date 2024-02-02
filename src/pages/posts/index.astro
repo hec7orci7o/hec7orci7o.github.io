@@ -1,7 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import Layout from "@/layouts/Layout.astro";
-import formatDate from "@/utils/formatDate";
+import PostCard from "@/components/posts/PostCard.astro";
 
 const posts = (await getCollection("posts")).sort(function (first, second) {
   return second.data.publishedAt.getTime() - first.data.publishedAt.getTime();
@@ -13,45 +13,20 @@ const posts = (await getCollection("posts")).sort(function (first, second) {
     <h1 class="text-2xl text-neutral-100">Posts</h1>
 
     <article class="flex flex-col gap-4">
-      {
-        posts.map((post) => (
-          <a
-            class="group flex flex-col gap-2 border-t border-neutral-700 py-4 transition-all hover:text-neutral-100"
-            href={post.data.isPublish ? `/posts/${post.slug}` : null}
-          >
-            <div class="flex w-full items-center justify-between">
-              <h2 class="text-lg">{post.data.title}</h2>
-
-              <div class="flex flex-row items-center gap-4">
-                <p>{formatDate(post.data.publishedAt)}</p>
-                {post.data.isPublish &&
-                  <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 18 18"
-                  fill="none"
-                  class="transition-all duration-300 group-hover:translate-x-1"
-                >
-                  <path
-                    d="M5.25 12.75L12.75 5.25"
-                    stroke="#999999"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                  <path
-                    d="M5.25 5.25H12.75V12.75"
-                    stroke="#999999"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-                }
-              </div>
-            </div>
-            <p>{post.data.description}</p>
-          </a>
-        ))
+      {posts.filter((post) => post.data.isPublished).length === 0 && 
+        <p>Soon, stay connected 👀...</p>
       }
+      {posts
+        .filter((post) => post.data.isPublished)
+        .map((post) => (
+          <PostCard 
+            title={post.data.title}
+            description={post.data.description}
+            slug={post.slug}
+            publishedAt={post.data.publishedAt}
+            isPublished={post.data.isPublished}
+          />
+        ))}
     </article>
   </main>
 </Layout>

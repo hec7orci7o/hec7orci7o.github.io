@@ -2,12 +2,17 @@
 export type Project = {
   title: string;
   techs: string[];
-  link: string;
+  link?: string;
   isComingSoon?: boolean;
   isDeployed?: boolean;
 };
 
 const projects: Project[] = [
+  {
+    title: "Coding platform",
+    techs: [],
+    isComingSoon: true,
+  },
   {
     title: "Business management system",
     techs: ["JS", "Next.js", "Tailwind", "Eslint", "Docker", "Supabase", "Cypress"],

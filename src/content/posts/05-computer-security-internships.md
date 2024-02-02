@@ -1,9 +1,9 @@
 ---
-title: "Advent of Cyber 2022"
-publishedAt: 2022-12-01
-description: "Successful completion of the Advent of Cyber 2022 cybersecurity challenge"
-slug: "advent-of-cyber-2022"
-isPublish: false
+title: "Computer Security Internships"
+publishedAt: 2022-07-18
+description: ""
+slug: "computer-security-internships"
+isPublished: false
 isDraft: true
 ---
 

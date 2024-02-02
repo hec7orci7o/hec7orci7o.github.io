@@ -1,9 +1,9 @@
 ---
-title: "Locked Shields - CCDCOE 2022"
-publishedAt: 2022-03-01
-description: "I participated in the cyber defense exercise organized by NATO in 2022."
-slug: "locked-shields-ccdcoe-2022"
-isPublish: false
+title: "Advent of Cyber 2023"
+publishedAt: 2023-12-25
+description: "Successful completion of the Advent of Cyber 2023 cybersecurity challenge"
+slug: "advent-of-cyber-2023"
+isPublished: false
 isDraft: true
 ---
 

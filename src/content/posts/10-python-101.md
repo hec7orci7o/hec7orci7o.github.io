@@ -1,8 +1,8 @@
 ---
-title: "Hashcode 2022"
-publishedAt: 2022-02-24
-description: "I participated in the Google Hash Code 2022 programming contest."
-slug: "hashcode-2022"
+title: "Introduction to Python"
+publishedAt: 2023-12-14
+description: "I introduce others to Python in collaboration with Codelab"
+slug: "python-101"
 isPublished: false
 isDraft: true
 ---

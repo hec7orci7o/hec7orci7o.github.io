@@ -1,0 +1,59 @@
+{
+  // Configuración de actualización de importaciones al mover archivos
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+
+  // Configuración de formateo de código con ESLint al guardar
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "eslint.format.enable": true,
+  "editor.formatOnSave": true,
+
+  // Configuración de desplazamiento y comportamiento del editor
+  "editor.stickyScroll.enabled": true,
+  "editor.stickyScroll.scrollWithEditor": true,
+  "editor.linkedEditing": true,
+
+  // Configuración de estilo y formato de código
+  "editor.tabSize": 2,
+  "editor.indentSize": "tabSize",
+
+  // Configuración de resaltado de pares de corchetes y guías
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+
+  // Configuración de la fuente del editor
+  "editor.fontFamily": "'Cascadia Code', monospace",
+
+  // Configuración de desplazamiento suave en la barra lateral
+  "workbench.list.smoothScrolling": true,
+
+  // Configuración del tema de color y de iconos
+  "workbench.colorTheme": "Hack The Box",
+  "workbench.iconTheme": "material-icon-theme",
+
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    ".env": ".env.*",
+    "Dockerfile": "Dockerfile*, docker-compose*.yml, .dockerignore",
+    "package.json": "*.json, *.lock, *.yaml, *.mjs, *.ts, *.config.js, *.config.cjs, .eslintrc.js",
+  },
+
+  // Configuración de exclusiones de archivos y carpetas
+  "files.exclude": {
+    "**/.git": true,
+    ".next": true,
+    ".husky": true,
+    "node_modules": true,
+    "next-env.d.ts": true,
+  },
+
+  // Configuración de formato de fin de línea y eliminación de espacios finales
+  "files.eol": "\n",
+  "files.trimTrailingWhitespace": false,
+  "files.trimFinalNewlines": true,
+
+  // Configuración de GitHub Copilot
+  "github.copilot.enable": {
+    "*": true,
+  }
+}

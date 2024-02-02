@@ -1,8 +1,8 @@
 ---
-title: "Hashcode 2022"
-publishedAt: 2022-02-24
-description: "I participated in the Google Hash Code 2022 programming contest."
-slug: "hashcode-2022"
+title: "Final Degree Project"
+publishedAt: 2024-02-09
+description: ""
+slug: "final-degree-project"
 isPublished: false
 isDraft: true
 ---

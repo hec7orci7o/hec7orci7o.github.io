@@ -1,8 +1,8 @@
 ---
-title: "Hashcode 2022"
-publishedAt: 2022-02-24
-description: "I participated in the Google Hash Code 2022 programming contest."
-slug: "hashcode-2022"
+title: "Locked Shields - CCDCOE 2022"
+publishedAt: 2022-03-01
+description: "I participated in the cyber defense exercise organized by NATO in 2022."
+slug: "locked-shields-ccdcoe-2022"
 isPublished: false
 isDraft: true
 ---

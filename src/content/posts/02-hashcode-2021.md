@@ -3,7 +3,7 @@ title: "Hashcode 2021"
 publishedAt: 2021-02-25
 description: "I participated in the Google Hash Code 2021 programming contest."
 slug: "hashcode-2021"
-isPublish: false
+isPublished: false
 isDraft: true
 ---
 

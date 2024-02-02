@@ -3,7 +3,7 @@ title: "Hack for Good 2022"
 publishedAt: 2022-10-20
 description: "I was awarded with my team in the Hack For Good 2022 competition."
 slug: "hack-for-good-2022"
-isPublish: false
+isPublished: false
 isDraft: true
 ---
 
