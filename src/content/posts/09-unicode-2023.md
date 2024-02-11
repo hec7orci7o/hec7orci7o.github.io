@@ -35,6 +35,6 @@ El evento fue organizado por el equipo de [codelab] y contó con la colaboració
 [Lucas Cauhé](https://www.linkedin.com/in/lucas-cauh%C3%A9-vi%C3%B1ao-b103b51a4/),
 [Darío Marcos](https://www.linkedin.com/in/dar%C3%ADo-marcos-casal%C3%A9-3b9551246/),
 [Francisco Javier Pizarro](https://www.linkedin.com/in/franciscopizarrojavier/),
-[Hector Toral](https://www.linkedin.com/in/hec7or/)
+[Héctor Toral](https://www.linkedin.com/in/hec7or/)
 
 [codelab]: https://codelabzgz.github.io/

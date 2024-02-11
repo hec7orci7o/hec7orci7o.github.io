@@ -17,7 +17,7 @@ const presentation: Presentation = {
   title: "Hi, I’m Héctor 👋",
   profile: "/profile.webp",
   description:
-    "a *Spanish dev passionate about cybersecurity*. My goal is to become a *pentester* and I'm currently a *DevOps*. Outside of coding, you'll find me at the gym with friends or exploring new pentesting techniques.",
+    "a *Spanish dev passionate about cybersecurity*. I have experience with the *DevOps* world and my goal is to become a *pentester*. Outside of coding, you'll find me with friends or exploring new concepts related to my main goals.",
   socials: [
     {
       label: "LinkedIn",
