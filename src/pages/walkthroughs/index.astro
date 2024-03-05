@@ -1,0 +1,30 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "@/layouts/Layout.astro";
+import WalkthroughCard from "@/components/walkthroughs/WalkthroughCard.astro";
+
+const walkthroughs = (await getCollection("walkthroughs"))
+---
+
+<Layout title="All Walkthroughs">
+  <main class="flex flex-col gap-20">
+    <h1 class="text-2xl text-neutral-100">Walkthroughs</h1>
+
+    <article class="flex flex-col gap-4">
+      {walkthroughs.length === 0 && 
+        <p>Soon, stay connected 👀...</p>
+      }
+      {walkthroughs
+        .map((walkthrough) => (
+          <WalkthroughCard 
+            title={walkthrough.data.title}
+            banner={walkthrough.data.banner}
+            difficulty={walkthrough.data.difficulty}
+            os={walkthrough.data.os}
+            slug={walkthrough.slug}
+            releaseDate={walkthrough.data.releaseDate}
+          />
+        ))}
+    </article>
+  </main>
+</Layout>
