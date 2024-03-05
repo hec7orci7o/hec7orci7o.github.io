@@ -7,7 +7,7 @@ import share from "@/components/icons/share.svg"
 import plus from "@/components/icons/plus.svg"
 import grid from "@/components/icons/grid.svg"
 
-const { src, alt } = Astro.props;
+const { src, alt, url } = Astro.props;
 ---
 
 <div class="rounded-md ring-1 ring-white/10 shadow-white/10 shadow-sm">
@@ -23,7 +23,7 @@ const { src, alt } = Astro.props;
     <div class="flex items-center gap-x-1 w-1/2 absolute left-1/2 -translate-x-1/2">
       <input 
         class="bg-transparent border border-white/10 h-5 rounded-md focus:outline-none font-mono text-xs text-center w-full"
-        value="google.com"
+        value={url.length > 20 ? `${url.substring(0, 20)}...` : url}
         disabled
       />
       <img src={reload.src} alt="certificate icon" class="w-3 h-3 absolute right-0 mr-1.5"/>

