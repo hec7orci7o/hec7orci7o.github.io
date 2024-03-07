@@ -4,6 +4,10 @@ difficulty: medium
 tier: 0
 type: offensive
 slug: file-inclusion
+banner: /cheatsheets/file-inclusion.webp
+badge: /cheatsheets/badges/every-road-leads-back-to-root.webp
+sharebleLink: https://academy.hackthebox.com/achievement/badge/c0347dd3-d55f-11ee-891c-bea50ffe6cb4
+completedOn: 2024-02-27
 ---
 
 ## Local File Inclusion

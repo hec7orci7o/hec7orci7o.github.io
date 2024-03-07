@@ -4,6 +4,10 @@ difficulty: easy
 tier: 0
 type: offensive
 slug: attacking-web-applications-with-ffuf
+banner: /cheatsheets/attacking-web-applications-with-ffuf.webp
+badge: /cheatsheets/badges/fuzzing-is-power.webp
+sharebleLink: https://academy.hackthebox.com/achievement/badge/71e3a3e1-0f67-11ee-acfc-bea50ffe6cb4
+completedOn: 2023-06-20
 ---
 
 # Ffuf

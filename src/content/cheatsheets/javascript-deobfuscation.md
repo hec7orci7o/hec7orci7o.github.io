@@ -4,6 +4,10 @@ difficulty: easy
 tier: 0
 type: defensive
 slug: javascript-deobfuscation
+banner: /cheatsheets/javascript-deobfuscation.webp
+badge: /cheatsheets/badges/playing-with-the-mess.webp
+sharebleLink: https://academy.hackthebox.com/achievement/badge/78c603d7-0d31-11ee-acfc-bea50ffe6cb4
+completedOn: 2023-06-17
 ---
 
 # Commands

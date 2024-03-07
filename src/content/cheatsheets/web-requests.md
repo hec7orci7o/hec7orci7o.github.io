@@ -4,6 +4,10 @@ difficulty: fundamental
 tier: 0
 type: general
 slug: web-requests
+banner: /cheatsheets/web-requests.webp
+badge: /cheatsheets/badges/your-request-is-my-demand.webp
+sharebleLink: https://academy.hackthebox.com/achievement/badge/9e22e73e-0d16-11ee-acfc-bea50ffe6cb4
+completedOn: 2023-03-17
 ---
 
 ## cURL

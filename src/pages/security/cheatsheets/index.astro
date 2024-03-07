@@ -1,0 +1,33 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "@/layouts/Layout.astro";
+import CheatsheetCard from "@/components/cheatsheets/CheatsheetCard.astro";
+
+const cheatsheets = (await getCollection("cheatsheets")).sort(function (first, second) {
+  return second.data.completedOn.getTime() - first.data.completedOn.getTime();
+});
+
+---
+
+<Layout title="All Cheatsheets">
+  <main class="flex flex-col gap-20">
+    <h1 class="text-2xl text-neutral-100">Cheatsheets</h1>
+
+    <article class="flex flex-col gap-4">
+      {cheatsheets.length === 0 && 
+        <p>Soon, stay connected 👀...</p>
+      }
+      {cheatsheets
+        .map((cheatsheet) => (
+          <CheatsheetCard 
+            title={cheatsheet.data.title}
+            difficulty={cheatsheet.data.difficulty}
+            type={cheatsheet.data.type}
+            slug={cheatsheet.slug}
+            isPublished={true}
+            completedOn={cheatsheet.data.completedOn}
+          />
+        ))}
+    </article>
+  </main>
+</Layout>

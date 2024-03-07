@@ -3,7 +3,9 @@ import { getCollection } from "astro:content";
 import Layout from "@/layouts/Layout.astro";
 import WalkthroughCard from "@/components/walkthroughs/WalkthroughCard.astro";
 
-const walkthroughs = (await getCollection("walkthroughs"))
+const walkthroughs = (await getCollection("walkthroughs")).sort(function (first, second) {
+  return second.data.releaseDate.getTime() - first.data.releaseDate.getTime();
+});
 ---
 
 <Layout title="All Walkthroughs">
@@ -23,6 +25,7 @@ const walkthroughs = (await getCollection("walkthroughs"))
             os={walkthrough.data.os}
             slug={walkthrough.slug}
             releaseDate={walkthrough.data.releaseDate}
+            isPublished={walkthrough.data.isPublished}
           />
         ))}
     </article>

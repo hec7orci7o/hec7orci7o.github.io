@@ -4,6 +4,10 @@ difficulty: medium
 tier: 0
 type: general
 slug: intro-to-network-traffic-analysis
+banner: /cheatsheets/intro-to-network-traffic-analysis.webp
+badge: /cheatsheets/badges/lurk-in-the-packets.webp
+sharebleLink: https://academy.hackthebox.com/achievement/badge/edb9e140-0cff-11ee-acfc-bea50ffe6cb4
+completedOn: 2023-06-17
 ---
 
 # Cheat Sheet

@@ -4,6 +4,10 @@ difficulty: fundamental
 tier: 0
 type: general
 slug: linux-fundamentals
+banner: /cheatsheets/linux-fundamentals.webp
+badge: /cheatsheets/badges/our-favorite-seabird.webp
+sharebleLink: https://academy.hackthebox.com/achievement/badge/b1f66adb-0d04-11ee-acfc-bea50ffe6cb4
+completedOn: 2023-03-17
 ---
 
 | **Command** | **Description** |

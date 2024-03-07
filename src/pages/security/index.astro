@@ -1,0 +1,71 @@
+---
+import { getCollection } from "astro:content";
+
+import Layout from "@/layouts/Layout.astro";
+import CheatsheetCard from "@/components/cheatsheets/Card.astro";
+import WalkthroughCard from "@/components/walkthroughs/Card.astro";
+import Link from "@/components/shared/Link.astro";
+
+const cheatsheets = (await getCollection("cheatsheets")).sort(function (first, second) {
+  return second.data.completedOn.getTime() - first.data.completedOn.getTime();
+});
+
+const walkthroughs = (await getCollection("walkthroughs")).sort(function (first, second) {
+  return second.data.releaseDate.getTime() - first.data.releaseDate.getTime();
+});
+---
+
+<Layout>
+  <main class="flex flex-col gap-20">
+    <article class="flex flex-col gap-8">
+      <header class="flex w-full flex-row justify-between gap-2">
+        <h3 class="text-lg text-neutral-100">Latest cheatsheets</h3>
+        <Link href="/security/cheatsheets" label="See all cheatsheets" isUnderline target="_self" />
+      </header>
+      {cheatsheets.length === 0 && <p>Oops, I must work^^^^^</p>}
+
+      <section class="grid gap-4 grid-cols-1 md:grid-cols-2">
+        {
+          cheatsheets.length !== 0 &&
+          cheatsheets
+              .slice(0, 2)
+              .map((cheatsheet) => (
+                <CheatsheetCard
+                  completedOn={cheatsheet.data.completedOn}
+                  title={cheatsheet.data.title}
+                  description={`${cheatsheet.data.type} · ${cheatsheet.data.difficulty}`}
+                  slug={cheatsheet.slug}
+                />
+              ))
+        }
+      </section>
+    </article>
+
+    <article class="flex flex-col gap-8">
+      <header class="flex w-full flex-row justify-between gap-2">
+        <h3 class="text-lg text-neutral-100">
+          Latest machines
+        </h3>
+        <Link href="/security/walkthroughs" label="See all walkthroughs" isUnderline target="_self" />
+      </header>
+      {walkthroughs.length === 0 && <p>Oops, I must work^^^^^</p>}
+
+      <section class="flex flex-col gap-4">
+        {
+          walkthroughs.length !== 0 &&
+          walkthroughs
+            .slice(0, 3)
+            .map((walkthrough) => (
+              <WalkthroughCard 
+                title={walkthrough.data.title}
+                difficulty={walkthrough.data.difficulty}
+                slug={walkthrough.slug}
+                isComingSoon={!walkthrough.data.isPublished}
+              />
+            ))
+        }
+      </section>
+    </article>
+
+  </main>
+</Layout>

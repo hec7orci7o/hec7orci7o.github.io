@@ -4,6 +4,10 @@ difficulty: fundamental
 tier: 0
 type: general
 slug: windows-fundamentals
+banner: /cheatsheets/windows-fundamentals.webp
+badge: /cheatsheets/badges/crawl-walk-run.webp
+sharebleLink: https://academy.hackthebox.com/achievement/badge/b2968675-c408-11ed-acfc-bea50ffe6cb4
+completedOn: 2022-09-08
 ---
 
 | **Command** | **Description** |

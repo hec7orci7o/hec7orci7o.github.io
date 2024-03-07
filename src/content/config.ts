@@ -18,6 +18,10 @@ const cheatsheetsCollection = defineCollection({
     difficulty: z.enum(["fundamental", "easy", "medium", "hard"]),
     tier: z.number(),
     type: z.enum(["general","defensive","offensive"]),
+    banner: z.string(),
+    badge: z.string(),
+    sharebleLink: z.string(),
+    completedOn: z.date(),
   }),
 });
 
@@ -29,6 +33,7 @@ const walkthroughsCollection = defineCollection({
     difficulty: z.enum(["easy", "medium", "hard"]),
     os: z.enum(["linux", "windows"]),
     releaseDate: z.date(),
+    isPublished: z.boolean(),
   }),
 });
 

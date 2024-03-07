@@ -4,6 +4,10 @@ difficulty: medium
 tier: 0
 type: offensive
 slug: sql-injection-fundamentals
+banner: /cheatsheets/sql-injection-fundamentals.webp
+badge: /cheatsheets/badges/drop-your-weapon.webp
+sharebleLink: https://academy.hackthebox.com/achievement/badge/c6a689db-110f-11ee-acfc-bea50ffe6cb4
+completedOn: 2023-06-22
 ---
 
 ## MySQL

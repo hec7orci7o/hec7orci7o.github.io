@@ -4,6 +4,10 @@ difficulty: easy
 tier: 2
 type: offensive
 slug: cross-site-scripting
+banner: /cheatsheets/cross-site-scripting.webp
+badge: /cheatsheets/badges/included-in-every-report.webp
+sharebleLink: https://academy.hackthebox.com/achievement/badge/8885dbd4-d588-11ee-891c-bea50ffe6cb4
+completedOn: 2024-02-27
 ---
 
 ## Commands

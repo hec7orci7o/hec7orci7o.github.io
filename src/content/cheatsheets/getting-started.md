@@ -4,6 +4,10 @@ difficulty: fundamental
 tier: 0
 type: offensive
 slug: getting-started
+banner: /cheatsheets/getting-started.webp
+badge: /cheatsheets/badges/your-first-battle.webp
+sharebleLink: https://academy.hackthebox.com/achievement/badge/b7514590-c408-11ed-acfc-bea50ffe6cb4
+completedOn: 2022-08-27
 ---
 
 ## Basic Tools

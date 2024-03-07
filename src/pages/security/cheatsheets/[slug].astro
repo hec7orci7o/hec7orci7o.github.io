@@ -1,0 +1,46 @@
+---
+import { type CollectionEntry, getCollection } from "astro:content";
+import Layout from "@/layouts/Layout.astro";
+
+export async function getStaticPaths() {
+  const cheatsheets = await getCollection("cheatsheets");
+
+  return cheatsheets.map((cheatsheet) => ({
+    params: { slug: cheatsheet.slug },
+    props: { cheatsheet },
+  }));
+}
+
+type Props = {
+  cheatsheet: CollectionEntry<"cheatsheets">;
+};
+
+const { cheatsheet } = Astro.props;
+const { Content, remarkPluginFrontmatter  } = await cheatsheet.render();
+---
+
+<Layout title={cheatsheet.data.title}>
+  <main class="post mx-auto flex w-full max-w-prose flex-col gap-4">
+    <header role="presentation">
+      <div class="relative">
+        <img
+          src={cheatsheet.data.banner}
+          alt="module banner"
+        >
+        <a href={cheatsheet.data.sharebleLink} target="_blank">
+          <img
+          src={cheatsheet.data.badge}
+          alt="module badge"
+          class="w-24 translate-y-1/2 absolute bottom-0 right-0 -translate-x-1/4 hover:scale-110 duration-500"
+          >
+        </a>
+      </div>
+      <h1 class="text-md">
+        {cheatsheet.data.title}
+      </h1>
+      <p>{remarkPluginFrontmatter.minutesRead}</p>
+    </header>
+
+    <Content />
+  </main>
+</Layout>
