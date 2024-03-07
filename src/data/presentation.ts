@@ -25,6 +25,9 @@ const presentation: Presentation = {
     }, {
       label: "Github",
       link: "https://github.com/hec7orci7o",
+    }, {
+      label: "Resume",
+      link: "https://hec7orci7o.github.io/resume",
     },
   ],
 };
