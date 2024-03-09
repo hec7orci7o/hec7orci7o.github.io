@@ -1,17 +1,4 @@
----
-const { color = "green" } = Astro.props;
-
-const primary   = `bg-${color}-500`
-const secondary = `bg-${color}-400`
----
-
 <span class="relative flex h-3 w-3">
-  <span class:list={[
-    "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
-    secondary
-  ]}/>
-  <span class:list={[
-    "relative inline-flex rounded-full h-3 w-3",
-    primary
-  ]}/>
+  <span class="animate-ping absolute inline-flex h-full w-full bg-green-400 rounded-full opacity-75"/>
+  <span class="relative inline-flex rounded-full bg-green-500 h-3 w-3"/>
 </span>
