@@ -12,7 +12,9 @@ import convertAsteriskToStrongTag from "@/utils/convertAsteriskToStrongTag";
 import presentation from "@/data/presentation";
 import projects from "@/data/projects";
 
-const log = (await getCollection("activity")).sort(function (first, second) {
+const log = (await getCollection("activity"))
+.filter(entry => entry.data.publishedAt.getTime() <= new Date().getTime())  
+.sort(function (first, second) {
   return second.data.publishedAt.getTime() - first.data.publishedAt.getTime();
 });
 ---
