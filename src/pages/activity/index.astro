@@ -1,0 +1,33 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "@/layouts/Layout.astro";
+import ActivityCard from "@/components/activity/ActivityCard.astro";
+
+const log = (await getCollection("activity")).sort(function (first, second) {
+  return second.data.publishedAt.getTime() - first.data.publishedAt.getTime();
+});
+---
+
+<Layout title="All Activity">
+  <main class="flex flex-col gap-20">
+    <h1 class="text-2xl text-neutral-100">Activity</h1>
+
+    <article class="flex flex-col gap-4">
+      {log.filter((entry) => entry.data.isPublished).length === 0 && 
+        <p>Soon, stay connected 👀...</p>
+      }
+      {log
+        .filter((entry) => entry.data.isPublished)
+        .map((entry) => (
+          <ActivityCard 
+            title={entry.data.title}
+            description={entry.data.description}
+            slug={entry.slug}
+            publishedAt={entry.data.publishedAt}
+            isPublished={entry.data.isPublished}
+            isDraft={entry.data.isDraft}
+          />
+        ))}
+    </article>
+  </main>
+</Layout>

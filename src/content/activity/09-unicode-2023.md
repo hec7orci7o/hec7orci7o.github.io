@@ -4,7 +4,7 @@ publishedAt: 2023-10-18
 description: "Unicode, el hackatón que marcó el regreso de codelab, atrajo a estudiantes de todos los cursos, destacando el notable interés por este tipo de eventos. Los desafíos incluyeron la planificación de una excursión y la identificación de la ruta más eficiente. El evento tuvo mucho existo, y esperamos repetirlo en el futuro."
 slug: "unicode-2023"
 isPublished: true
-isDraft: true
+isDraft: false
 ---
 
 ![Foto con los participantes del evento](../../assets/unicode-2023.jpeg)

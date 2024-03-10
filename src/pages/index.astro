@@ -4,7 +4,7 @@ import { Image } from "astro:assets"
 
 import Layout from "@/layouts/Layout.astro";
 import SocialLinks from "@/components/SocialLinks.astro";
-import PostCard from "@/components/posts/Card.astro";
+import ActivityCard from "@/components/activity/Card.astro";
 import ProjectCard from "@/components/projects/Card.astro";
 import Link from "@/components/shared/Link.astro";
 import convertAsteriskToStrongTag from "@/utils/convertAsteriskToStrongTag";
@@ -12,7 +12,7 @@ import convertAsteriskToStrongTag from "@/utils/convertAsteriskToStrongTag";
 import presentation from "@/data/presentation";
 import projects from "@/data/projects";
 
-const posts = (await getCollection("posts")).sort(function (first, second) {
+const log = (await getCollection("activity")).sort(function (first, second) {
   return second.data.publishedAt.getTime() - first.data.publishedAt.getTime();
 });
 ---
@@ -52,24 +52,24 @@ const posts = (await getCollection("posts")).sort(function (first, second) {
 
     <article class="flex flex-col gap-8">
       <header class="flex w-full flex-row justify-between gap-2">
-        <h3 class="text-lg text-neutral-100">Latest posts</h3>
-        <Link href="/posts" label="See all posts" isUnderline target="_self" />
+        <h3 class="text-lg text-neutral-100">Latest activity</h3>
+        <Link href="/activity" label="See all activity" isUnderline target="_self" />
       </header>
-      {posts.length === 0 && <p>Soon, stay connected 👀...</p>}
+      {log.length === 0 && <p>Soon, stay connected 👀...</p>}
 
       <section class="grid gap-4 grid-cols-1 md:grid-cols-2">
         {
-          posts.length !== 0 &&
-            posts
-              .filter((post) => post.data.isPublished) 
+          log.length !== 0 &&
+          log
+              .filter((entry) => entry.data.isPublished) 
               .slice(0, 2)
-              .map((post) => (
-                <PostCard
-                  publishedAt={post.data.publishedAt}
-                  title={post.data.title}
-                  description={post.data.description}
-                  slug={post.slug}
-                  isPublished={post.data.isPublished}
+              .map((entry) => (
+                <ActivityCard
+                  publishedAt={entry.data.publishedAt}
+                  title={entry.data.title}
+                  description={entry.data.description}
+                  slug={entry.slug}
+                  isPublished={entry.data.isPublished}
                 />
               ))
         }
