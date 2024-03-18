@@ -23,12 +23,12 @@ const { Content } = await walkthrough.render();
   <div class="mx-auto flex w-full max-w-prose flex-col gap-4 divide-y divide-white/10">
     <header role="presentation">
       <div class="flex items-center gap-x-3">
-        <div class="relative">
+        <a href={walkthrough.data.shareLink} class="relative">
           <img
             src={walkthrough.data.banner}
             class="w-20 h-20"
           >
-        </div>
+        </a>
         <div class="flex flex-col items-start gap-y-2 tracking-wide">
           <h1 class="text-2xl font-bold text-white">{walkthrough.data.title}</h1>
           <h2 class="text-sm font-light capitalize ">

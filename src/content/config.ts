@@ -33,6 +33,8 @@ const walkthroughsCollection = defineCollection({
     difficulty: z.enum(["easy", "medium", "hard"]),
     os: z.enum(["linux", "windows"]),
     releaseDate: z.date(),
+    pwnDate: z.date(),
+    shareLink: z.string().url(),
     isPublished: z.boolean(),
   }),
 });

