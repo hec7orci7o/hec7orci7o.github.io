@@ -10,45 +10,120 @@ isPublished: false
 shareLink: https://www.hackthebox.com/achievement/machine/701907/559
 ---
 
+import Browser from "@/components/Browser.astro"
+
 ## Enumeration
 
+To begin with, we launch a scan to see what ports we have open to see what services the machine has exposed.
+
+[(command explanation)](https://explainshell.com/explain?cmd=nmap+-p-+-n+-Pn+--disable-arp-ping+-sS+-sV+-sC+-vvv+-T5+10.10.11.230+-oN+cozyHosting)
+
+
 ```bash
-nmap -p- -n -Pn --disable-arp-ping -sS -sV -sC -vvv -T5 10.10.11.230 -oN cozyHosting.nmap
+sudo nmap -p- -n -Pn --disable-arp-ping -sS -sV -sC -vvv -T5 10.10.11.230 -oN cozyHosting
 
 PORT    STATE  SERVICE  REASON          VERSION
 22/tcp  open   ssh      syn-ack ttl 63  OpenSSH 8.9p1 Ubuntu 3ubuntu0.3 (Ubuntu Linux; protocol 2.0)
 80/tcp  open   http     syn-ack ttl 63  nginx 1.18.0 (Ubuntu)
 ```
 
+The scan shows ports 22 (SSH) and 80 (Nginx) open, with port 80 redirecting to the domain [cozyhosting.htb](http://cozyhosting.htb), so let's add this vHost to our /etc/hosts file
+
 ```bash
 echo "10.10.11.230 cozyhosting.htb" | sudo tee -a /etc/hosts
 ```
 
+<Browser
+  url="cozyhosting.htb"
+  src="/walkthroughs/cozy-hosting/0.png"
+/>
+
+- `-w` Wordlist file path 
+- `-u` Target URL 
+- `-ic` Ignore wordlist comments 
+- `-t` Number of concurrent threads 
+- `-c` Apply color to responses
+- `--mc all` Match all code responses
+- `-fc 404` Filter responses with the 404 code
+
 ```bash
-ffuf -w /usr/share/wordlists/SecLists/Discovery/Web-Content/directory-list-2.3-
-medium.txt:FFUZ -u http://cozyhosting.htb/FFUZ -ic -t 100
+ffuf -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt:FFUZ -u http://cozyhosting.htb/FFUZ -ic -c -t 100 --mc all -fc 404
+
+index                   [Status: 200, Size: 12706, Words: 4263, Lines: 285]
+login                   [Status: 200, Size: 4431, Words: 1718, Lines: 97]
+admin                   [Status: 401, Size: 97, Words: 1, Lines: 1]
+logout                  [Status: 204, Size: 0, Words: 1, Lines: 1]
+error                   [Status: 500, Size: 73, Words: 1, Lines: 1]
 ```
 
-index
-login
-admin
-logout
-error
+On the login page I can't get access by using the default credentials.
+
+<Browser
+  url="cozyhosting.htb/login"
+  src="/walkthroughs/cozy-hosting/1.png"
+/>
+
+However, when navigating to [`/error`](http://cozyhosting.htb/error) you get an error page with a header that says `Whitelabel Error Page`.
+This reveals that this application is using `SpringBoot`.
+
+<Browser
+  url="cozyhosting.htb/error"
+  src="/walkthroughs/cozy-hosting/2.png"
+/>
+
+Now we can run our analysis again, now using a Spring Boot specific word list.
 
 ```bash
-ffuf -w /usr/share/wordlists/SecLists/Discovery/Web-Content/spring-boot.txt:FFUZ
--u http://cozyhosting.htb/FFUZ -ic -t 100
+ffuf -w /usr/share/seclists/Discovery/Web-Content/spring-boot.txt:FFUZ -u http://cozyhosting.htb/FFUZ -ic -c -t 100 --mc all -fc 404
+
+actuator                [Status: 200, Size: 634, Words: 1, Lines: 1]
+actuator/env/lang       [Status: 200, Size: 487, Words: 13, Lines: 1]
+actuator/health         [Status: 200, Size: 15, Words: 1, Lines: 1]
+actuator/mappings       [Status: 200, Size: 9938, Words: 108, Lines: 1]
+actuator/sessions       [Status: 200, Size: 48, Words: 1, Lines: 1]
+actuator/env/home       [Status: 200, Size: 487, Words: 13, Lines: 1]
+actuator/env/path       [Status: 200, Size: 487, Words: 13, Lines: 1]
+actuator/beans          [Status: 200, Size: 127224, Words: 542, Lines: 1]
+actuator/env            [Status: 200, Size: 4957, Words: 120, Lines: 1]
 ```
+
+We see that the [actuator endpoint](https://www.baeldung.com/spring-boot-actuators) is exposed, which is mainly used for debugging purposes in **Spring Boot** applications. The **Spring Boot actuator** module provides a collection of built-in endpoints that expose different types of information and operations in an application.
 
 ## Foothold
 
-```bash
-http://cozyhosting.htb/actuator/mappings
-```
+Upon exploring the actuator endpoint, we find the `/actuator/mappings` endpoint. This shows a detailed view of the entire application configuration. Browsing the endpoint, we see a `JSON` response containing information about the existing request mappings, including the methods of the requests GET, POST, ... 
 
-```bash
-http://cozyhosting.htb/actuator/sessions
-```
+<Browser
+  url="cozyhosting.htb/actuator/mappings"
+  src="/walkthroughs/cozy-hosting/3.png"
+/>
+
+By visiting the actuator/sessions endpoint, we can list all **active sessions** and their **session identifiers**.
+
+<Browser
+  url="cozyhosting.htb/actuator/sessions"
+  src="/walkthroughs/cozy-hosting/4.png"
+/>
+
+We see the kanderson session identifier, which we can grab and set as a cookie in our browser, using the Storage tab of the developer console
+
+<Browser
+  url="cozyhosting.htb"
+  src="/walkthroughs/cozy-hosting/5.png"
+/>
+
+once the cookie has been set, we proceed to navigate to [`/admin`](http://cozyhosting.htb/admin) where we can see that we are logged in as kanderson
+<Browser
+  url="cozyhosting.htb"
+  src="/walkthroughs/cozy-hosting/6.png"
+/>
+
+At the bottom of the page, we see a form for automatic patching. We try to submit the form with the user name `test` and the host name `127.0.0.1`, we get an error indicating that the host was not added with a description: [Host key verification failed](https://askubuntu.com/questions/45679/ssh-connection-problem-with-host-key-verification-failed-error).
+
+<Browser
+  url="cozyhosting.htb"
+  src="/walkthroughs/cozy-hosting/7.png"
+/>
 
 ## Exploitation
 
