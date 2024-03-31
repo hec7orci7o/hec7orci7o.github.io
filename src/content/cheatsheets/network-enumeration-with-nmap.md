@@ -13,7 +13,7 @@ completedOn: 2024-02-26
 ## Scanning Options
 
 | **Nmap Option**      | **Description**                                                        |
-| -------------------- | ---------------------------------------------------------------------- |
+| :-------------------- | :---------------------------------------------------------------------- |
 | `10.10.10.0/24`      | Target network range.                                                  |
 | `-sn`                | Disables port scanning.                                                |
 | `-Pn`                | Disables ICMP Echo Requests                                            |
@@ -44,7 +44,7 @@ completedOn: 2024-02-26
 ## Output Options
 
 |**Nmap Option**|**Description**|
-|---|---|
+|:---|:---|
 |`-oA filename`|Stores the results in all available formats starting with the name of "filename".|
 |`-oN filename`|Stores the results in normal format with the name "filename".|
 |`-oG filename`|Stores the results in "grepable" format with the name of "filename".|
@@ -53,7 +53,7 @@ completedOn: 2024-02-26
 ## Performance Options
 
 |**Nmap Option**|**Description**|
-|---|---|
+|:---|:---|
 |`--max-retries <num>`|Sets the number of retries for scans of specific ports.|
 |`--stats-every=5s`|Displays scan's status every 5 seconds.|
 |`-v/-vv`|Displays verbose output during the scan.|

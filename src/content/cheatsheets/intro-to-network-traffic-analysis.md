@@ -10,19 +10,11 @@ sharebleLink: https://academy.hackthebox.com/achievement/badge/edb9e140-0cff-11e
 completedOn: 2023-06-17
 ---
 
-# Cheat Sheet
-
 Keep in mind, unless you are utilizing root, `sudo` privileges will be required to execute any applications that need to bind a network interface or set it into promiscuous mode. 
-
-## Nomachine Connection Information
-  * Target IP == 10.129.43.4
-  * Username ==  htb-student
-  * Password == HTB_@cademy_stdnt!
-
 
 ## Tcpdump
 | **Command**   | **Description**   |
-| --------------|-------------------|
+| :--------------|:-------------------|
 | `tcpdump --version` | Prints the tcpdump and libpcap version strings then exits. |
 | `tcpdump -h` | Prints the help and usage information. |
 | `tcpdump -D` | Prints a list of usable network interfaces from which tcpdump can capture. |
@@ -35,10 +27,9 @@ Keep in mind, unless you are utilizing root, `sudo` privileges will be required 
 | `tcpdump -i (int) proto (#)` | Will filter the capture for any protocol traffic matching the (#). For example, (6) would filter for any TCP traffic and discard the rest. |
 | `tcpdump -i (int) (proto name)` | Will utilize a protocols common name to filter the traffic captured. TCP/UDP/ICMP as examples. |
 
----
 ## Tcpdump Common Switches and Filters
 | **Switch/Filter**   | **Description**   |
-| --------------|-------------------|
+| :--------------|:-------------------|
 | `D` | Will display any interfaces available to capture from.       |
 | `i` | Selects an interface to capture from. ex. -i eth0         |
 | `n` | Do not resolve hostnames.         |
@@ -64,10 +55,9 @@ Keep in mind, unless you are utilizing root, `sudo` privileges will be required 
 | `or` |`or`  Or allows for a match on either of two conditions. It does not have to meet both. It can be tricky.   |
 | `not` |`not` is a modifier saying anything but x. For example,  not UDP.    |
 
-----
 ## TShark
 | **Command**   | **Description**   |
-| --------------|-------------------|
+| :--------------|:-------------------|
 | `tshark -h` | Prints the help menu. |  
 | `tshark -D` | List available interfaces to capture from. |  
 | `tshark -i (int)` | Capture on a selected interface. Replace (int) with the interface name or number. |
@@ -84,11 +74,11 @@ Keep in mind, unless you are utilizing root, `sudo` privileges will be required 
 | `x` | will add Hex and ASCII output into the capture.     |  
 | `h` | See the help menu     |   
 
-----
+
 ## WireShark
 
 | **Capture Filter**   | **Description**   |
-| --------------|-------------------|
+| :--------------|:-------------------|
 | `host x.x.x.x` | Capture only traffic pertaining to a certain host         |  
 | `net x.x.x.x/24` | Capture traffic to or from a specific network (using slash notation to specify the mask)          |  
 | `src/dst net x.x.x.x/24` | Using src or dst net will only capture traffic sourcing from the specified network or destined to the target network          |  
@@ -100,7 +90,7 @@ Keep in mind, unless you are utilizing root, `sudo` privileges will be required 
 | `broadcast / multicast / unicast` | Grabs a specific type of traffic. one to one, one to many, or one to all.         |
 
  **Display Filter**   | **Description**   |
-| --------------|-------------------|
+| :--------------|:-------------------|
 | `ip.addr == x.x.x.x` | Capture only traffic pertaining to a certain host. This is an OR statement.           |  
 | `ip.addr == x.x.x.x/24` | Capture traffic pertaining to a specific network. This is an OR statement. |  
 | `ip.src/dst == x.x.x.x` | Capture traffic to or from a specific host. |  
@@ -115,10 +105,9 @@ Keep in mind, unless you are utilizing root, `sudo` privileges will be required 
 | `ftp.request.command` | Will filter for any control commands sent over ftp control channel. |
 | `ftp-data` | Will show any objects transfered over ftp. |
 
-----  
 ## Misc Commands
 | **Command**   | **Description**   |
-| --------------|-------------------|
+| :--------------|:-------------------|
 | `sudo *` | Sudo will run the command that proceeds it with elevated privileges. |
 | `which (application)` | Utilizes which to determine if (application) is installed on the host. Replace the application with what you are looking for. ex. `which tcpdump` |
 | `sudo apt install (application)` | Uses elevated privileges to install an application package if it does not exist on the host. ex. `sudo apt install wireshark`|
@@ -126,7 +115,7 @@ Keep in mind, unless you are utilizing root, `sudo` privileges will be required 
 
 ## Common Ports and Protocols
 | **Port Number**   | **Protocol**   | **Description**   |
-| --------------|-------------------|-------------------|
+| :--------------|:-------------------|:-------------------|
 | `20` | FTP-Data | Data channel for passing FTP files. |
 | `21` | FTP-Command | Control channel for issuing commands to an FTP server. |
 | `22` | SSH | Secure Shell Service port. Provides secure remote communications |

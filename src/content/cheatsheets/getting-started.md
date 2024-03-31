@@ -13,7 +13,7 @@ completedOn: 2022-08-27
 ## Basic Tools
 
 | **Command**   | **Description**   |
-| --------------|-------------------|
+| :--------------|:-------------------|
 | **General** |
 | `sudo openvpn user.ovpn` | Connect to VPN |
 | `ifconfig`/`ip a` | Show our IP address |
@@ -46,7 +46,7 @@ completedOn: 2022-08-27
 
 ## Pentesting
 | **Command**   | **Description**   |
-| --------------|-------------------|
+| :--------------|:-------------------|
 | **Service Scanning** |
 | `nmap 10.129.42.253` | Run nmap on an IP |
 | `nmap -sV -sC -p- 10.129.42.253` | Run an nmap script scan on an IP |

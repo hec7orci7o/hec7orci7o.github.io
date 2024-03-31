@@ -11,25 +11,25 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/mdx": "^2.1.1",
-    "@astrojs/sitemap": "^3.1.1",
+    "@astrojs/mdx": "^2.2.2",
+    "@astrojs/sitemap": "^3.1.2",
     "@astrojs/tailwind": "^5.1.0",
-    "@fontsource/open-sans": "^5.0.25",
-    "@tailwindcss/typography": "^0.5.10",
-    "astro": "^4.4.11",
+    "@fontsource/open-sans": "^5.0.27",
+    "@tailwindcss/typography": "^0.5.12",
+    "astro": "^4.5.12",
     "astro-robots-txt": "^1.0.0",
     "astro-seo": "0.8.3",
     "mdast-util-to-string": "^4.0.0",
     "reading-time": "^1.5.0",
-    "tailwindcss": "^3.4.1"
+    "tailwindcss": "^3.4.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.42.1",
-    "@typescript-eslint/parser": "7.1.1",
+    "@typescript-eslint/parser": "7.4.0",
     "eslint": "8.57.0",
-    "eslint-plugin-astro": "0.31.4",
+    "eslint-plugin-astro": "0.33.1",
     "prettier": "3.2.5",
     "prettier-plugin-astro": "0.13.0",
-    "prettier-plugin-tailwindcss": "0.5.11"
+    "prettier-plugin-tailwindcss": "0.5.13"
   }
 }

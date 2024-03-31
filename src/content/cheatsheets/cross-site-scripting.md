@@ -12,8 +12,8 @@ completedOn: 2024-02-27
 
 ## Commands
 
-|Code|Description|
-|---|---|
+|**Code**|**Description**|
+|:---|:---|
 |**XSS Payloads**||
 |`<script>alert(window.origin)</script>`|Basic XSS Payload|
 |`<plaintext>`|Basic XSS Payload|

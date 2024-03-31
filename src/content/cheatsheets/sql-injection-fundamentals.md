@@ -13,7 +13,7 @@ completedOn: 2023-06-22
 ## MySQL
 
 | **Command**   | **Description**   |
-| --------------|-------------------|
+| :--------------|:-------------------|
 | **General** |
 | `mysql -u root -h docker.hackthebox.eu -P 3306 -p` | login to mysql database |
 | `SHOW DATABASES` | List available databases |
@@ -52,7 +52,7 @@ completedOn: 2023-06-22
 
 ## SQL Injection
 | **Payload**   | **Description**   |
-| --------------|-------------------|
+| :--------------|:-------------------|
 | **Auth Bypass** |
 | `admin' or '1'='1` | Basic Auth Bypass |
 | `admin')-- -` | Basic Auth Bypass With comments |

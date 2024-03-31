@@ -10,10 +10,10 @@ sharebleLink: https://academy.hackthebox.com/achievement/badge/78c603d7-0d31-11e
 completedOn: 2023-06-17
 ---
 
-# Commands
+## Commands
 
 | **Command**   | **Description**   |
-| --------------|-------------------|
+| :--------------|:-------------------|
 | `curl http:/SERVER_IP:PORT/` | cURL GET request |
 | `curl -s http:/SERVER_IP:PORT/ -X POST` | cURL POST request |
 | `curl -s http:/SERVER_IP:PORT/ -X POST -d "param1=sample"` | cURL POST request with data |
@@ -24,17 +24,17 @@ completedOn: 2023-06-17
 | `echo hackthebox \| tr 'A-Za-z' 'N-ZA-Mn-za-m'` | rot13 encode |
 | `echo ENCODED_ROT13 \| tr 'A-Za-z' 'N-ZA-Mn-za-m'` | rot13 decode |
 
-# Deobfuscation Websites
+## Deobfuscation Websites
 
-| **Website** |
-| ----------------------------------|
-| [JS Console](https://jsconsole.com) |
-| [Prettier](https://prettier.io/playground/) |
-| [Beautifier](https://beautifier.io/) |
-| [JSNice](http://www.jsnice.org/) |
+[JS Console](https://jsconsole.com)
+[Prettier](https://prettier.io/playground/)
+[Beautifier](https://beautifier.io/)
+[JSNice](http://www.jsnice.org/)
+[JSNice](http://www.jsnice.org/)
+[de4js](https://lelinhtinh.github.io/de4js/)
 
-# Misc
+## Misc
 
 | **Command**   | **Description**   |
-| --------------|-------------------|
+| :--------------|:-------------------|
 | `ctrl+u` | Show HTML source code in Firefox |

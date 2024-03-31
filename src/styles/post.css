@@ -31,9 +31,37 @@
 }
 
 .post pre {
-  @apply p-4;
+  @apply p-2 pb-0;
 }
 
 .post pre > code {
   @apply bg-transparent;
+}
+
+.post table {
+  @apply w-full overflow-hidden;
+}
+
+.post tbody {
+  @apply space-y-0.5;
+}
+
+.post thead {
+  @apply hover:bg-white/5;
+}
+
+.post th {
+  @apply font-bold text-white py-2;
+}
+
+.post tr {
+  @apply hover:bg-white/5;
+}
+
+.post td {
+  @apply break-all first:min-w-[50%];
+}
+
+.post td > code {
+  @apply bg-transparent text-red-500;
 }

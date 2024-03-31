@@ -11,7 +11,7 @@ completedOn: 2023-03-17
 ---
 
 | **Command** | **Description** |
-| --------------|-------------------|
+| :--------------|:-------------------|
 | `man <tool>` | Opens man pages for the specified tool. | 
 | `<tool> -h` | Prints the help page of the tool. | 
 | `apropos <keyword>` | Searches through man pages' descriptions for instances of a given keyword. | 

