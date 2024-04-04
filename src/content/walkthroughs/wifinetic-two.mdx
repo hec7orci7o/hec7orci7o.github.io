@@ -1,0 +1,39 @@
+---
+title: WifineticTwo
+banner: /avatars/wifinetic-two.webp
+difficulty: medium
+os: linux
+pwnDate: 2024-04-04
+releaseDate: 2024-03-16
+slug: "wifinetic-two"
+isPublished: false
+shareLink: https://www.hackthebox.com/achievement/machine/
+---
+
+import Browser from "@/components/Browser.astro" 
+
+## Enumeration
+
+```bash
+sudo nmap -p- --open -sS --min-rate 5000 -vvv -n -Pn --disable-arp-ping 10.10.11.8 -oG allPorts
+```
+
+```bash
+sudo nmap -p22,80 -sCV 10.10.11.8 -oN targeted
+```
+
+```bash
+sudo echo "10.10.11.8 wifinetic-two.htb" >> /etc/hosts
+```
+
+## Foothold
+
+## Post Exploitation
+
+once inside we proceed to upgrade our shell following [hacktricks](https://book.hacktricks.xyz/generic-methodologies-and-resources/shells/full-ttys#script) guide. 
+
+## Lateral Movement
+
+## Privilege Escalation
+
+## Extra
