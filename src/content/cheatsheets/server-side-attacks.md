@@ -6,7 +6,7 @@ type: offensive
 slug: server-side-attacks
 banner: /cheatsheets/server-side-attacks.webp
 badge: /cheatsheets/badges/straight-to-the-server.webp
-sharebleLink: https://academy.hackthebox.com/achievement/badge/
+sharebleLink: https://academy.hackthebox.com/achievement/badge/38f904af-f67e-11ee-b18d-bea50ffe6cb4
 completedOn: 2024-04-02
 ---
 
