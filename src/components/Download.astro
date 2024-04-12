@@ -1,17 +1,12 @@
 ---
 type Props = {
-  href: string;
+  id: string;
 };
 
-const { href } = Astro.props as Props;
+const { id } = Astro.props as Props;
 ---
 
-<a
-  download
-  class="text-slate-400 hover:text-slate-500 dark:text-slate-600"
-  href={href}
-  rel="noopener noreferrer"
->
+<button id={id} class="text-slate-400 hover:text-slate-500 dark:text-slate-600">
   <svg
     class="h-6 w-6"
     fill="none"
@@ -25,4 +20,4 @@ const { href } = Astro.props as Props;
       stroke-width="2"
       d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
   </svg>
-</a>
+</button>

@@ -18,7 +18,7 @@ const { PDF_VIEW } = import.meta.env;
 const { title, pdfLink, description } = Astro.props
   .frontmatter as Props["frontmatter"];
 
-// Firstname Lastname -> ['F', 'L']
+// Firstname Lastname -> ['H', 'T']
 const initials = title
   .split(" ")
   .map(([initial]) => initial!.toUpperCase())
@@ -40,7 +40,7 @@ const initials = title
     <BlurCircle position="top" color={theme.colors.blur.top} />
     <BlurCircle position="bottom" color={theme.colors.blur.bottom} />
     <div class="container mx-auto flex justify-center">
-      <article class="minimalist relative">
+      <article id="cv" class="minimalist relative">
         <div class="absolute top-4 rounded-sm bg-indigo-400 px-4 py-1 sm:left-8 sm:top-12">
           <div class="flex h-fit select-none flex-col items-center text-sm font-bold">
             {initials.map((initial) => <span>{initial}</span>)}
@@ -49,7 +49,7 @@ const initials = title
         {
           !PDF_VIEW && (
             <div class="not-prose absolute right-4 top-4">
-              <Download href={pdfLink} />
+              <Download id="download-button" />
             </div>
           )
         }
@@ -63,3 +63,15 @@ const initials = title
     </style>
   </body>
 </html>
+
+<script>
+import html2pdf from "html2pdf.js"
+
+const button = document.getElementById("download-button")
+
+button?.addEventListener('click', () => {
+  var cv = document.getElementById('cv');
+  html2pdf(cv);
+});
+
+</script>
