@@ -9,9 +9,10 @@ export type Project = {
 
 const projects: Project[] = [
   {
-    title: "Coding platform",
-    techs: [],
-    isComingSoon: true,
+    title: "Codelab - Coding platform",
+    techs: ["JS", "Next.js", "Tailwind", "Eslint"],
+    link: "https://codelabzgz.github.io/",
+    isDeployed: true,
   },
   {
     title: "Business management system",
