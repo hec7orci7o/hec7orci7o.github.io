@@ -39,8 +39,8 @@ const walkthroughsCollection = defineCollection({
     os: z.enum(["linux", "windows"]),
     releaseDate: z.date(),
     pwnDate: z.date(),
-    shareLink: z.string().url(),
-    isPublished: z.boolean(),
+    soon: z.boolean().optional(),
+    achievement: z.string().url(),
   }),
 });
 

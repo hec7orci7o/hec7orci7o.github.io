@@ -9,20 +9,20 @@ type Props = {
   difficulty: string;
   slug: string;
   os: string
-  releaseDate: Date;
-  isPublished: boolean;
+  date: Date;
+  soon?: boolean;
 };
 
-const { title, banner, difficulty, slug, os, releaseDate, isPublished } = Astro.props;
+const { title, banner, difficulty, slug, os, date, soon } = Astro.props;
 
-let icon = null
+let icon;
 if (os == "linux") icon = linux;
 else if (os == "windows") icon = windows;
 ---
 
 <a
   class="group flex flex-col gap-2 border-t border-neutral-700 py-4 transition-all hover:text-neutral-100"
-  href={isPublished ? `/security/walkthroughs/${slug}` : null}
+  href={soon ? `/security/walkthroughs/${slug}` : null}
 >
   <div class="flex w-full items-center justify-between">
     <div class="flex items-center gap-x-3">
@@ -32,7 +32,7 @@ else if (os == "windows") icon = windows;
           class="w-12 h-12"
         >
         {icon && <img 
-          src={icon.src} 
+          src={icon?.src} 
           alt={`${os} machine.`} 
           class="w-5 h-5 absolute bottom-0 right-0 bg-neutral-950 rounded-full"
         />}
@@ -44,9 +44,9 @@ else if (os == "windows") icon = windows;
     </div>
     
 
-    {isPublished ? 
+    {!soon ? 
       <div class="flex flex-row items-center gap-4">
-      <p>{formatDate(releaseDate)}</p>
+      <p>{formatDate(date)}</p>
       <svg
         width="18"
         height="18"
