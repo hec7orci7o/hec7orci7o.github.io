@@ -1,9 +1,8 @@
 ---
 title: "Computer Security Internships"
-publishedAt: 2022-07-18
 description: ""
 slug: "computer-security-internships"
-isPublished: true
+publishedAt: 2022-07-18
 isDraft: true
 ---
 

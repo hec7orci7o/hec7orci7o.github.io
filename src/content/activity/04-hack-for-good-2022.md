@@ -1,9 +1,8 @@
 ---
 title: "Hack for Good 2022"
-publishedAt: 2022-10-20
 description: ""
 slug: "hack-for-good-2022"
-isPublished: true
+publishedAt: 2022-10-20
 isDraft: true
 ---
 

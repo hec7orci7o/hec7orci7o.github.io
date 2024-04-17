@@ -1,9 +1,8 @@
 ---
 title: "Final Degree Project"
-publishedAt: 2024-02-09
 description: ""
 slug: "final-degree-project"
-isPublished: true
+publishedAt: 2024-02-09
 isDraft: true
 ---
 

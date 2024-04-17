@@ -1,9 +1,8 @@
 ---
 title: "Hashcode 2021"
-publishedAt: 2021-02-25
 description: ""
 slug: "hashcode-2021"
-isPublished: true
+publishedAt: 2021-02-25
 isDraft: true
 ---
 

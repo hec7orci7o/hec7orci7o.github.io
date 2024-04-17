@@ -1,9 +1,8 @@
 ---
 title: "Cyber Apocalypse 2024: Hacker Royale"
-publishedAt: 2024-03-09
 description: ""
 slug: "cyber-apocalypse-2024"
-isPublished: true
+publishedAt: 2024-03-09
 isDraft: true
 ---
 

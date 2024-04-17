@@ -16,7 +16,7 @@ moduleLink: https://academy.hackthebox.com/achievement/361848/18
 completedAt: 2023-06-17
 tags:
   - cheatsheet
-  - Operating System Fundamentals
+  - operating-system-fundamentals
 ---
 | **Command** | **Description** |
 | ----------- | --------------- |

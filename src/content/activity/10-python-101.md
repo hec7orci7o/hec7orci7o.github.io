@@ -1,9 +1,8 @@
 ---
 title: "Introduction to Python"
-publishedAt: 2023-12-14
 description: ""
 slug: "python-101"
-isPublished: true
+publishedAt: 2023-12-14
 isDraft: true
 ---
 

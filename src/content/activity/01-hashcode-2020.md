@@ -1,9 +1,8 @@
 ---
 title: "Hashcode 2020"
-publishedAt: 2020-02-20
 description: ""
 slug: "hashcode-2020"
-isPublished: true
+publishedAt: 2020-02-20
 isDraft: true
 ---
 

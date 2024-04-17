@@ -15,7 +15,7 @@ moduleLink: https://academy.hackthebox.com/achievement/361848/19
 completedAt: 2024-02-26
 tags:
   - cheatsheet
-  - Basic Toolset
+  - basic-toolset
   - CPTS
 ---
 ## Scanning Options

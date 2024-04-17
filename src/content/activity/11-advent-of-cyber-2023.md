@@ -1,9 +1,8 @@
 ---
 title: "Advent of Cyber 2023"
-publishedAt: 2023-12-25
 description: ""
 slug: "advent-of-cyber-2023"
-isPublished: true
+publishedAt: 2023-12-25
 isDraft: true
 ---
 

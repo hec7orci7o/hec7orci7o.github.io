@@ -1,9 +1,8 @@
 ---
 title: "RootedCON 2024"
-publishedAt: 2024-03-07
 description: ""
 slug: "rootedcon-2024"
-isPublished: true
+publishedAt: 2024-03-07
 isDraft: true
 ---
 

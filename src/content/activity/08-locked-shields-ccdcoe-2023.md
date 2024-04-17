@@ -1,9 +1,8 @@
 ---
 title: "Locked Shields - CCDCOE 2023"
-publishedAt: 2023-03-01
 description: ""
 slug: "locked-shields-ccdcoe-2023"
-isPublished: true
+publishedAt: 2023-03-01
 isDraft: true
 ---
 
