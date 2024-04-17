@@ -26,14 +26,21 @@ const log = (await getCollection("activity"))
     >
       {
         presentation.profile && (
-          <div class="w-44 sm:w-1/4 self-center">
+          <div class="w-44 sm:w-1/4 self-center relative">
             <Image
-            src={presentation.profile}
-            class="w-full h-full rounded-full"
-            alt="Your Profile"
-            width="200"
-            height="200"
+              src={presentation.profile}
+              class="w-full h-full rounded-full"
+              alt="Your Profile"
+              width="200"
+              height="200"
             />
+            <a href="https://academy.hackthebox.com/achievement/badge/d5bbf192-fc37-11ee-b18d-bea50ffe6cb4" target="_blank">
+              <img
+                src="/cheatsheets/badges/straight-to-the-server.webp"
+                alt="Accreditation for completion of the Bug Bounty Hunter path."
+                class="w-[4.5rem] absolute bottom-0 right-0 z-50 hover:scale-110 duration-500 cursor-pointer"
+              />
+            </a>
           </div>
         )
       }
