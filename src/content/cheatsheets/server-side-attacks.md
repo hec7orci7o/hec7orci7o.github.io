@@ -1,15 +1,22 @@
 ---
-title: server-side-attacks
-difficulty: medium
+title: Server-side Attacks
+description: A backend that handles user-supplied input insecurely can lead to sensitive information disclosure and remote code execution. This module covers how to identify and exploit server-side bugs. This module introduces Server-Side Request Forgery (SSRF), Server-Side Template Injection (SSTI), and Server-Side Includes (SSI) injection attacks, alongside other server-side vulnerabilities.
+author:
+  - Andres D
+difficulty: Medium
 tier: 2
-type: offensive
+type: Offensive
+time: 8 hours
 slug: server-side-attacks
-banner: /cheatsheets/server-side-attacks.webp
 badge: /cheatsheets/badges/straight-to-the-server.webp
-sharebleLink: https://academy.hackthebox.com/achievement/badge/38f904af-f67e-11ee-b18d-bea50ffe6cb4
-completedOn: 2024-04-02
+module: /cheatsheets/server-side-attacks.webp
+badgeLink: https://academy.hackthebox.com/achievement/badge/38f904af-f67e-11ee-b18d-bea50ffe6cb4
+moduleLink: https://academy.hackthebox.com/achievement/361848/145
+completedAt: 2024-04-09
+tags:
+  - cheatsheet
+  - CBBH
 ---
-
 ## Nginx Reverse Proxy & AJP
 
 |**Command**|**Description**|
@@ -96,12 +103,12 @@ completedOn: 2024-04-02
 |`./tplmap.py -u 'http://<TARGET IP>:<PORT>/execute?cmd'`|Automating the templating engine identification process with tplmap|
 |`python3`|Starting the python3 interpreter|
 
-| **Methods**      | **Description**                                                                                                                     |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `__class__`      | Returns the object (class) to which the type belongs                                                                                |
-| `__mro__`        | Returns a tuple containing the base class inherited by the object. Methods are parsed in the order of tuples.                       |
-| `__subclasses__` | Each new class retains references to subclasses, and this method returns a list of references that are still available in the class |
-| `__builtins__`   | Returns the builtin methods included in a function                                                                                  |
-| `__globals__`    | A reference to a dictionary that contains global variables for a function                                                           |
-| `__base__`       | Returns the base class inherited by the object                                                                                      |
-| `__init__`       | Class initialization method                                                                                                         |
+|**Methods**|**Description**|
+|---|---|
+|`__class__`|Returns the object (class) to which the type belongs|
+|`__mro__`|Returns a tuple containing the base class inherited by the object. Methods are parsed in the order of tuples.|
+|`__subclasses__`|Each new class retains references to subclasses, and this method returns a list of references that are still available in the class|
+|`__builtins__`|Returns the builtin methods included in a function|
+|`__globals__`|A reference to a dictionary that contains global variables for a function|
+|`__base__`|Returns the base class inherited by the object|
+|`__init__`|Class initialization method|

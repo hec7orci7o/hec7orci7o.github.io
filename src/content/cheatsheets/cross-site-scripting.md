@@ -1,19 +1,26 @@
 ---
 title: Cross-Site Scripting (XSS)
-difficulty: easy
+description: Cross-Site Scripting (XSS) vulnerabilities are among the most common web application vulnerabilities. An XSS vulnerability may allow an attacker to execute arbitrary JavaScript code within the target's browser and result in complete web application compromise if chained together with other vulnerabilities. This module will teach you how to identify XSS vulnerabilities and exploit them.
+author:
+  - 21y4d
+difficulty: Easy
 tier: 2
-type: offensive
+type: Offensive
+time: 6 hours
 slug: cross-site-scripting
-banner: /cheatsheets/cross-site-scripting.webp
 badge: /cheatsheets/badges/included-in-every-report.webp
-sharebleLink: https://academy.hackthebox.com/achievement/badge/8885dbd4-d588-11ee-891c-bea50ffe6cb4
-completedOn: 2024-02-27
+module: /cheatsheets/cross-site-scripting.webp
+badgeLink: https://academy.hackthebox.com/achievement/badge/8885dbd4-d588-11ee-891c-bea50ffe6cb4
+moduleLink: https://academy.hackthebox.com/achievement/361848/103
+completedAt: 2024-02-27
+tags:
+  - cheatsheet
+  - CBBH
 ---
-
 ## Commands
 
-|**Code**|**Description**|
-|:---|:---|
+|Code|Description|
+|---|---|
 |**XSS Payloads**||
 |`<script>alert(window.origin)</script>`|Basic XSS Payload|
 |`<plaintext>`|Basic XSS Payload|

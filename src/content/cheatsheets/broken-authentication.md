@@ -1,16 +1,23 @@
 ---
 title: Broken Authentication
-difficulty: medium
+description: "Authentication is probably the most straightforward and prevalent measure used to secure access to resources, and it's the first line of defense against unauthorized access. Broken authentication is currently listed as #7 on the 2021 OWASP Top 10 Web Application Security Risks, falling under the broader category of Identification and Authentication failures. A vulnerability or misconfiguration at the authentication stage can devastatingly impact an application's overall security."
+author: 
+  - Sandro guly Zaccarini
+difficulty: Medium
 tier: 2
-type: offensive
+type: Offensive
+time: 2 days
 slug: broken-authentication
-banner: /cheatsheets/broken-authentication.webp
 badge: /cheatsheets/badges/just-a-small-crack-and-you-re-in.webp
-sharebleLink: https://academy.hackthebox.com/achievement/badge/4a77fe4a-f01a-11ee-b18d-bea50ffe6cb4
-completedOn: 2024-04-01
+module: /cheatsheets/broken-authentication.webp
+badgeLink: https://academy.hackthebox.com/achievement/badge/4a77fe4a-f01a-11ee-b18d-bea50ffe6cb4
+moduleLink: https://academy.hackthebox.com/achievement/361848/80
+completedAt: 2024-04-01
+tags:
+  - cheatsheet
+  - CBBH
 ---
-
-## Fuzz
+# Fuzz
 
 |**Command**|**Description**|
 |---|---|
@@ -19,14 +26,14 @@ completedOn: 2024-04-01
 |`wfuzz -H Foo:FUZZ`|Fuzz header|
 |`-X GET , -X POST`|Choose method|
 
-## Grep
+# Grep
 
 |**Command**|**Description**|
 |---|---|
 |`grep '[[:classname:]]' file.txt`|Find strings that contain a given class. Classes are: [[:graph:]], [[:lower:]], [[:print:]], [[:punct:]], [[:space:]], [[:upper:]], and [[:xdigit:]]|
 |`grep -x '.\{123\}'`|Find strings with length of 123|
 
-## Misc
+# Misc
 
 | **Command**                           | **Description**      |
 | ------------------------------------- | -------------------- |

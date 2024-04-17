@@ -15,13 +15,17 @@ const cheatsheetsCollection = defineCollection({
   type: "content",
   schema: z.object({
     title: z.string(),
-    difficulty: z.enum(["fundamental", "easy", "medium", "hard"]),
+    description: z.string(),
+    author: z.array(z.string()),
+    type: z.enum(["General", "Defensive","Offensive"]),
+    difficulty: z.enum(["Fundamental", "Easy", "Medium", "Hard"]),
     tier: z.number(),
-    type: z.enum(["general","defensive","offensive"]),
-    banner: z.string(),
     badge: z.string(),
-    sharebleLink: z.string(),
-    completedOn: z.date(),
+    module: z.string(),
+    badgeLink: z.string(),
+    moduleLink: z.string(),
+    completedAt: z.date(),
+    tags: z.array(z.string())
   }),
 });
 

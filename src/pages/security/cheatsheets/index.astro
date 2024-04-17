@@ -4,7 +4,7 @@ import Layout from "@/layouts/Layout.astro";
 import CheatsheetCard from "@/components/cheatsheets/CheatsheetCard.astro";
 
 const cheatsheets = (await getCollection("cheatsheets")).sort(function (first, second) {
-  return second.data.completedOn.getTime() - first.data.completedOn.getTime();
+  return second.data.completedAt.getTime() - first.data.completedAt.getTime();
 });
 
 ---
@@ -25,7 +25,7 @@ const cheatsheets = (await getCollection("cheatsheets")).sort(function (first, s
             type={cheatsheet.data.type}
             slug={cheatsheet.slug}
             isPublished={true}
-            completedOn={cheatsheet.data.completedOn}
+            completedOn={cheatsheet.data.completedAt}
           />
         ))}
     </article>

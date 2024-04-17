@@ -1,15 +1,22 @@
 ---
 title: Web Attacks
-difficulty: medium
+description: This module covers three common web vulnerabilities, HTTP Verb Tampering, IDOR, and XXE, each of which can have a significant impact on a company's systems. We will cover how to identify, exploit, and prevent each of them through various methods.
+author:
+  - 21y4d
+difficulty: Medium
 tier: 2
-type: offensive
+type: Offensive
+time: 2 days
 slug: web-attacks
-banner: /cheatsheets/web-attacks.webp
 badge: /cheatsheets/badges/arachnoid.webp
-sharebleLink: https://academy.hackthebox.com/achievement/badge/
-completedOn: 2024-04-02
+module: /cheatsheets/web-attacks.webp
+badgeLink: https://academy.hackthebox.com/achievement/badge/d5b41668-fc37-11ee-b18d-bea50ffe6cb4
+moduleLink: https://academy.hackthebox.com/achievement/361848/134
+completedAt: 2024-04-16
+tags:
+  - cheatsheet
+  - CBBH
 ---
-
 ## HTTP Verb Tampering
 
 `HTTP Method`
