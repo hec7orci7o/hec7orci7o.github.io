@@ -61,4 +61,4 @@ Regarding my English level, I have participated in several exchange programs in 
 
 ### [Hack The Box](https://www.hackthebox.com/)
 
-#### Bug Bounty Hunter | Current
+#### Bug Bounty Hunter | Apr 2024
