@@ -24,6 +24,7 @@ const log = (await getCollection("activity"))
             slug={entry.slug}
             publishedAt={entry.data.publishedAt}
             isDraft={entry.data.isDraft}
+            lang={entry.data.lang}
           />
         ))}
     </article>

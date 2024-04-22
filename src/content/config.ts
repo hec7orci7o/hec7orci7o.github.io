@@ -7,6 +7,7 @@ const logCollection = defineCollection({
     description: z.string(),
     slug: z.string(),
     publishedAt: z.date(),
+    lang: z.enum(["es", "us"]),
     isDraft: z.boolean().default(false),
   }),
 });
