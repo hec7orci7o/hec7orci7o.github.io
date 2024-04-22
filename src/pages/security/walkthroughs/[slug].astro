@@ -20,10 +20,10 @@ const { Content } = await walkthrough.render();
 ---
 
 <Layout title={walkthrough.data.title}>
-  <div class="mx-auto flex w-full max-w-prose flex-col gap-4 divide-y divide-white/10">
+  <div class="mx-auto flex w-full max-w-prose flex-col gap-4 divide-y divide-white/10" transition:name="page">
     <header role="presentation">
       <div class="flex items-center gap-x-3">
-        <a href={walkthrough.data.shareLink} class="relative">
+        <a href={walkthrough.data.achievement} class="relative hover:scale-110 duration-500">
           <img
             src={walkthrough.data.banner}
             class="w-20 h-20"

@@ -20,7 +20,7 @@ const { Content, remarkPluginFrontmatter  } = await cheatsheet.render();
 ---
 
 <Layout title={cheatsheet.data.title}>
-  <main class="post mx-auto flex w-full max-w-prose flex-col gap-4">
+  <main class="post mx-auto flex w-full max-w-prose flex-col gap-4" transition:name="page">
     <header role="presentation">
       <div class="relative">
         <img

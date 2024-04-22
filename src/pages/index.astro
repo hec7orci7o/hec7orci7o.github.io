@@ -23,7 +23,12 @@ const cheatsheets = (await getCollection("cheatsheets"))
 const walkthroughs = (await getCollection("walkthroughs"))
   .sort(function (first, second) {
     return second.data.releaseDate.getTime() - first.data.releaseDate.getTime();
-  }).map(i => ({ title: i.data.title, description: i.data.os + " " + i.data.difficulty, slug: i.slug, date: i.data.pwnDate }))
+  }).map(i => ({ 
+    title: i.data.title, 
+    description: i.data.os[0].toUpperCase() + i.data.os.substring(1) + " · " + i.data.difficulty[0].toUpperCase() + i.data.difficulty.substring(1), 
+    slug: i.slug, 
+    date: i.data.pwnDate
+ }))
 
 const latest = [...log, ...cheatsheets, ...walkthroughs]
   .sort(function (first, second) {
