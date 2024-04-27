@@ -22,7 +22,7 @@ else if (os == "windows") icon = windows;
 
 <a
   class="group flex flex-col gap-2 border-t border-neutral-700 py-4 transition-all hover:text-neutral-100"
-  href={soon ? `/security/walkthroughs/${slug}` : null}
+  href={!soon ? `/security/walkthroughs/${slug}` : null}
 >
   <div class="flex w-full items-center justify-between">
     <div class="flex items-center gap-x-3">
