@@ -15,20 +15,30 @@ const log = (await getCollection("activity"))
   .filter(entry => !entry.data.isDraft && entry.data.publishedAt.getTime() <= new Date().getTime())  
   .sort(function (first, second) {
     return second.data.publishedAt.getTime() - first.data.publishedAt.getTime();
-  }).map( i => ({ title: i.data.title, description: i.data.description, slug: i.data.slug, date: i.data.publishedAt }))
+  }).map( i => ({ 
+    title: i.data.title, 
+    description: i.data.description, 
+    slug: "/activity/" + i.data.slug,
+    date: i.data.publishedAt 
+  }))
 const cheatsheets = (await getCollection("cheatsheets"))
   .sort(function (first, second) {
     return second.data.completedAt.getTime() - first.data.completedAt.getTime();
-  }).map(i => ({ title: i.data.title, description: i.data.description, slug: i.slug, date: i.data.completedAt }))
+  }).map(i => ({ 
+    title: i.data.title, 
+    description: i.data.description, 
+    slug: "/security/cheatsheets/" + i.slug, 
+    date: i.data.completedAt
+  }))
 const walkthroughs = (await getCollection("walkthroughs"))
   .sort(function (first, second) {
     return second.data.releaseDate.getTime() - first.data.releaseDate.getTime();
   }).map(i => ({ 
     title: i.data.title, 
     description: i.data.os[0].toUpperCase() + i.data.os.substring(1) + " · " + i.data.difficulty[0].toUpperCase() + i.data.difficulty.substring(1), 
-    slug: i.slug, 
+    slug: "/security/walkthroughs/" + i.slug, 
     date: i.data.pwnDate
- }))
+  }))
 
 const latest = [...log, ...cheatsheets, ...walkthroughs]
   .sort(function (first, second) {
