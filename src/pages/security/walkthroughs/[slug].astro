@@ -1,9 +1,10 @@
 ---
 import { type CollectionEntry, getCollection } from "astro:content";
 import Layout from "@/layouts/Layout.astro";
+import Card from "@/components/Card.astro";
 
 export async function getStaticPaths() {
-  const walkthroughs = await getCollection("walkthroughs");
+  const walkthroughs = await getCollection("walkthroughs")
 
   return walkthroughs.map((walkthrough) => ({
     params: { slug: walkthrough.slug },
@@ -17,6 +18,15 @@ type Props = {
 
 const { walkthrough } = Astro.props;
 const { Content } = await walkthrough.render();
+
+const walkthroughs = (await getCollection("walkthroughs"))
+  .sort(function (first, second) {
+    return second.data.pwnDate.getTime() - first.data.pwnDate.getTime();
+  })
+const index = walkthroughs.findIndex(w => w.slug === walkthrough.slug)
+
+const next = index > 0 ? walkthroughs[index - 1] : null;
+const previous = index < walkthroughs.length - 1 ? walkthroughs[index + 1] : null;
 ---
 
 <Layout title={walkthrough.data.title}>
@@ -41,5 +51,20 @@ const { Content } = await walkthrough.render();
     <main class="post">
       <Content />
     </main>
+
+    <footer class="grid gap-4 grid-cols-1 md:grid-cols-2 pt-6">
+      <Card
+        title={"Previous"}
+        description={previous?.data.title}
+        url={previous?.slug}
+        date={previous?.data.pwnDate}
+      />
+      <Card
+        title={"Next"}
+        description={next?.data.title}
+        url={next?.slug}
+        date={next?.data.pwnDate}
+      />
+    </footer>
   </div>
 </Layout>
