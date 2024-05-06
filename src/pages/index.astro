@@ -22,12 +22,13 @@ const log = (await getCollection("activity"))
     date: i.data.publishedAt 
   }))
 const cheatsheets = (await getCollection("cheatsheets"))
+  .filter(c => Boolean(c.data.badgeLink) || Boolean(c.data.moduleLink))
   .sort(function (first, second) {
     return second.data.completedAt.getTime() - first.data.completedAt.getTime();
   }).map(i => ({ 
     title: i.data.title, 
     description: i.data.description, 
-    slug: "/security/cheatsheets/" + i.slug, 
+    slug: "/security/cheatsheets/" + i.slug,
     date: i.data.completedAt
   }))
 const walkthroughs = (await getCollection("walkthroughs"))

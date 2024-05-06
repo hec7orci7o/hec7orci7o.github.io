@@ -13,8 +13,8 @@ const { title, description, url, date } = Astro.props;
 
 <a
   class:list={[
-    "group flex cursor-pointer flex-col gap-2 rounded-md border border-neutral-700 p-4 transition-all duration-300",
-    Boolean(url) ? "hover:-translate-y-2 hover:border-neutral-400" : "opacity-40 cursor-not-allowed"
+    "group flex flex-col gap-2 rounded-md border border-neutral-700 p-4 transition-all duration-300",
+    Boolean(url) ? "hover:-translate-y-2 hover:border-neutral-400 cursor-pointer" : "opacity-40 cursor-not-allowed"
   ]}
   href={url}
   aria-disabled={Boolean(url)}

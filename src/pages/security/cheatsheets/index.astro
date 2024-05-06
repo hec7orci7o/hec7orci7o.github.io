@@ -3,7 +3,9 @@ import { getCollection } from "astro:content";
 import Layout from "@/layouts/Layout.astro";
 import CheatsheetCard from "@/components/cheatsheets/CheatsheetCard.astro";
 
-const cheatsheets = (await getCollection("cheatsheets")).sort(function (first, second) {
+const cheatsheets = (await getCollection("cheatsheets"))
+.filter(c => Boolean(c.data.badgeLink) || Boolean(c.data.moduleLink))
+.sort(function (first, second) {
   return second.data.completedAt.getTime() - first.data.completedAt.getTime();
 });
 

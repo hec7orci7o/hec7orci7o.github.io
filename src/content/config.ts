@@ -24,8 +24,8 @@ const cheatsheetsCollection = defineCollection({
     time: z.string(),
     badge: z.string(),
     module: z.string(),
-    badgeLink: z.string().url(),
-    moduleLink: z.string().url(),
+    badgeLink: z.string().url().nullable(),
+    moduleLink: z.string().url().nullable(),
     completedAt: z.date(),
     tags: z.array(z.string())
   }),

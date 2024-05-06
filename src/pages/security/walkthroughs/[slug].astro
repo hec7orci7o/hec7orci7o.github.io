@@ -24,6 +24,7 @@ const walkthroughs = (await getCollection("walkthroughs"))
     return second.data.pwnDate.getTime() - first.data.pwnDate.getTime();
   })
 const index = walkthroughs.findIndex(w => w.slug === walkthrough.slug)
+console.log(index)
 
 const next = index > 0 ? walkthroughs[index - 1] : null;
 const previous = index < walkthroughs.length - 1 ? walkthroughs[index + 1] : null;
@@ -56,13 +57,13 @@ const previous = index < walkthroughs.length - 1 ? walkthroughs[index + 1] : nul
       <Card
         title={"Previous"}
         description={previous?.data.title}
-        url={previous?.slug}
+        url={previous?.slug !== undefined ? `/security/walkthroughs/${previous.slug}` : undefined}
         date={previous?.data.pwnDate}
       />
       <Card
         title={"Next"}
         description={next?.data.title}
-        url={next?.slug}
+        url={next?.slug !== undefined ? `/security/walkthroughs/${next.slug}` : undefined}
         date={next?.data.pwnDate}
       />
     </footer>
