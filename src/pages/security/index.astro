@@ -6,7 +6,9 @@ import CheatsheetCard from "@/components/cheatsheets/Card.astro";
 import WalkthroughCard from "@/components/walkthroughs/Card.astro";
 import Link from "@/components/shared/Link.astro";
 
-const cheatsheets = (await getCollection("cheatsheets")).sort(function (first, second) {
+const cheatsheets = (await getCollection("cheatsheets"))
+.filter(c => Boolean(c.data.badgeLink) || Boolean(c.data.moduleLink))
+.sort(function (first, second) {
   return second.data.completedAt.getTime() - first.data.completedAt.getTime();
 });
 
