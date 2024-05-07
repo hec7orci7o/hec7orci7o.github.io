@@ -32,6 +32,7 @@ const cheatsheets = (await getCollection("cheatsheets"))
     date: i.data.completedAt
   }))
 const walkthroughs = (await getCollection("walkthroughs"))
+  .filter(c => Boolean(c.data.achievement))
   .sort(function (first, second) {
     return second.data.releaseDate.getTime() - first.data.releaseDate.getTime();
   }).map(i => ({ 

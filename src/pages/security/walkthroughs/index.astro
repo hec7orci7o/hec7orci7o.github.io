@@ -25,7 +25,7 @@ const walkthroughs = (await getCollection("walkthroughs")).sort(function (first,
             os={walkthrough.data.os}
             slug={walkthrough.slug}
             date={walkthrough.data.releaseDate}
-            soon={walkthrough.data?.soon}
+            soon={!Boolean(walkthrough.data.achievement)}
           />
         ))}
     </article>

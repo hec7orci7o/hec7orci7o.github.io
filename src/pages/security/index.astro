@@ -13,9 +13,9 @@ const cheatsheets = (await getCollection("cheatsheets"))
 });
 
 const walkthroughs = (await getCollection("walkthroughs"))
-  .filter(w => !Boolean(w.data.soon))
+  .filter(w => Boolean(w.data.achievement))
   .sort(function (first, second) {
-  return second.data.releaseDate.getTime() - first.data.releaseDate.getTime();
+  return second.data.pwnDate.getTime() - first.data.pwnDate.getTime();
 });
 ---
 
@@ -64,7 +64,7 @@ const walkthroughs = (await getCollection("walkthroughs"))
                 title={walkthrough.data.title}
                 difficulty={walkthrough.data.difficulty}
                 slug={walkthrough.slug}
-                isComingSoon={Boolean(walkthrough.data.soon)}
+                isComingSoon={!Boolean(walkthrough.data.achievement)}
               />
             ))
         }
