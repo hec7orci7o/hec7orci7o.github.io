@@ -10,9 +10,9 @@ time: 5 hours
 slug: using-the-metasploit-framework
 badge: /cheatsheets/badges/combine-the-modules.webp
 module: /cheatsheets/using-the-metasploit-framework.webp
-badgeLink: 
-moduleLink: 
-completedAt: 2024-05-07
+badgeLink: https://academy.hackthebox.com/achievement/badge/5f886583-0f8e-11ef-b18d-bea50ffe6cb4
+moduleLink: https://academy.hackthebox.com/achievement/361848/39
+completedAt: 2024-05-11
 tags:
   - cheatsheet
   - CPTS
@@ -55,9 +55,6 @@ tags:
 |`db_nmap`|Use Nmap and place results in a database. (Normal Nmap syntax is supported, such as –sT –v –P0.)|
 |`db_destroy`|Delete the current database.|
 |`db_destroy <user:password@host:port/database>`|Delete database using advanced options.|
-|||
-
----
 
 ## Meterpreter Commands
 

