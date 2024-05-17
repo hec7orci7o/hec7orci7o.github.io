@@ -1,5 +1,5 @@
 {
-  "name": "astro-template-portfolio",
+  "name": "hec7orci7o",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
@@ -14,9 +14,9 @@
     "@astrojs/mdx": "^2.2.2",
     "@astrojs/sitemap": "^3.1.2",
     "@astrojs/tailwind": "^5.1.0",
-    "@fontsource/open-sans": "^5.0.27",
-    "@tailwindcss/typography": "^0.5.12",
-    "astro": "^4.5.12",
+    "@fontsource/open-sans": "^5.0.28",
+    "@tailwindcss/typography": "^0.5.13",
+    "astro": "^4.8.6",
     "astro-robots-txt": "^1.0.0",
     "astro-seo": "0.8.3",
     "html2pdf.js": "^0.10.1",
@@ -30,6 +30,6 @@
     "eslint-plugin-astro": "0.33.1",
     "prettier": "3.2.5",
     "prettier-plugin-astro": "0.13.0",
-    "prettier-plugin-tailwindcss": "0.5.13"
+    "prettier-plugin-tailwindcss": "0.5.14"
   }
 }

