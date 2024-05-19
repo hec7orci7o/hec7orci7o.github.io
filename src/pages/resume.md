@@ -7,7 +7,7 @@ pdfLink: resume.pdf
 
 # Héctor Toral
 
-**Red Team Operator**
+**Cybersecurity operator**
 
 Zaragoza, ES | hectortoraltrabajos@gmail.com | [hec7orci7o.github.io](https://hec7orci7o.github.io) | [github.com/hec7orci7o](https://github.com/hec7orci7o)
 
@@ -61,4 +61,4 @@ Regarding my English level, I have participated in several exchange programs in 
 
 ### [Hack The Box](https://www.hackthebox.com/)
 
-#### Bug Bounty Hunter | Apr 2024
+#### [Bug Bounty Hunter](https://academy.hackthebox.com/achievement/badge/d5bbf192-fc37-11ee-b18d-bea50ffe6cb4) | Apr 2024

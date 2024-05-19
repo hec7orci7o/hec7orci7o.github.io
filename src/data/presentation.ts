@@ -17,7 +17,7 @@ const presentation: Presentation = {
   title: "Hi, I’m Héctor 👋",
   profile: "/profile.webp",
   description:
-    "a *Spanish dev passionate about cybersecurity*. I have experience with the *DevOps* world and my goal is to become a *pentester*. Outside of coding, you'll find me with friends or exploring new concepts related to my main goals.",
+    "A Spanish dev passionate about cybersecurity. I have experience in the development world, working on full-stack and DevOps projects. In my free time, I enjoy hacking machines on Hack The Box.",
   socials: [
     {
       label: "LinkedIn",
@@ -27,7 +27,7 @@ const presentation: Presentation = {
       link: "https://github.com/hec7orci7o",
     }, {
       label: "Resume",
-      link: "https://hec7orci7o.github.io/resume",
+      link: "/resume",
     },
   ],
 };
