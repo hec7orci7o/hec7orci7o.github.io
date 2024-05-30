@@ -1,45 +1,54 @@
 ---
-import certificate from "@/components/icons/certificate.svg"
-import chevronLeft from "@/components/icons/chevron-left.svg"
-import chevronRight from "@/components/icons/chevron-right.svg"
-import reload from "@/components/icons/reload.svg"
-import share from "@/components/icons/share.svg"
-import plus from "@/components/icons/plus.svg"
-import grid from "@/components/icons/grid.svg"
+import certificate from "@/components/icons/certificate.svg";
+import chevronLeft from "@/components/icons/chevron-left.svg";
+import chevronRight from "@/components/icons/chevron-right.svg";
+import reload from "@/components/icons/reload.svg";
+import share from "@/components/icons/share.svg";
+import plus from "@/components/icons/plus.svg";
+import grid from "@/components/icons/grid.svg";
 
 const { src, alt, url } = Astro.props;
 ---
 
 <div class="rounded-md ring-1 ring-white/10 shadow-white/10 shadow-sm">
-  <div class="flex items-center justify-between h-7 rounded-t-md bg-[#2E2D2C] px-2.5 relative">
+  <div
+    class="flex items-center justify-between h-7 rounded-t-md bg-[#2E2D2C] px-2.5 relative"
+  >
     <div class="flex items-center gap-x-1">
-      <div class="w-[8px] h-[8px] bg-[#EE6A5F] rounded-full"/>
-      <div class="w-[8px] h-[8px] bg-[#F5BD4F] rounded-full"/>
-      <div class="w-[8px] h-[8px] bg-[#61C454] rounded-full"/>
-      <img src={certificate.src} alt="certificate icon" class="w-3 h-3 ml-2 mr-0.5"/>
-      <img src={chevronLeft.src} alt="previous icon" class="w-3 h-3"/>
-      <img src={chevronRight.src} alt="next icon" class="w-3 h-3"/>
+      <div class="w-[8px] h-[8px] bg-[#EE6A5F] rounded-full"></div>
+      <div class="w-[8px] h-[8px] bg-[#F5BD4F] rounded-full"></div>
+      <div class="w-[8px] h-[8px] bg-[#61C454] rounded-full"></div>
+      <img
+        src={certificate.src}
+        alt="certificate icon"
+        class="w-3 h-3 ml-2 mr-0.5"
+      />
+      <img src={chevronLeft.src} alt="previous icon" class="w-3 h-3" />
+      <img src={chevronRight.src} alt="next icon" class="w-3 h-3" />
     </div>
-    <div class="flex items-center gap-x-1 w-1/2 absolute left-1/2 -translate-x-1/2">
-      <input 
+    <div
+      class="flex items-center gap-x-1 w-1/2 absolute left-1/2 -translate-x-1/2"
+    >
+      <input
         class="bg-transparent border border-white/10 h-5 rounded-md focus:outline-none font-mono text-xs text-center w-full"
         value={url.length > 20 ? `${url.substring(0, 20)}...` : url}
         disabled
       />
-      <img src={reload.src} alt="certificate icon" class="w-3 h-3 absolute right-0 mr-1.5"/>
+      <img
+        src={reload.src}
+        alt="certificate icon"
+        class="w-3 h-3 absolute right-0 mr-1.5"
+      />
     </div>
     <div class="flex items-center gap-x-1">
-      <img src={share.src} alt="share icon" class="w-3 h-3"/>
-      <img src={plus.src} alt="add icon" class="w-3 h-3"/>
-      <img src={grid.src} alt="settings icon" class="w-3 h-3"/>
+      <img src={share.src} alt="share icon" class="w-3 h-3" />
+      <img src={plus.src} alt="add icon" class="w-3 h-3" />
+      <img src={grid.src} alt="settings icon" class="w-3 h-3" />
     </div>
   </div>
-  <img 
-    src={src}
-    alt={alt}
-    class="rounded-b-md aspect-video"
-  >
+  <img src={src} alt={alt} class="rounded-b-md aspect-video" />
 </div>
 <p class="text-center">
   {alt}
-<p>
+  <p></p>
+</p>
