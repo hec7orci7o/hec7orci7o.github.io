@@ -3,9 +3,11 @@ import { getCollection } from "astro:content";
 import Layout from "@/layouts/Layout.astro";
 import WalkthroughCard from "@/components/walkthroughs/WalkthroughCard.astro";
 
-const walkthroughs = (await getCollection("walkthroughs")).sort(function (first, second) {
-  return second.data.pwnDate.getTime() - first.data.pwnDate.getTime();
-});
+const walkthroughs = (await getCollection("walkthroughs")).sort(
+  function (first, second) {
+    return second.data.pwnDate.getTime() - first.data.pwnDate.getTime();
+  },
+);
 ---
 
 <Layout title="All Walkthroughs">
@@ -13,12 +15,10 @@ const walkthroughs = (await getCollection("walkthroughs")).sort(function (first,
     <h1 class="text-2xl text-neutral-100">Walkthroughs</h1>
 
     <article class="flex flex-col gap-4">
-      {walkthroughs.length === 0 && 
-        <p>Soon, stay connected 👀...</p>
-      }
-      {walkthroughs
-        .map((walkthrough) => (
-          <WalkthroughCard 
+      {walkthroughs.length === 0 && <p>Soon, stay connected 👀...</p>}
+      {
+        walkthroughs.map((walkthrough) => (
+          <WalkthroughCard
             title={walkthrough.data.title}
             banner={walkthrough.data.banner}
             difficulty={walkthrough.data.difficulty}
@@ -26,8 +26,10 @@ const walkthroughs = (await getCollection("walkthroughs")).sort(function (first,
             slug={walkthrough.slug}
             date={walkthrough.data.pwnDate}
             soon={!Boolean(walkthrough.data.achievement)}
+            rating={walkthrough.data.user}
           />
-        ))}
+        ))
+      }
     </article>
   </main>
 </Layout>

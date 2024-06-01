@@ -2,18 +2,20 @@
 import formatDate from "@/utils/formatDate";
 import linux from "@/components/icons/ic-linux.svg";
 import windows from "@/components/icons/ic-windows.svg";
+import Rating from "./Rating.astro";
 
 type Props = {
   title: string;
   banner: string;
   difficulty: string;
   slug: string;
-  os: string
+  os: string;
   date: Date;
   soon?: boolean;
+  rating: number[];
 };
 
-const { title, banner, difficulty, slug, os, date, soon } = Astro.props;
+const { title, banner, difficulty, slug, os, date, soon, rating } = Astro.props;
 
 let icon;
 if (os == "linux") icon = linux;
@@ -24,51 +26,60 @@ else if (os == "windows") icon = windows;
   class="group flex flex-col gap-2 border-t border-neutral-700 py-4 transition-all hover:text-neutral-100"
   href={!soon ? `/security/walkthroughs/${slug}` : null}
 >
-  <div class="flex w-full items-center justify-between">
-    <div class="flex items-center gap-x-3">
+  <div
+    class="grid grid-cols-2 sm:grid-cols-3 w-full items-center justify-between"
+  >
+    <div class="col-span-1 flex items-center gap-x-3">
       <div class="relative">
-        <img
-          src={banner}
-          class="w-12 h-12"
-        >
-        {icon && <img 
-          src={icon?.src} 
-          alt={`${os} machine.`} 
-          class="w-5 h-5 absolute bottom-0 right-0 bg-neutral-950 rounded-full"
-        />}
+        <img src={banner} class="w-12 h-12 min-w-12 min-h-12" />
+        {
+          icon && (
+            <img
+              src={icon?.src}
+              alt={`${os} machine.`}
+              class="w-5 h-5 absolute bottom-0 right-0 bg-neutral-950 rounded-full"
+            />
+          )
+        }
       </div>
       <div class="flex flex-col items-start gap-y-0.5">
         <h2 class="text-sm font-bold">{title}</h2>
         <h2 class="text-xs font-light uppercase tracking-wide">{difficulty}</h2>
       </div>
     </div>
-    
-
-    {!soon ? 
-      <div class="flex flex-row items-center gap-4">
-      <p>{formatDate(date)}</p>
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 18 18"
-        fill="none"
-        class="transition-all duration-300 group-hover:translate-x-1"
-      >
-        <path
-          d="M5.25 12.75L12.75 5.25"
-          stroke="#999999"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-        <path
-          d="M5.25 5.25H12.75V12.75"
-          stroke="#999999"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-      </svg>
-    </div>: 
-    <span class="w-fit rounded-md bg-neutral-900 px-4 py-1">Soon</span>
-  }
+    <div class="self-center col-span-1 mx-auto hidden sm:block">
+      <Rating values={rating} />
+    </div>
+    {
+      !soon ? (
+        <div class="ml-auto flex flex-row items-center gap-4">
+          <p>{formatDate(date)}</p>
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            class="transition-all duration-300 group-hover:translate-x-1"
+          >
+            <path
+              d="M5.25 12.75L12.75 5.25"
+              stroke="#999999"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M5.25 5.25H12.75V12.75"
+              stroke="#999999"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+      ) : (
+        <span class="ml-auto w-fit rounded-md bg-neutral-900 px-4 py-1">
+          Soon
+        </span>
+      )
+    }
   </div>
 </a>

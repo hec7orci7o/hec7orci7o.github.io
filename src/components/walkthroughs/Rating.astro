@@ -1,0 +1,37 @@
+---
+function normalizar(valores: number[]) {
+  const minVal = Math.min(...valores);
+  const maxVal = Math.max(...valores);
+  const rango = maxVal - minVal;
+  return valores.map((valor) =>
+    Math.max((valor - minVal) / rango, 1 / 100, 0.05),
+  );
+}
+
+type Props = {
+  values: number[];
+};
+
+let { values } = Astro.props;
+values = normalizar(values);
+---
+
+<div class="flex items-end gap-1">
+  {
+    values.map((value, index) => (
+      <div
+        class:list={[
+          "w-1 rounded-full bg-[#9FEF00]",
+          index <= 2
+            ? "bg-[#9FEF00]"
+            : index >= 7
+              ? "bg-[#FF3E3E]"
+              : "bg-[#FFA500]",
+        ]}
+        style={{
+          height: `${35 * value}px`,
+        }}
+      />
+    ))
+  }
+</div>
