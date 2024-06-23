@@ -1,4 +1,3 @@
-
 type Social = {
   label: string;
   link: string;
@@ -13,7 +12,7 @@ type Presentation = {
 };
 
 const presentation: Presentation = {
-  mail: "hectortoraltrabajos@gmail.com",
+  mail: "hi@hectortoral.com",
   title: "Hi, I’m Héctor 👋",
   profile: "/profile.webp",
   description:
@@ -22,10 +21,12 @@ const presentation: Presentation = {
     {
       label: "LinkedIn",
       link: "https://www.linkedin.com/in/hec7or/",
-    }, {
+    },
+    {
       label: "Github",
       link: "https://github.com/hec7orci7o",
-    }, {
+    },
+    {
       label: "Resume",
       link: "/resume",
     },
