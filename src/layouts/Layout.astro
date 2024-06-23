@@ -15,7 +15,7 @@ export type Props = HeadTags;
 const headTags = Astro.props;
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <SEOTags {...headTags} />
 
@@ -26,11 +26,17 @@ const headTags = Astro.props;
     <BlurCircle position="top" color={theme.colors.blur.top} />
     <BlurCircle position="bottom" color={theme.colors.blur.bottom} />
     <slot />
-    
+
     <style is:global>
       html {
         font-family: "Open Sans";
       }
     </style>
+    <!-- Cloudflare Web Analytics -->
+    <script
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon='{"token": "a5fd3371301a4b3389b954288167ace8"}'
+      defer></script>
+    <!-- End Cloudflare Web Analytics -->
   </body>
 </html>
