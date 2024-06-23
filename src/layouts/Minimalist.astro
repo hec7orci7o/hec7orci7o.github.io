@@ -8,15 +8,13 @@ import "@/styles/resume.css";
 type Props = {
   frontmatter: {
     title: string;
-    pdfLink: string;
     description?: string;
   };
 };
 
 const { PDF_VIEW } = import.meta.env;
 
-const { title, pdfLink, description } = Astro.props
-  .frontmatter as Props["frontmatter"];
+const { title, description } = Astro.props.frontmatter as Props["frontmatter"];
 
 // Firstname Lastname -> ['H', 'T']
 const initials = title
