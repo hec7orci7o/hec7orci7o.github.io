@@ -26,8 +26,8 @@ const cheatsheetsCollection = defineCollection({
     module: z.string(),
     badgeLink: z.string().url().nullable(),
     moduleLink: z.string().url().nullable(),
-    completedAt: z.date(),
-    tags: z.array(z.string())
+    completedAt: z.date().nullable(),
+    tags: z.array(z.string()),
   }),
 });
 
@@ -42,7 +42,7 @@ const walkthroughsCollection = defineCollection({
     pwnDate: z.date(),
     achievement: z.string().url().nullable(),
     user: z.array(z.number()),
-    root: z.array(z.number())
+    root: z.array(z.number()),
   }),
 });
 
