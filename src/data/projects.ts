@@ -1,4 +1,3 @@
-
 export type Project = {
   title: string;
   techs: string[];
@@ -11,29 +10,64 @@ const projects: Project[] = [
   {
     title: "Codelab - Coding platform",
     techs: ["JS", "Next.js", "Tailwind", "Eslint"],
-    link: "https://codelabzgz.github.io/",
+    link: "https://codelabzgz.dev",
     isDeployed: true,
   },
   {
     title: "Business management system",
-    techs: ["JS", "Next.js", "Tailwind", "Eslint", "Docker", "Supabase", "Cypress"],
+    techs: [
+      "JS",
+      "Next.js",
+      "Tailwind",
+      "Eslint",
+      "Docker",
+      "Supabase",
+      "Cypress",
+    ],
     link: "https://maya.gracehopper.xyz",
     isDeployed: true,
   },
   {
     title: "Chess - frontend / backend",
-    techs: ["TS", "Next.js", "Tailwind", "Eslint", "Docker", "MongoDB", "Redis", "Socket.io", "Mocha"],
+    techs: [
+      "TS",
+      "Next.js",
+      "Tailwind",
+      "Eslint",
+      "Docker",
+      "MongoDB",
+      "Redis",
+      "Socket.io",
+      "Mocha",
+    ],
     link: "https://reign.gracehopper.xyz",
     isDeployed: true,
   },
   {
     title: "URL shortener",
-    techs: ["Kotlin", "SpringBoot", "PostgreSQL", "SonarQube", "RabbitMQ","Docker", "detekt", "Tailwind"],
+    techs: [
+      "Kotlin",
+      "SpringBoot",
+      "PostgreSQL",
+      "SonarQube",
+      "RabbitMQ",
+      "Docker",
+      "detekt",
+      "Tailwind",
+    ],
     link: "https://github.com/Hec7or-Uni/urlshortener",
   },
   {
     title: "Networking app for architects",
-    techs: ["JS", "Next.js", "Tailwind", "Eslint", "MongoDB", "Stripe", "Mailchimp"],
+    techs: [
+      "JS",
+      "Next.js",
+      "Tailwind",
+      "Eslint",
+      "MongoDB",
+      "Stripe",
+      "Mailchimp",
+    ],
     link: "https://buiildr.vercel.app/",
     isDeployed: true,
   },

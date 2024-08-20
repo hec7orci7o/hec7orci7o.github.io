@@ -11,9 +11,9 @@ time: 2 days
 slug: shells-and-payloads
 badge: /cheatsheets/badges/ghost-in-the-shell.webp
 module: /cheatsheets/shells-and-payloads.webp
-badgeLink:
-moduleLink:
-completedAt:
+badgeLink: https://academy.hackthebox.com/achievement/badge/9c3634ce-5ee3-11ef-864f-bea50ffe6cb4
+moduleLink: https://academy.hackthebox.com/achievement/361848/115
+completedAt: 2024-08-20
 tags:
   - cheatsheet
   - CPTS
