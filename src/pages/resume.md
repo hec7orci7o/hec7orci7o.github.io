@@ -11,7 +11,7 @@ pdfLink: resume.pdf
 
 Zaragoza, ES | hi@hectortoral.com | [hectortoral.com](https://hectortoral.com) | [github.com/hec7orci7o](https://github.com/hec7orci7o)
 
-I am an engineer who has always been attracted to the world of cybersecurity. I am a restless person who is always looking for something to do. I have participated in different events, such as CTF and hackathons. Also, because I am a member of [codelabzgz](https://codelabzgz.github.io/) (student association), I have participated and organized some competitions and formative talks in programming languages such as Python. On the other hand, due to my interest and that of other students, we managed to encourage the creation of a [cybersecurity school](http://ctfs.unizar.es/) where a [professor](https://webdiis.unizar.es/~ricardo/) and PhD students introduced us to this world.
+I am an engineer who has always been attracted to the world of cybersecurity. I am a restless person who is always looking for something to do. I have participated in different events, such as CTF and hackathons. Also, because I am a member of [codelabzgz](https://codelabzgz.dev/) (student association), I have participated and organized some competitions and formative talks in programming languages such as Python. On the other hand, due to my interest and that of other students, we managed to encourage the creation of a [cybersecurity school](http://ctfs.unizar.es/) where a [professor](https://webdiis.unizar.es/~ricardo/) and PhD students introduced us to this world.
 
 The last event in which I have participated is [Locked Shields](https://ccdcoe.org/exercises/locked-shields/) in which for the third time in a row I have been part of the blue team of a fictitious country, testing my skills to defend the national computer systems and critical infrastructures under real-time attacks.
 
@@ -43,7 +43,8 @@ During my university internship, I joined a cybersecurity team to help in the da
 
 ## Skills
 
-[Nmap](https://hectortoral.com/security/walkthroughs/monitored/), [Ffuf](https://hectortoral.com/security/walkthroughs/bizness/), Gobuster, Dirbuster, Burp Suite, ZAP, Tcpdump, Wireshark, [Hashcat](https://hectortoral.com/security/walkthroughs/codify/), [John the Ripper](https://hectortoral.com/security/walkthroughs/builder/), Python, [sqlmap](https://hectortoral.com/security/walkthroughs/monitored/), Bash Scripting, more in my [GitHub](https://github.com/hec7orci7o)
+[Nmap](https://hectortoral.com/security/walkthroughs/monitored/), [Ffuf](https://hectortoral.com/security/walkthroughs/bizness/), Gobuster, Dirbuster, Burp Suite, ZAP, Tcpdump, Wireshark, [Hashcat](https://hectortoral.com/security/walkthroughs/codify/), [John the Ripper](https://hectortoral.com/security/walkthroughs/builder/), Python, [sqlmap](https://hectortoral.com/security/walkthroughs/monitored/), Bash Scripting, 
+CrackMapExec, Mimikatz, more in my [GitHub](https://github.com/hec7orci7o)
 
 ## Languages
 
@@ -59,6 +60,13 @@ Regarding my English level, I have participated in several exchange programs in 
 
 #### Bachelor, Information Technology | Sep 2019 - Feb 2024
 
+- [Final Degree Project](https://deposita.unizar.es/record/79852) – Distinction
+- [Project Software Course](https://github.com/UNIZAR-30226-2023-01) – Distinction
+
 ### [Hack The Box](https://www.hackthebox.com/)
 
 #### [Bug Bounty Hunter](https://academy.hackthebox.com/achievement/badge/d5bbf192-fc37-11ee-b18d-bea50ffe6cb4) | Apr 2024
+#### [Penetration Tester](https://academy.hackthebox.com/path/preview/penetration-tester) | Current (62.17%)
+
+![Hec7orci7o HTB Badge](https://www.hackthebox.eu/badge/image/701907)
+

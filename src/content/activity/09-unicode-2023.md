@@ -37,4 +37,4 @@ El evento fue organizado por el equipo de [codelab] y contó con la colaboració
 [Francisco Javier Pizarro](https://www.linkedin.com/in/franciscopizarrojavier/),
 [Héctor Toral](https://www.linkedin.com/in/hec7or/)
 
-[codelab]: https://codelabzgz.github.io/
+[codelab]: https://codelabzgz.dev/
