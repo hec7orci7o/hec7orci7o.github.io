@@ -1,0 +1,65 @@
+name: Publish redirect to GitHub Pages
+
+on:
+  # Manual trigger with the option to customize the redirect target
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: "Destination URL for the redirect"
+        required: true
+        default: "https://hectortoral.com/"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate index.html with redirect
+        run: |
+          mkdir -p dist
+          cat > dist/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+            <head>
+              <meta charset="utf-8">
+              <title>Redirecting…</title>
+              <meta http-equiv="refresh" content="0; url=__TARGET__">
+              <link rel="canonical" href="__TARGET__">
+              <script>window.location.replace("__TARGET__");</script>
+            </head>
+            <body>
+              If you are not redirected automatically, follow this link:
+              <a href="__TARGET__">__TARGET__</a>.
+            </body>
+          </html>
+          HTML
+
+      - name: Replace placeholder with target URL
+        run: |
+          target="${{ github.event.inputs.target_url }}"
+          # Replace __TARGET__ in the HTML with the provided URL
+          sed -i "s|__TARGET__|$target|g" dist/index.html
+
+      - name: Upload redirect page as artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy redirect to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
